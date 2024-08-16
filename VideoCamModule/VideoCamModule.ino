@@ -10,35 +10,32 @@ class CameraLightTurnsSupplyController {
     typedef void (*ChangeStateCallback)(CameraStates);
 
 public:
-    void setCameraState(CameraStates state) {
-        if (this->cameraState == state)return;
-        switch (state) {
-            case CAMS_OFF:
-                digitalWrite(outDisplayOn, LOW);
-                digitalWrite(outFrontCamPower, LOW);
-                digitalWrite(outRearCamPower, LOW);
-                digitalWrite(outRelayCameraSwitch, LOW);
-                digitalWrite(outControllerLed, LOW);
-            case REAR_CAM_ON:
-                digitalWrite(outDisplayOn, HIGH);
-                digitalWrite(outFrontCamPower, LOW);
-                digitalWrite(outRearCamPower, HIGH);
-                digitalWrite(outRelayCameraSwitch, LOW);
-                digitalWrite(outControllerLed, HIGH);
-            case FRONT_CAM_ON:
-                digitalWrite(outDisplayOn, HIGH);
-                digitalWrite(outFrontCamPower, HIGH);
-                digitalWrite(outRearCamPower, LOW);
-                digitalWrite(outRelayCameraSwitch, HIGH);
-                digitalWrite(outControllerLed, HIGH);
-        }
-        this->cameraState = state;
-        changeStateCallback(state);
+    void setChangeStateCallback(ChangeStateCallback callback) {
+        this->changeStateCallback = callback;
     }
 
-    ChangeStateCallback changeStateCallback;
+    void initiate() {
+        pinMode(inReverseGear, INPUT);
+        pinMode(inRightTurn, INPUT);
+        pinMode(inLeftTurn, INPUT);
+        pinMode(outRearCamPower, OUTPUT);
+        pinMode(outFrontCamPower, OUTPUT);
+        pinMode(outCautionSignal, OUTPUT);
+        pinMode(outDisplayOn, OUTPUT);
+        pinMode(outLeftFogLight, OUTPUT);
+        pinMode(outRightFogLight, OUTPUT);
+        pinMode(outRelayCameraSwitch, OUTPUT);
+        pinMode(outControllerLed, OUTPUT);
+        setCameraState(CAMS_OFF);
+        getGearsState();
+    }
+
+    void checkGearsLoopStep() {
+        getGearsState();
+    }
 
 private:
+    ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
     //timings
     uint16_t BOUNCE_DELAY = 60;
@@ -70,6 +67,12 @@ private:
     unsigned long leftTriggerOffMill = 0;
     unsigned long rightTriggerOffMill = 0;
 
+    void getGearsState() {
+        getReverseState();
+        getLeftState();
+        getRightState();
+    }
+
     bool getReverseState() {
         return reverseIsOn = checkSignalState(&lastReverseState,
                                               inReverseGear,
@@ -86,6 +89,32 @@ private:
         return rightIsOn = !checkSignalState(&lastRightState,
                                              inRightTurn,
                                              &lastTimeRightChanged);
+    }
+
+    void setCameraState(CameraStates state) {
+        if (this->cameraState == state)return;
+        switch (state) {
+            case CAMS_OFF:
+                digitalWrite(outDisplayOn, LOW);
+                digitalWrite(outFrontCamPower, LOW);
+                digitalWrite(outRearCamPower, LOW);
+                digitalWrite(outRelayCameraSwitch, LOW);
+                digitalWrite(outControllerLed, LOW);
+            case REAR_CAM_ON:
+                digitalWrite(outDisplayOn, HIGH);
+                digitalWrite(outFrontCamPower, LOW);
+                digitalWrite(outRearCamPower, HIGH);
+                digitalWrite(outRelayCameraSwitch, LOW);
+                digitalWrite(outControllerLed, HIGH);
+            case FRONT_CAM_ON:
+                digitalWrite(outDisplayOn, HIGH);
+                digitalWrite(outFrontCamPower, HIGH);
+                digitalWrite(outRearCamPower, LOW);
+                digitalWrite(outRelayCameraSwitch, HIGH);
+                digitalWrite(outControllerLed, HIGH);
+        }
+        this->cameraState = state;
+        changeStateCallback(state);
     }
 
     bool checkSignalState(
@@ -105,10 +134,14 @@ private:
     }
 };
 
+CameraLightTurnsSupplyController device = CameraLightTurnsSupplyController();
+
 void setup() {
+    device.initiate();
     Serial.begin(9600);
 }
 
 void loop() {
+    device.checkGearsLoopStep();
     delay(50);
 }
