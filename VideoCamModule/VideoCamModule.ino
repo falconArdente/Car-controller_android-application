@@ -9,6 +9,7 @@ class CameraLightTurnsSupplyController {
 public:
     CameraStates cameraState = CAMS_OFF;
 
+
 private:
     //timings
     const uint16_t BOUNCE_DELAY = 60;
@@ -28,20 +29,38 @@ private:
     const int outRelayCameraSwitch = 11;
     const int outControllerLed = 13; //direct board on
     // states
-    int stateRearSig = 0;
-    int stateLeftSig = 0;
-    int stateRightSig = 0;
-    bool backIsOn = false;
+    bool lastReverseState = false;
+    bool lastLeftState = false;
+    bool lastRightState = false;
+    bool reverseIsOn = false;
     bool leftIsOn = false;
     bool rightIsOn = false;
-    unsigned long lastTimeRearChanged = 0;
+    unsigned long lastTimeReverseChanged = 0;
     unsigned long lastTimeLeftChanged = 0;
     unsigned long lastTimeRightChanged = 0;
     unsigned long leftTriggerOffMill = 0;
     unsigned long rightTriggerOffMill = 0;
 
+    bool getReverseState() {
+        return reverseIsOn = checkSignalState(&lastReverseState,
+                                              inReverseGear,
+                                              &lastTimeReverseChanged);
+    }
+
+    bool getLeftState() {
+        return leftIsOn = !checkSignalState(&lastLeftState,
+                                            inLeftTurn,
+                                            &lastTimeLeftChanged);
+    }
+
+    bool getRightState() {
+        return rightIsOn = !checkSignalState(&lastRightState,
+                                             inRightTurn,
+                                             &lastTimeRightChanged);
+    }
+
     bool checkSignalState(
-            int *lastSignalState,
+            bool *lastSignalState,
             const int pinNumber,
             unsigned long *lastTimeChanged) {
         if (lastSignalState != digitalRead(pinNumber) &&
