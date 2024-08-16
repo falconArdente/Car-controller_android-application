@@ -6,15 +6,44 @@ class CameraLightTurnsSupplyController {
         REAR_CAM_ON,
         FRONT_CAM_ON,
     };
-public:
-    CameraStates cameraState = CAMS_OFF;
 
+    typedef void (*ChangeStateCallback)(CameraStates);
+
+public:
+    void setCameraState(CameraStates state) {
+        if (this->cameraState == state)return;
+        switch (state) {
+            case CAMS_OFF:
+                digitalWrite(outDisplayOn, LOW);
+                digitalWrite(outFrontCamPower, LOW);
+                digitalWrite(outRearCamPower, LOW);
+                digitalWrite(outRelayCameraSwitch, LOW);
+                digitalWrite(outControllerLed, LOW);
+            case REAR_CAM_ON:
+                digitalWrite(outDisplayOn, HIGH);
+                digitalWrite(outFrontCamPower, LOW);
+                digitalWrite(outRearCamPower, HIGH);
+                digitalWrite(outRelayCameraSwitch, LOW);
+                digitalWrite(outControllerLed, HIGH);
+            case FRONT_CAM_ON:
+                digitalWrite(outDisplayOn, HIGH);
+                digitalWrite(outFrontCamPower, HIGH);
+                digitalWrite(outRearCamPower, LOW);
+                digitalWrite(outRelayCameraSwitch, HIGH);
+                digitalWrite(outControllerLed, HIGH);
+        }
+        this->cameraState = state;
+        changeStateCallback(state);
+    }
+
+    ChangeStateCallback changeStateCallback;
 
 private:
+    CameraStates cameraState = CAMS_OFF;
     //timings
-    const uint16_t BOUNCE_DELAY = 60;
-    const uint16_t REPEATER_DELAY = 600; // millis to discover command to turn front camera on
-    const uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
+    uint16_t BOUNCE_DELAY = 60;
+    uint16_t REPEATER_DELAY = 600; // millis to discover command to turn front camera on
+    uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
     //input pins
     const int inReverseGear = A1;
     const int inRightTurn = 12;
@@ -75,7 +104,6 @@ private:
         }
     }
 };
-
 
 void setup() {
     Serial.begin(9600);
