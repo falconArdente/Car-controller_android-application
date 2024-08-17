@@ -1,5 +1,11 @@
 #include <EEPROM.h>
 
+struct Timings {
+    uint16_t BOUNCE_DELAY = 60;
+    uint16_t REPEATER_DELAY = 600; // millis to discover double click
+    uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
+} timings;
+
 class CameraLightTurnsSupplyController {
     enum CameraStates {
         CAMS_OFF,
@@ -7,17 +13,65 @@ class CameraLightTurnsSupplyController {
         FRONT_CAM_ON,
     };
 
+    class Lever {
+    public:
+        Lever(int pinNumber, bool isLowLevelToTurnOn = false) {
+            this->pinNumber = pinNumber;
+            pinMode(pinNumber, INPUT);
+            this->isLowLevelToTurnOn = isLowLevelToTurnOn;
+        }
+
+        bool isOn() {
+            return state;
+        }
+
+        bool doubleClicked = false;
+
+        void checkState() {
+            if (isLowLevelToTurnOn)state = !state;
+            unsigned long timeStamp = millis();
+            if (state != digitalRead(pinNumber) &&
+                lastTimeChanged <= timeStamp - timings.BOUNCE_DELAY) {
+                state = digitalRead(pinNumber);
+                lastTimeChanged = timeStamp;
+            }
+            if (isLowLevelToTurnOn)state = !state;
+            if (lastTimeChanged == timeStamp) {// is time to set on/off stamp
+                if (state) {
+                    doubleClicked = isDoubleClicking(timeStamp);
+                    lastTimeTurnedOn = timeStamp;
+                } else {
+                    lastTimeTurnedOff = timeStamp;
+                }
+            }
+        }
+
+    private:
+        bool state = false;
+        int pinNumber;
+        unsigned long lastTimeChanged = 0;
+        unsigned long lastTimeTurnedOn = 0;
+        unsigned long lastTimeTurnedOff = 0;
+        bool isLowLevelToTurnOn;
+
+        bool isDoubleClicking(unsigned long timeStamp) {
+            if (lastTimeTurnedOn + timings.REPEATER_DELAY < timeStamp &&
+                lastTimeTurnedOn < lastTimeTurnedOff)
+                return true;
+            else
+                return false;
+        }
+    };
+
     typedef void (*ChangeStateCallback)(CameraStates);
 
 public:
+
     void setChangeStateCallback(ChangeStateCallback callback) {
         this->changeStateCallback = callback;
     }
 
     void initiate() {
-        pinMode(inReverseGear, INPUT);
-        pinMode(inRightTurn, INPUT);
-        pinMode(inLeftTurn, INPUT);
         pinMode(outRearCamPower, OUTPUT);
         pinMode(outFrontCamPower, OUTPUT);
         pinMode(outCautionSignal, OUTPUT);
@@ -32,16 +86,16 @@ public:
 
     void checkGearsLoopStep() {
         getGearsState();
-        if (reverseIsOn) {
+        if (reverseGear.isOn()) {
             setCameraState(REAR_CAM_ON);
             return;
         }
-        if (leftIsOn) {
-            if (leftIsDoublePressed())setCameraState(FRONT_CAM_ON);
+        if (leftTurnLever.isOn()) {
+            if (leftTurnLever.doubleClicked)setCameraState(FRONT_CAM_ON);
             return;
         }
-        if (rightIsOn) {
-            if (rightIsDoublePressed())setCameraState(FRONT_CAM_ON);
+        if (rightTurnLever.isOn()) {
+            if (rightTurnLever.doubleClicked)setCameraState(FRONT_CAM_ON);
             return;
         }
         switch (cameraState) {
@@ -53,6 +107,7 @@ public:
     }
 
 private:
+
     bool isTimeToOffFront() {
 
     }
@@ -61,25 +116,14 @@ private:
 
     }
 
-    bool leftIsDoublePressed() {
-
-    }
-
-    bool rightIsDoublePressed() {
-
-    }
-
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
-    //timings
-    uint16_t BOUNCE_DELAY = 60;
-    uint16_t REPEATER_DELAY = 600; // millis to discover command to turn front camera on
-    uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
-    //input pins
-    const int inReverseGear = A1;
-    const int inRightTurn = 12;
-    const int inLeftTurn = A0;
-    //output pins
+//input pins
+    Lever reverseGear = Lever(A1);
+    Lever leftTurnLever = Lever(A0, true);
+    Lever rightTurnLever = Lever(12, true);
+
+//output pins
     const int outRearCamPower = 7; // transistor to power on
     const int outFrontCamPower = 5;
     const int outCautionSignal = 2;
@@ -88,51 +132,14 @@ private:
     const int outRightFogLight = 9;
     const int outRelayCameraSwitch = 11;
     const int outControllerLed = 13; //direct board on
-    // states
-    bool lastReverseState = false;
-    bool lastLeftState = false;
-    bool lastRightState = false;
-    bool reverseIsOn = false;
-    bool leftIsOn = false;
-    bool rightIsOn = false;
+// states
     bool leftIsDoubleClicked = false;
     bool rightIsDoubleClicked = false;
-    unsigned long lastTimeReverseChanged = 0;
-    unsigned long lastTimeReverseOff = 0;
-    unsigned long lastTimeLeftChanged = 0;
-    unsigned long lastTimeRightChanged = 0;
-    unsigned long lastTimeLeftOn;
-    unsigned long lastTimeRightOn;
-    unsigned long lastTimeLeftOff = 0;
-    unsigned long lastTimeRightOff = 0;
 
     void getGearsState() {
-        getReverseState();
-        getLeftState();
-        getRightState();
-    }
-
-    bool getReverseState() {
-        reverseIsOn = checkSignalState(&lastReverseState, inReverseGear, &lastTimeReverseChanged);
-        if (!reverseIsOn)lastTimeReverseOff = millis();
-        return reverseIsOn;
-    }
-
-    bool getLeftState() {
-        leftIsOn = !checkSignalState(&lastLeftState, inLeftTurn, &lastTimeLeftChanged);
-        if (leftIsOn) {
-            leftIsDoubleClicked =
-            lastTimeLeftOn = millis();
-        } else {
-            lastTimeLeftOff = millis();
-        }
-        return leftIsOn;
-    }
-
-    bool getRightState() {
-        return rightIsOn = !checkSignalState(&lastRightState,
-                                             inRightTurn,
-                                             &lastTimeRightChanged);
+        reverseGear.checkState();
+        leftTurnLever.checkState();
+        rightTurnLever.checkState();
     }
 
     void setCameraState(CameraStates state) {
@@ -161,21 +168,6 @@ private:
         changeStateCallback(state);
     }
 
-    bool checkSignalState(
-            bool *lastSignalState,
-            const int pinNumber,
-            unsigned long *lastTimeChanged) {
-        if (lastSignalState != digitalRead(pinNumber) &&
-            lastTimeChanged <= millis() - BOUNCE_DELAY) {
-            lastSignalState = digitalRead(pinNumber);
-            lastTimeChanged = millis();
-            if (lastSignalState == HIGH) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
 };
 
 CameraLightTurnsSupplyController device = CameraLightTurnsSupplyController();
