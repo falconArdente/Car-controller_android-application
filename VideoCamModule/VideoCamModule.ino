@@ -32,9 +32,43 @@ public:
 
     void checkGearsLoopStep() {
         getGearsState();
+        if (reverseIsOn) {
+            setCameraState(REAR_CAM_ON);
+            return;
+        }
+        if (leftIsOn) {
+            if (leftIsDoublePressed())setCameraState(FRONT_CAM_ON);
+            return;
+        }
+        if (rightIsOn) {
+            if (rightIsDoublePressed())setCameraState(FRONT_CAM_ON);
+            return;
+        }
+        switch (cameraState) {
+            REAR_CAM_ON:
+                if (isTimeToOffRear())setCameraState(CAMS_OFF);
+            FRONT_CAM_ON:
+                if (isTimeToOffFront())setCameraState(CAMS_OFF);
+        }
     }
 
 private:
+    bool isTimeToOffFront() {
+
+    }
+
+    bool isTimeToOffRear() {
+
+    }
+
+    bool leftIsDoublePressed() {
+
+    }
+
+    bool rightIsDoublePressed() {
+
+    }
+
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
     //timings
