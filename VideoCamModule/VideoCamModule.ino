@@ -95,11 +95,16 @@ private:
     bool reverseIsOn = false;
     bool leftIsOn = false;
     bool rightIsOn = false;
+    bool leftIsDoubleClicked = false;
+    bool rightIsDoubleClicked = false;
     unsigned long lastTimeReverseChanged = 0;
+    unsigned long lastTimeReverseOff = 0;
     unsigned long lastTimeLeftChanged = 0;
     unsigned long lastTimeRightChanged = 0;
-    unsigned long leftTriggerOffMill = 0;
-    unsigned long rightTriggerOffMill = 0;
+    unsigned long lastTimeLeftOn;
+    unsigned long lastTimeRightOn;
+    unsigned long lastTimeLeftOff = 0;
+    unsigned long lastTimeRightOff = 0;
 
     void getGearsState() {
         getReverseState();
@@ -108,15 +113,20 @@ private:
     }
 
     bool getReverseState() {
-        return reverseIsOn = checkSignalState(&lastReverseState,
-                                              inReverseGear,
-                                              &lastTimeReverseChanged);
+        reverseIsOn = checkSignalState(&lastReverseState, inReverseGear, &lastTimeReverseChanged);
+        if (!reverseIsOn)lastTimeReverseOff = millis();
+        return reverseIsOn;
     }
 
     bool getLeftState() {
-        return leftIsOn = !checkSignalState(&lastLeftState,
-                                            inLeftTurn,
-                                            &lastTimeLeftChanged);
+        leftIsOn = !checkSignalState(&lastLeftState, inLeftTurn, &lastTimeLeftChanged);
+        if (leftIsOn) {
+            leftIsDoubleClicked =
+            lastTimeLeftOn = millis();
+        } else {
+            lastTimeLeftOff = millis();
+        }
+        return leftIsOn;
     }
 
     bool getRightState() {
