@@ -5,7 +5,7 @@ struct Timings {
     uint16_t REPEATER_DELAY = 600; // millis to discover double click
     uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
     uint16_t REAR_CAM_SHOWTIME_DELAY = 3000;
-} timings;
+} appTimings;
 
 class CameraLightTurnsSupplyController {
     enum CameraStates {
@@ -14,13 +14,20 @@ class CameraLightTurnsSupplyController {
         FRONT_CAM_ON,
     };
 
+public:
+    CameraLightTurnsSupplyController(Timings timings) {
+        this->timings = &timings;
+    }
+
     class Lever {
     public:
-        Lever(int pinNumber, bool isLowLevelToTurnOn = false) {
+        Lever(int pinNumber, Timings timings, bool isLowLevelToTurnOn = false) {
+            this->timings = &timings;
             this->pinNumber = pinNumber;
             pinMode(pinNumber, INPUT);
             this->isLowLevelToTurnOn = isLowLevelToTurnOn;
         }
+
 
         bool isOn() {
             return state;
@@ -38,7 +45,7 @@ class CameraLightTurnsSupplyController {
             if (isLowLevelToTurnOn)state = !state;
             unsigned long timeStamp = millis();
             if (state != digitalRead(pinNumber) &&
-                lastTimeChanged <= timeStamp - timings.BOUNCE_DELAY) {
+                lastTimeChanged <= timeStamp - timings->BOUNCE_DELAY) {
                 state = digitalRead(pinNumber);
                 lastTimeChanged = timeStamp;
             }
@@ -54,6 +61,7 @@ class CameraLightTurnsSupplyController {
         }
 
     private:
+        Timings *timings;
         bool state = false;
         bool doubleClicked = false;
         int pinNumber;
@@ -63,7 +71,7 @@ class CameraLightTurnsSupplyController {
         bool isLowLevelToTurnOn;
 
         bool isDoubleClicking(unsigned long timeStamp) {
-            if (lastTimeTurnedOn + timings.REPEATER_DELAY < timeStamp &&
+            if (lastTimeTurnedOn + timings->REPEATER_DELAY < timeStamp &&
                 lastTimeTurnedOn < lastTimeTurnedOff)
                 return true;
             else
@@ -115,8 +123,10 @@ public:
     }
 
 private:
+    Timings *timings;
+
     bool isTimeToOffFront() {
-        unsigned long timeStamp = millis() - timings.FRONT_CAM_SHOWTIME_DELAY;
+        unsigned long timeStamp = millis() - timings->FRONT_CAM_SHOWTIME_DELAY;
         if (leftTurnLever.getLastTimeTurnedOff() < timeStamp
             && rightTurnLever.getLastTimeTurnedOff() < timeStamp)
             return true;
@@ -125,7 +135,7 @@ private:
     }
 
     bool isTimeToOffRear() {
-        if (reverseGear.getLastTimeTurnedOff() + timings.REAR_CAM_SHOWTIME_DELAY > millis())
+        if (reverseGear.getLastTimeTurnedOff() + timings->REAR_CAM_SHOWTIME_DELAY > millis())
             return true;
         else
             return false;
@@ -134,9 +144,9 @@ private:
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
 //input pins
-    Lever reverseGear = Lever(A1);
-    Lever leftTurnLever = Lever(A0, true);
-    Lever rightTurnLever = Lever(12, true);
+    Lever reverseGear = Lever(A1, appTimings);
+    Lever leftTurnLever = Lever(A0, appTimings, true);
+    Lever rightTurnLever = Lever(12, appTimings, true);
 
 //output pins
     const int outRearCamPower = 7; // transistor to power on
@@ -185,7 +195,7 @@ private:
 
 };
 
-CameraLightTurnsSupplyController device = CameraLightTurnsSupplyController();
+CameraLightTurnsSupplyController device = CameraLightTurnsSupplyController(appTimings);
 
 void setup() {
     device.initiate();
