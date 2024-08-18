@@ -4,6 +4,7 @@ struct Timings {
     uint16_t BOUNCE_DELAY = 60;
     uint16_t REPEATER_DELAY = 600; // millis to discover double click
     uint16_t FRONT_CAM_SHOWTIME_DELAY = 3000; //millis to show front cam after signal gone off
+    uint16_t REAR_CAM_SHOWTIME_DELAY = 3000;
 } timings;
 
 class CameraLightTurnsSupplyController {
@@ -23,6 +24,14 @@ class CameraLightTurnsSupplyController {
 
         bool isOn() {
             return state;
+        }
+
+        bool isDoubleClicked() {
+            return doubleClicked;
+        }
+
+        unsigned long getLastTimeTurnedOff() {
+            return lastTimeTurnedOff;
         }
 
         bool doubleClicked = false;
@@ -48,6 +57,7 @@ class CameraLightTurnsSupplyController {
 
     private:
         bool state = false;
+        bool doubleClicked = false;
         int pinNumber;
         unsigned long lastTimeChanged = 0;
         unsigned long lastTimeTurnedOn = 0;
@@ -91,11 +101,11 @@ public:
             return;
         }
         if (leftTurnLever.isOn()) {
-            if (leftTurnLever.doubleClicked)setCameraState(FRONT_CAM_ON);
+            if (leftTurnLever.isDoubleClicked())setCameraState(FRONT_CAM_ON);
             return;
         }
         if (rightTurnLever.isOn()) {
-            if (rightTurnLever.doubleClicked)setCameraState(FRONT_CAM_ON);
+            if (rightTurnLever.isDoubleClicked())setCameraState(FRONT_CAM_ON);
             return;
         }
         switch (cameraState) {
@@ -107,9 +117,13 @@ public:
     }
 
 private:
-
     bool isTimeToOffFront() {
-
+        unsigned long timeStamp = millis() - timings.FRONT_CAM_SHOWTIME_DELAY;
+        if (leftTurnLever.getLastTimeTurnedOff() < timeStamp
+            && rightTurnLever.getLastTimeTurnedOff() < timeStamp)
+            return true;
+        else
+            return false;
     }
 
     bool isTimeToOffRear() {
