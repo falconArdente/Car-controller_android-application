@@ -31,5 +31,5 @@
 - Среда разработки Android Studio Jellyfish | 2023.3.1 Patch 1;
 
 ## Компиляция и загрузка в микроконтроллер
-Файлы из папки videoCamModule (https://github.com/falconArdente/Car-controller_android-application/tree/bd982d7455a36e3f3930be44132e2ab3c56b03bf/VideoCamModule) 
+Файлы из папки [videoCamModule](https://github.com/falconArdente/Car-controller_android-application/tree/bd982d7455a36e3f3930be44132e2ab3c56b03bf/VideoCamModule) 
 необходимо расположить в одной папке, файл VideoCamModule.ino открыть с помощью среды разработки Arduino 1.8 (или выше) и загрузить в микроконтроллер встроенными средствами среды.
