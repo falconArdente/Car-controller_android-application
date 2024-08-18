@@ -14,16 +14,9 @@
 - написание удобного android-приложения для настройки;
 - соединение контроллера и смартфона с использованием Bluetooth SPP или GATT профилей в зависимсость от результатов работы Bluetooth модуля (Blutooth Low Energy в приоритете).
 
-# Структура проекта
+# [Wiki проекта](https://github.com/falconArdente/Car-controller_android-application/wiki)
 
-## - `videoCamModule`      - Код для работы контроллера
-- `VideoCamModule.ino`  - Файл программы контроллера
-- `CameraLightTurnsSupplyController`              - Описание объекта контроллера
-- `Lever`       - Описание вспомогательного объекта, обрабатывающего сигналы рычагов поворотников и включения передачи заднего хода
-- `Timings`                - Структура для хранения настроек временнЫх параметров, используется как Singleton
-## - `src и build.gradle.kts`      - Код android-приложения
-
-# Аппаратная платформа и среда разработки
+# Аппаратная платформа, среда разработки, как собрать
 
 ## Контроллер
 - ATmega328P (Распиновка под Arduino Pro Mini или Arduino Pro);
@@ -36,3 +29,7 @@
 ## Android-приложение
 - Операционная система Android 8.1 и выше;
 - Среда разработки Android Studio Jellyfish | 2023.3.1 Patch 1;
+
+## Компиляция и загрузка в микроконтроллер
+Файлы из папки videoCamModule (https://github.com/falconArdente/Car-controller_android-application/tree/bd982d7455a36e3f3930be44132e2ab3c56b03bf/VideoCamModule) 
+необходимо расположить в одной папке, файл VideoCamModule.ino открыть с помощью среды разработки Arduino 1.8 (или выше) и загрузить в микроконтроллер встроенными средствами среды.
