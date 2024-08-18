@@ -34,8 +34,6 @@ class CameraLightTurnsSupplyController {
             return lastTimeTurnedOff;
         }
 
-        bool doubleClicked = false;
-
         void checkState() {
             if (isLowLevelToTurnOn)state = !state;
             unsigned long timeStamp = millis();
@@ -127,7 +125,10 @@ private:
     }
 
     bool isTimeToOffRear() {
-
+        if (reverseGear.getLastTimeTurnedOff() + timings.REAR_CAM_SHOWTIME_DELAY > millis())
+            return true;
+        else
+            return false;
     }
 
     ChangeStateCallback changeStateCallback;
