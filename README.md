@@ -32,3 +32,7 @@
 ## Компиляция и загрузка в микроконтроллер
 Файлы из папки [videoCamModule](https://github.com/falconArdente/Car-controller_android-application/tree/bd982d7455a36e3f3930be44132e2ab3c56b03bf/VideoCamModule) 
 необходимо расположить в одной папке, файл VideoCamModule.ino открыть с помощью среды разработки Arduino 1.8 (или выше) и загрузить в микроконтроллер встроенными средствами среды.
+
+![GitHub top language](https://img.shields.io/github/languages/top/falconArdente/Car-controller_android-application)
+![GitHub Repo stars](https://img.shields.io/github/stars/falconArdente/Car-controller_android-application)
+![GitHub issues](https://img.shields.io/github/issues/falconArdente/Car-controller_android-application)
