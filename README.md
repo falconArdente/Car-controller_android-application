@@ -12,7 +12,7 @@
 текущий цикл:
 - написание читаемого кода контроллера;
 - написание удобного android-приложения для настройки;
-- соединение контроллера и смартфона с использованием Bluetooth SPP или GATT профилей в зависимсость от результатов испытаний Bluetooth модуля (Blutooth Low Energy в приоритете).
+- соединение контроллера и смартфона с использованием Bluetooth SPP или GATT профилей в зависимости от результатов испытаний Bluetooth модуля (Bluetooth Low Energy в приоритете).
 
 # [Wiki проекта](https://github.com/falconArdente/Car-controller_android-application/wiki)
 
