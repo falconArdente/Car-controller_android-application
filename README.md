@@ -12,14 +12,14 @@
 текущий цикл:
 - написание читаемого кода контроллера;
 - написание удобного android-приложения для настройки;
-- соединение контроллера и смартфона с использованием Bluetooth SPP или GATT профилей в зависимсость от результатов испытаний Bluetooth модуля (Blutooth Low Energy в приоритете).
+- соединение контроллера и смартфона с использованием Bluetooth SPP или GATT профилей в зависимости от результатов испытаний Bluetooth модуля (Bluetooth Low Energy в приоритете).
 
 # [Wiki проекта](https://github.com/falconArdente/Car-controller_android-application/wiki)
 
 # Аппаратная платформа, среда разработки, как собрать
 
 ## Контроллер
-- ATmega328P (Распиновка под Arduino Pro Mini или Arduino Pro);
+- ATmega328P (Распиновка под Arduino Pro Mini или Arduino Pro, схема изготовления печатной платы представлена в разделе wiki);
 - Среда разработки Arduino 1.8.
 
 ## Bluetooth - модуль

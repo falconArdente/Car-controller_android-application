@@ -17,5 +17,6 @@ void setup() {
 
 void loop() {
     device.checkGearsLoopStep();
+    //checking version usability
     delay(50);
 }
