@@ -3,6 +3,8 @@
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
+    Serial.print("timing device");
+    Serial.println(appTimings.BOUNCE_DELAY);
 }
 
 void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallback callback) {
@@ -18,6 +20,9 @@ void CameraLightTurnsSupplyController::initiate() {
     pinMode(outRightFogLight, OUTPUT);
     pinMode(outRelayCameraSwitch, OUTPUT);
     pinMode(outControllerLed, OUTPUT);
+    ///!!!!
+    digitalWrite(outRelayCameraSwitch, LOW);
+
     setCameraState(CAMS_OFF);
     getGearsState();
 }
@@ -61,6 +66,9 @@ bool CameraLightTurnsSupplyController::isTimeToOffRear() {
 }
 
 void CameraLightTurnsSupplyController::getGearsState() {
+
+    // Serial.print("timing ");Serial.println(leftTurnLever.timings.BOUNCE_DELAY);
+    //Serial.print("left ");Serial.println(leftTurnLever.getLastTimeTurnedOff());
     reverseGear.checkState();
     leftTurnLever.checkState();
     rightTurnLever.checkState();
