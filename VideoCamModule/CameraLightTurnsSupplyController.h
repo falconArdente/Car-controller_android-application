@@ -14,21 +14,29 @@ class CameraLightTurnsSupplyController {
         FRONT_CAM_ON,
     };
 
-public:
-    CameraLightTurnsSupplyController(Timings appTimings) ;
     typedef void (*ChangeStateCallback)(CameraStates);
+
+public:
+    CameraLightTurnsSupplyController(Timings appTimings);
+
+    CameraLightTurnsSupplyController();
+
+    const CameraLightTurnsSupplyController &operator=(const CameraLightTurnsSupplyController &B);
+
     void setChangeStateCallback(ChangeStateCallback callback);
+
     void initiate();
+
     void checkGearsLoopStep();
 
 private:
     Timings *timings;
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
-//input pins
-    Lever reverseGear = Lever(A1, *timings);
-    Lever leftTurnLever = Lever(A0, *timings, true);
-    Lever rightTurnLever = Lever(12, *timings, true);
+//input gears
+    Lever reverseGear;
+    Lever leftTurnLever;
+    Lever rightTurnLever;
 //output pins
     const int outRearCamPower = 7; // transistor to power on
     const int outFrontCamPower = 5;
@@ -39,9 +47,6 @@ private:
     const int outRelayCameraSwitch = 11;
     const int outControllerLed = 13; //direct board on
 // states
-    bool leftIsDoubleClicked = false;
-    bool rightIsDoubleClicked = false;
-
     bool isTimeToOffFront();
 
     bool isTimeToOffRear();
@@ -50,4 +55,5 @@ private:
 
     void setCameraState(CameraStates state);
 };
+
 #endif

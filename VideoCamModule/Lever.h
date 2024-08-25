@@ -8,7 +8,11 @@
 
 class Lever {
 public:
-    Lever(int pinNumber, Timings timings, bool isLowLevelToTurnOn = false);
+    Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false);
+
+    Lever();
+
+    const Lever &operator=(const Lever &B);
 
     bool isOn();
 
@@ -22,11 +26,11 @@ private:
     Timings *timings;
     bool state = false;
     bool doubleClicked = false;
-    int pinNumber;
+    int pinNumber = -1;
     unsigned long lastTimeChanged = 0;
     unsigned long lastTimeTurnedOn = 0;
     unsigned long lastTimeTurnedOff = 0;
-    bool isLowLevelToTurnOn;
+    bool isLowLevelToTurnOn = false;
 
     bool isDoubleClicking(unsigned long timeStamp);
 };

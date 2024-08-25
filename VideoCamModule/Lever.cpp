@@ -1,11 +1,24 @@
 #include "Timings.h"
 #include "Lever.h"
 
-Lever::Lever(int pinNumber, Timings timings, bool isLowLevelToTurnOn = false) {
-    this->timings = &timings;
+Lever::Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false) {
+    this->timings = timings;
     this->pinNumber = pinNumber;
-    pinMode(pinNumber, INPUT);
     this->isLowLevelToTurnOn = isLowLevelToTurnOn;
+    unsigned long nowStamp = millis();
+    unsigned long lastTimeChanged = nowStamp;
+    unsigned long lastTimeTurnedOn = nowStamp;
+    unsigned long lastTimeTurnedOff = nowStamp;
+}
+
+Lever::Lever() {}
+
+const Lever &Lever::operator=(const Lever &B) {
+    if (this == &B) return *this;
+    pinNumber = B.pinNumber;
+    timings = B.timings;
+    isLowLevelToTurnOn = B.isLowLevelToTurnOn;
+    return *this;
 }
 
 bool Lever::isOn() {
@@ -21,26 +34,31 @@ unsigned long Lever::getLastTimeTurnedOff() {
 }
 
 void Lever::checkState() {
-    if (isLowLevelToTurnOn)state = !state;
-    unsigned long timeStamp = millis();
-    if (state != digitalRead(pinNumber) &&
-        lastTimeChanged <= timeStamp - timings->BOUNCE_DELAY) {
-        state = digitalRead(pinNumber);
+    bool tempState = state;
+    if (isLowLevelToTurnOn)tempState = !tempState;
+    const unsigned long timeStamp = millis();
+    const bool stateStamp = digitalRead(pinNumber);
+    if (tempState != stateStamp &&
+        lastTimeChanged < timeStamp - timings->BOUNCE_DELAY) {
+        tempState = stateStamp;
         lastTimeChanged = timeStamp;
     }
-    if (isLowLevelToTurnOn)state = !state;
-    if (lastTimeChanged == timeStamp) {// is time to set on/off stamp
-        if (state) {
+
+    if (lastTimeChanged == timeStamp) {// it`s time to set on/off stamp
+        if (tempState) {
             doubleClicked = isDoubleClicking(timeStamp);
             lastTimeTurnedOn = timeStamp;
         } else {
+            doubleClicked = false;
             lastTimeTurnedOff = timeStamp;
         }
     }
+    if (isLowLevelToTurnOn)tempState = !tempState;
+    state = tempState;
 }
 
 bool Lever::isDoubleClicking(unsigned long timeStamp) {
-    if (lastTimeTurnedOn + timings->REPEATER_DELAY < timeStamp &&
+    if (lastTimeTurnedOn + timings->REPEATER_DELAY > timeStamp &&
         lastTimeTurnedOn < lastTimeTurnedOff)
         return true;
     else
