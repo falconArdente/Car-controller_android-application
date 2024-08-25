@@ -31,6 +31,7 @@ void CameraLightTurnsSupplyController::initiate() {
     rightTurnLever = Lever(12, timings);
     setCameraState(CAMS_OFF);
     getGearsState();
+    
 }
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
@@ -88,6 +89,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, LOW);
+            digitalWrite(outCautionSignal, LOW);
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
@@ -95,6 +97,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, HIGH);
+            if (!leftTurnLever.isOn()&&!rightTurnLever.isOn())digitalWrite(outCautionSignal, HIGH);
             break;
         case FRONT_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
@@ -102,10 +105,9 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
+            digitalWrite(outCautionSignal, LOW);
             break;
     }
     cameraState = state;
-    Serial.print("camera state is ");
-    Serial.println(state);
-    //changeStateCallback(state);
+    if(changeStateCallback!=NULL)changeStateCallback(state);
 }

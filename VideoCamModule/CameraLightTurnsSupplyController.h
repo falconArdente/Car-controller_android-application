@@ -8,15 +8,13 @@
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 
 class CameraLightTurnsSupplyController {
+public:
     enum CameraStates {
         CAMS_OFF,
         REAR_CAM_ON,
         FRONT_CAM_ON,
     };
-
     typedef void (*ChangeStateCallback)(CameraStates);
-
-public:
     CameraLightTurnsSupplyController(Timings appTimings);
 
     CameraLightTurnsSupplyController();
@@ -28,10 +26,11 @@ public:
     void initiate();
 
     void checkGearsLoopStep();
+    ChangeStateCallback changeStateCallback;
 
 private:
     Timings *timings;
-    ChangeStateCallback changeStateCallback;
+    
     CameraStates cameraState = CAMS_OFF;
 //input gears
     Lever reverseGear;
