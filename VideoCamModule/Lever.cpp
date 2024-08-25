@@ -14,16 +14,10 @@ Lever::Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false) {
 Lever::Lever() {}
 
 const Lever &Lever::operator=(const Lever &B) {
-    Serial.print("pinNumber = ");
-    Serial.println(B.pinNumber);
-
     if (this == &B) return *this;
     pinNumber = B.pinNumber;
     timings = B.timings;
     isLowLevelToTurnOn = B.isLowLevelToTurnOn;
-    Serial.print("deBounce = ");
-    Serial.println(timings->BOUNCE_DELAY);
-
     return *this;
 }
 
@@ -47,16 +41,6 @@ void Lever::checkState() {
     if (tempState != stateStamp &&
         lastTimeChanged < timeStamp - timings->BOUNCE_DELAY) {
         tempState = stateStamp;
-        Serial.print("t ");
-        Serial.print(timeStamp);
-        Serial.print(" :");
-        Serial.print(this->pinNumber);
-        Serial.print(" is ");
-        Serial.print(tempState);
-        Serial.print(" delay* ");
-        Serial.print(timings->REAR_CAM_SHOWTIME_DELAY);
-        Serial.println();
-
         lastTimeChanged = timeStamp;
     }
 
@@ -75,13 +59,8 @@ void Lever::checkState() {
 
 bool Lever::isDoubleClicking(unsigned long timeStamp) {
     if (lastTimeTurnedOn + timings->REPEATER_DELAY > timeStamp &&
-        lastTimeTurnedOn < lastTimeTurnedOff) {
-        Serial.print(this->pinNumber);
-        Serial.print(" doubleClicked lastTimeOn:");
-        Serial.print(lastTimeTurnedOn);
-        Serial.print(" timeStamp^");
-        Serial.println(timeStamp);
+        lastTimeTurnedOn < lastTimeTurnedOff)
         return true;
-    } else
+    else
         return false;
 }

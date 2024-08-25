@@ -7,6 +7,12 @@ CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTi
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
+const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operator=
+        (const CameraLightTurnsSupplyController &B) {
+    timings = B.timings;
+    return *this;
+}
+
 void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallback callback) {
     this->changeStateCallback = callback;
 }
@@ -23,17 +29,12 @@ void CameraLightTurnsSupplyController::initiate() {
     reverseGear = Lever(A1, timings);
     leftTurnLever = Lever(A0, timings);
     rightTurnLever = Lever(12, timings);
-
-    ///!!!!
-    digitalWrite(outRelayCameraSwitch, LOW);
-
     setCameraState(CAMS_OFF);
     getGearsState();
 }
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
     getGearsState();
-
     if (reverseGear.isOn()) {
         setCameraState(REAR_CAM_ON);
         return;

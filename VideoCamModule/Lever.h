@@ -20,11 +20,10 @@ public:
 
     unsigned long getLastTimeTurnedOff();
 
-    Timings *timings;
-
     void checkState();
 
 private:
+    Timings *timings;
     bool state = false;
     bool doubleClicked = false;
     int pinNumber = -1;
