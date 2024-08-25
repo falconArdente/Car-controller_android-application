@@ -16,7 +16,7 @@ class CameraLightTurnsSupplyController {
 
 public:
     CameraLightTurnsSupplyController(Timings appTimings);
-
+CameraLightTurnsSupplyController();
     typedef void (*ChangeStateCallback)(CameraStates);
 
     void setChangeStateCallback(ChangeStateCallback callback);
@@ -24,15 +24,15 @@ public:
     void initiate();
 
     void checkGearsLoopStep();
-
-private:
     Timings *timings;
+private:
+
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
 //input pins
-    Lever reverseGear = Lever(A1, *timings);
-    Lever leftTurnLever = Lever(A0, *timings, true);
-    Lever rightTurnLever = Lever(12, *timings, true);
+    Lever reverseGear ;
+    Lever leftTurnLever;
+    Lever rightTurnLever;
 
 //output pins
     const int outRearCamPower = 7; // transistor to power on

@@ -1,27 +1,36 @@
 #include "Timings.h"
 #include "Lever.h"
 
-Lever::Lever(int pinNumber, Timings appTimings, bool isLowLevelToTurnOn = false) {
-    //Serial.begin(9600);
-    this->timings = &appTimings;
-    this->pinNumber = pinNumber;
-    pinMode(pinNumber, INPUT);
-    // delay(10);
-    Serial.print(pinNumber);
-    Serial.println(" inititate");
-    Serial.print("timing lever");
-    Serial.println(timings->BOUNCE_DELAY);
-    //*this->timings->BOUNCE_DELAY;
+Lever::Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false){
+    this->timings=timings;
+    this->pinNumber=pinNumber;
     this->isLowLevelToTurnOn = isLowLevelToTurnOn;
-
+    unsigned long nowStamp=millis();
+    unsigned long lastTimeChanged = nowStamp;
+    unsigned long lastTimeTurnedOn = nowStamp;
+    unsigned long lastTimeTurnedOff = nowStamp;
+ }
+Lever::Lever(){}
+const Lever& Lever::operator=(const Lever &B){
+    Serial.print("pinNumber = ");
+    Serial.println(B.pinNumber);
+    
+    if (this == &B)    return *this;
+    pinNumber=B.pinNumber;
+    timings=B.timings;
+    isLowLevelToTurnOn=B.isLowLevelToTurnOn;
+    Serial.print("deBounce = ");
+    Serial.println(timings->BOUNCE_DELAY);
+    
+  return *this;
 }
 
 bool Lever::isOn() {
-    return state;
+    return state==true;
 }
 
 bool Lever::isDoubleClicked() {
-    return doubleClicked;
+    return  doubleClicked;
 }
 
 unsigned long Lever::getLastTimeTurnedOff() {
@@ -29,42 +38,47 @@ unsigned long Lever::getLastTimeTurnedOff() {
 }
 
 void Lever::checkState() {
-    if (isLowLevelToTurnOn)state = !state;
-    unsigned long timeStamp = millis();
-    if (state != digitalRead(pinNumber) &&
-        lastTimeChanged <= timeStamp - timings->BOUNCE_DELAY) {
-        state = digitalRead(pinNumber);
+     bool tempState=state;
+    if (isLowLevelToTurnOn)tempState = !tempState;
+   const unsigned long timeStamp = millis();
+   const bool stateStamp=digitalRead(pinNumber);
+    if (tempState != stateStamp &&
+       lastTimeChanged < timeStamp - timings->BOUNCE_DELAY) {
+        tempState = stateStamp;
         Serial.print("t ");
         Serial.print(timeStamp);
         Serial.print(" :");
         Serial.print(this->pinNumber);
         Serial.print(" is ");
         Serial.print(state);
+        Serial.print(" delay* ");Serial.print(timings->REAR_CAM_SHOWTIME_DELAY);
         Serial.println();
 
         lastTimeChanged = timeStamp;
-        delay(10);
-    }
-    if (isLowLevelToTurnOn)state = !state;
-    if (lastTimeChanged == timeStamp) {// is time to set on/off stamp
+      }
+    
+    if (lastTimeChanged == timeStamp) {// it`s time to set on/off stamp
         if (state) {
             doubleClicked = isDoubleClicking(timeStamp);
             lastTimeTurnedOn = timeStamp;
-
-            //Serial.print(this->pinNumber);
-            //Serial.println(" doubleClicked");
-            //delay(10);
-
-        } else {
-            lastTimeTurnedOff = timeStamp;
+        } else{ 
+          doubleClicked=false;
+        lastTimeTurnedOff = timeStamp;
         }
     }
+    if (isLowLevelToTurnOn)tempState = !tempState;
+    state=tempState;
 }
 
 bool Lever::isDoubleClicking(unsigned long timeStamp) {
-    if (lastTimeTurnedOn + timings->REPEATER_DELAY < timeStamp &&
-        lastTimeTurnedOn < lastTimeTurnedOff)
+    if (lastTimeTurnedOn + timings->REPEATER_DELAY > timeStamp &&
+        lastTimeTurnedOn < lastTimeTurnedOff){
+            Serial.print(this->pinNumber);
+            Serial.print(" doubleClicked lastTimeOn:");        
+            Serial.print(lastTimeTurnedOn);
+            Serial.print(" timeStamp^");        
+            Serial.println(timeStamp);
         return true;
-    else
+        }    else
         return false;
 }

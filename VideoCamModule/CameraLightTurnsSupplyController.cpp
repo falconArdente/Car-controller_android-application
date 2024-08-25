@@ -3,10 +3,8 @@
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
-    Serial.print("timing device");
-    Serial.println(appTimings.BOUNCE_DELAY);
 }
-
+CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallback callback) {
     this->changeStateCallback = callback;
 }
@@ -20,6 +18,10 @@ void CameraLightTurnsSupplyController::initiate() {
     pinMode(outRightFogLight, OUTPUT);
     pinMode(outRelayCameraSwitch, OUTPUT);
     pinMode(outControllerLed, OUTPUT);
+    reverseGear = Lever(A1, timings);
+    leftTurnLever = Lever(A0, timings, true);
+    rightTurnLever = Lever(12, timings, true);
+    
     ///!!!!
     digitalWrite(outRelayCameraSwitch, LOW);
 
@@ -29,21 +31,28 @@ void CameraLightTurnsSupplyController::initiate() {
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
     getGearsState();
+
     if (reverseGear.isOn()) {
+    Serial.println("reverse on c ");
         setCameraState(REAR_CAM_ON);
         return;
     }
     if (leftTurnLever.isOn()) {
+        Serial.println("left on c ");
         if (leftTurnLever.isDoubleClicked())setCameraState(FRONT_CAM_ON);
         return;
     }
     if (rightTurnLever.isOn()) {
+      Serial.println("right on c ");
         if (rightTurnLever.isDoubleClicked())setCameraState(FRONT_CAM_ON);
         return;
     }
+        Serial.print("reverse is ");
+    Serial.println(reverseGear.isOn());
     switch (cameraState) {
         REAR_CAM_ON:
             if (isTimeToOffRear())setCameraState(CAMS_OFF);
+            break;
         FRONT_CAM_ON:
             if (isTimeToOffFront())setCameraState(CAMS_OFF);
     }
@@ -59,23 +68,20 @@ bool CameraLightTurnsSupplyController::isTimeToOffFront() {
 }
 
 bool CameraLightTurnsSupplyController::isTimeToOffRear() {
-    if (reverseGear.getLastTimeTurnedOff() + timings->REAR_CAM_SHOWTIME_DELAY > millis())
+    if (reverseGear.getLastTimeTurnedOff() + timings->REAR_CAM_SHOWTIME_DELAY < millis())
         return true;
     else
         return false;
 }
 
 void CameraLightTurnsSupplyController::getGearsState() {
-
-    // Serial.print("timing ");Serial.println(leftTurnLever.timings.BOUNCE_DELAY);
-    //Serial.print("left ");Serial.println(leftTurnLever.getLastTimeTurnedOff());
     reverseGear.checkState();
     leftTurnLever.checkState();
     rightTurnLever.checkState();
 }
 
 void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
-    if (this->cameraState == state)return;
+    if (cameraState == state)return;
     switch (state) {
         case CAMS_OFF:
             digitalWrite(outDisplayOn, LOW);
@@ -83,19 +89,24 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, LOW);
+            break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
             digitalWrite(outFrontCamPower, LOW);
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, HIGH);
+            break;
         case FRONT_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
             digitalWrite(outFrontCamPower, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
+            break;
     }
-    this->cameraState = state;
-    changeStateCallback(state);
+    cameraState = state;
+    Serial.print("camera state is ");
+    Serial.println(state);
+    //changeStateCallback(state);
 }
