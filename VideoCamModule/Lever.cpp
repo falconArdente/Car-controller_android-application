@@ -28,7 +28,7 @@ const Lever &Lever::operator=(const Lever &B) {
 }
 
 bool Lever::isOn() {
-    return state == true;
+    return state;
 }
 
 bool Lever::isDoubleClicked() {
