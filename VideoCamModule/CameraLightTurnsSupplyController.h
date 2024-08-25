@@ -13,24 +13,26 @@ public:
         CAMS_OFF,
         REAR_CAM_ON,
         FRONT_CAM_ON,
+        TEST_MODE
     };
+
     typedef void (*ChangeStateCallback)(CameraStates);
+
     CameraLightTurnsSupplyController(Timings appTimings);
 
     CameraLightTurnsSupplyController();
 
     const CameraLightTurnsSupplyController &operator=(const CameraLightTurnsSupplyController &B);
 
-    void setChangeStateCallback(ChangeStateCallback callback);
-
     void initiate();
 
     void checkGearsLoopStep();
-    ChangeStateCallback changeStateCallback;
+
+    void setChangeStateCallback(ChangeStateCallback callback);
 
 private:
     Timings *timings;
-    
+    ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
 //input gears
     Lever reverseGear;
@@ -45,14 +47,18 @@ private:
     const int outRightFogLight = 9;
     const int outRelayCameraSwitch = 11;
     const int outControllerLed = 13; //direct board on
-// states
-    bool isTimeToOffFront();
-
-    bool isTimeToOffRear();
-
+// service functions
     void getGearsState();
 
+    bool isTimeOutForFront();
+
+    bool isTimeOutForRear();
+
     void setCameraState(CameraStates state);
+
+    void turnFogLightOn();
+
+    void turnOffFogLight();
 };
 
 #endif

@@ -20,6 +20,8 @@ public:
 
     unsigned long getLastTimeTurnedOff();
 
+    unsigned long getLastTimeTurnedOn();
+
     void checkState();
 
 private:

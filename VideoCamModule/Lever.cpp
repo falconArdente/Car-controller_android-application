@@ -33,6 +33,10 @@ unsigned long Lever::getLastTimeTurnedOff() {
     return lastTimeTurnedOff;
 }
 
+unsigned long Lever::getLastTimeTurnedOn() {
+    return lastTimeTurnedOn;
+}
+
 void Lever::checkState() {
     bool tempState = state;
     if (isLowLevelToTurnOn)tempState = !tempState;
