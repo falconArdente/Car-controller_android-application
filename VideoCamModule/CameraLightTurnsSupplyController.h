@@ -3,6 +3,7 @@
 #include "Timings.h"
 #include "Lever.h"
 #include <Arduino.h>
+#include "CommunicationInterface.h"
 
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
@@ -17,7 +18,7 @@ public:
     };
 
     typedef void (*ChangeStateCallback)(CameraStates);
-
+ 
     CameraLightTurnsSupplyController(Timings appTimings);
 
     CameraLightTurnsSupplyController();
@@ -27,10 +28,11 @@ public:
     void initiate();
 
     void checkGearsLoopStep();
-
     void setChangeStateCallback(ChangeStateCallback callback);
+    void setComunicationDevice(CommunicationInterface network);
 
 private:
+    CommunicationInterface network;
     Timings *timings;
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;

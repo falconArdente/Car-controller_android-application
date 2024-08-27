@@ -1,10 +1,13 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
+#include "CommunicationInterface.h"
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
 }
-
+void CameraLightTurnsSupplyController::setComunicationDevice(CommunicationInterface network){
+  
+}
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
 const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operator=
