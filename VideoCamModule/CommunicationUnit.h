@@ -2,15 +2,17 @@
 
 #include <Arduino.h>
 #include "CameraStatesEnum.h"
+#include "Timings.h"
 
 #ifndef COMINT_H
 #define COMINT_H
 
-class CommunicationUnit{
+class CommunicationUnit {
 public:
     CommunicationUnit() {
 //
     }
+
     class StateInfo {
     public:
         StateInfo(
@@ -28,12 +30,22 @@ public:
                 bool displayIsOn,
                 CameraStates cameraState
         );
-private:
-       byte package[2];
+
+    private:
+        byte package[2];
     };
+
+    class TimingsPackage {
+    public:
+        TimingsPackage(bool isToWrite, Timings timings);
+
+    private:
+        byte package[9];
+    };
+
     inline void sendState(StateInfo stateInfo);
 
-   // inline virtual void sendTimings(byte p [9]);
+    // inline virtual void sendTimings(byte p [9]);
 
 //inline virtual void checkForIncomingData();
 
