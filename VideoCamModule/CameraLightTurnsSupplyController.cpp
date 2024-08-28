@@ -1,12 +1,11 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
-#include "CommunicationInterface.h"
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
 }
-void CameraLightTurnsSupplyController::setComunicationDevice(CommunicationInterface network){
-  
+void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network){
+  Serial.println("");
 }
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 

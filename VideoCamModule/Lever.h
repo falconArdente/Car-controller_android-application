@@ -8,7 +8,7 @@
 
 class Lever {
 public:
-    Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false);
+    Lever(int pinNumber, Timings *timings);
 
     Lever();
 
@@ -32,8 +32,7 @@ private:
     unsigned long lastTimeChanged = 0;
     unsigned long lastTimeTurnedOn = 0;
     unsigned long lastTimeTurnedOff = 0;
-    bool isLowLevelToTurnOn = false;
-
+    
     bool isDoubleClicking(unsigned long timeStamp);
 };
 

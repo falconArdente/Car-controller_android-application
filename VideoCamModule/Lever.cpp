@@ -1,10 +1,9 @@
 #include "Timings.h"
 #include "Lever.h"
 
-Lever::Lever(int pinNumber, Timings *timings, bool isLowLevelToTurnOn = false) {
+Lever::Lever(int pinNumber, Timings *timings) {
     this->timings = timings;
     this->pinNumber = pinNumber;
-    this->isLowLevelToTurnOn = isLowLevelToTurnOn;
     unsigned long nowStamp = millis();
     unsigned long lastTimeChanged = nowStamp;
     unsigned long lastTimeTurnedOn = nowStamp;
@@ -17,7 +16,6 @@ const Lever &Lever::operator=(const Lever &B) {
     if (this == &B) return *this;
     pinNumber = B.pinNumber;
     timings = B.timings;
-    isLowLevelToTurnOn = B.isLowLevelToTurnOn;
     return *this;
 }
 
@@ -38,18 +36,15 @@ unsigned long Lever::getLastTimeTurnedOn() {
 }
 
 void Lever::checkState() {
-    bool tempState = state;
-    if (isLowLevelToTurnOn)tempState = !tempState;
     const unsigned long timeStamp = millis();
     const bool stateStamp = digitalRead(pinNumber);
-    if (tempState != stateStamp &&
+    if (state != stateStamp &&
         lastTimeChanged < timeStamp - timings->BOUNCE_DELAY) {
-        tempState = stateStamp;
+        state = stateStamp;
         lastTimeChanged = timeStamp;
     }
-
     if (lastTimeChanged == timeStamp) {// it`s time to set on/off stamp
-        if (tempState) {
+        if (state) {
             doubleClicked = isDoubleClicking(timeStamp);
             lastTimeTurnedOn = timeStamp;
         } else {
@@ -57,8 +52,6 @@ void Lever::checkState() {
             lastTimeTurnedOff = timeStamp;
         }
     }
-    if (isLowLevelToTurnOn)tempState = !tempState;
-    state = tempState;
 }
 
 bool Lever::isDoubleClicking(unsigned long timeStamp) {
