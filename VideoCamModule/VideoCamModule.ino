@@ -14,6 +14,9 @@ void setup() {
     device = CameraLightTurnsSupplyController(appTimings);
     device.setChangeStateCallback(callbackTest);
     device.initiate();
+    byte first;
+    bitWrite(first,0,1);
+    Serial.println(first);
 }
 
 void loop() {
@@ -21,6 +24,6 @@ void loop() {
     delay(50);
 }
 
-void callbackTest(CameraLightTurnsSupplyController::CameraStates state) {
+void callbackTest(CameraStates state) {
     // empty for now
 }
