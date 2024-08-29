@@ -42,7 +42,7 @@ void Lever::checkState() {
         lastTimeChanged < timeStamp - timings->BOUNCE_DELAY) {
         state = stateStamp;
         lastTimeChanged = timeStamp;
-        isChangedFlag=true;
+        isChangedFlag = true;
     }
     if (lastTimeChanged == timeStamp) {// it`s time to set on/off stamp
         if (state) {
@@ -53,7 +53,7 @@ void Lever::checkState() {
             lastTimeTurnedOff = timeStamp;
         }
     }
-    
+
     //if(state) lastTimeTurnedOn = timeStamp else lastTimeTurnedOff = timeStamp;
 }
 
