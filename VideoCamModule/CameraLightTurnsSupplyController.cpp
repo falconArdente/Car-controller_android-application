@@ -4,8 +4,9 @@
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
 }
+
 void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network){
-  Serial.println("");
+   this->network = network;
 }
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
@@ -21,7 +22,7 @@ void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallbac
 
 void CameraLightTurnsSupplyController::initiate() {
     pinMode(outRearCamPower, OUTPUT);
-    pinMode(outFrontCamPower, OUTPUT);
+    pinMode(outAngelEye, OUTPUT);
     pinMode(outCautionSignal, OUTPUT);
     pinMode(outDisplayOn, OUTPUT);
     pinMode(outLeftFogLight, OUTPUT);
@@ -34,7 +35,30 @@ void CameraLightTurnsSupplyController::initiate() {
     setCameraState(CAMS_OFF);
     getGearsState();
 }
-
+    void CameraLightTurnsSupplyController::communicationLoopStep(){
+      if(!reverseGear.isChangedFlag&&!leftTurnLever.isChangedFlag&&!rightTurnLever.isChangedFlag&&!isChangedFlag) return;
+             CommunicationUnit::StateInfoSet state{
+                leftTurnLever.isOn(),
+                leftTurnLever.isDoubleClicked(),
+                rightTurnLever.isOn(),
+                rightTurnLever.isDoubleClicked(),
+                reverseGear.isOn(),
+                digitalRead(outCautionSignal),
+                digitalRead(outLeftFogLight),
+                digitalRead(outRightFogLight),
+                digitalRead(outRelayCameraSwitch),
+                digitalRead(outRearCamPower),
+                digitalRead(outAngelEye),
+                digitalRead(outDisplayOn),
+                cameraState,
+      };
+     network.package(state); 
+     reverseGear.isChangedFlag=false;
+    leftTurnLever.isChangedFlag=false;
+    rightTurnLever.isChangedFlag=false;
+    isChangedFlag=false;
+      
+    }
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
     getGearsState();
     switch (cameraState) { // logic by diagram https://github.com/falconArdente/Car-controller_android-application/wiki/CameraStatesDiagram
@@ -43,6 +67,7 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(REAR_CAM_ON);
             } else if (leftTurnLever.isDoubleClicked() || rightTurnLever.isDoubleClicked())
                 setCameraState(FRONT_CAM_ON);
+                this->isChangedFlag=true;
             break;
         case FRONT_CAM_ON:
             if (reverseGear.isOn()) {
@@ -52,6 +77,7 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                        && isTimeOutForFront()
                        && isTimeOutForRear())
                 setCameraState(CAMS_OFF);
+                //this->isChangedFlag=true;
             break;
         case REAR_CAM_ON:
             if ((!isTimeOutForFront() || leftTurnLever.isDoubleClicked() ||
@@ -60,9 +86,10 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(FRONT_CAM_ON);
             } else if (isTimeOutForRear())
                 setCameraState(CAMS_OFF);
+               // this->isChangedFlag=true;
             break;
         case TEST_MODE:
-            // Do nothing
+            //this->isChangedFlag=true;
             break;
     }
     if (!reverseGear.isOn() && cameraState != TEST_MODE)digitalWrite(outCautionSignal, LOW);
@@ -95,7 +122,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
     switch (state) {
         case CAMS_OFF:
             digitalWrite(outDisplayOn, LOW);
-            digitalWrite(outFrontCamPower, LOW);
+            digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, LOW);
@@ -104,7 +131,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outFrontCamPower, LOW);
+            digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, HIGH);
@@ -114,7 +141,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             break;
         case FRONT_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outFrontCamPower, HIGH);
+            digitalWrite(outAngelEye, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);

@@ -23,7 +23,7 @@ public:
     unsigned long getLastTimeTurnedOn();
 
     void checkState();
-
+    bool isChangedFlag=false;
 private:
     Timings *timings;
     bool state = false;
