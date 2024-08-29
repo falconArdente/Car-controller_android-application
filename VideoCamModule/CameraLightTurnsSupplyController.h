@@ -22,9 +22,10 @@ public:
     void initiate();
 
     void checkGearsLoopStep();
+    void communicationLoopStep();
     void setChangeStateCallback(ChangeStateCallback callback);
     void setCommunicationDevice(CommunicationUnit network);
-
+    bool isChangedFlag=false;
 private:
     CommunicationUnit network;
     Timings *timings;
@@ -36,7 +37,7 @@ private:
     Lever rightTurnLever;
 //output pins
     const int outRearCamPower = 7; // transistor to power on
-    const int outFrontCamPower = 5;
+    const int outAngelEye = 5;
     const int outCautionSignal = 2;
     const int outDisplayOn = A2;
     const int outLeftFogLight = 3;

@@ -10,48 +10,52 @@
 class CommunicationUnit {
 public:
     CommunicationUnit() {
-//
+
     }
+      struct StateInfoSet{
+                bool leftPressed;
+                bool leftDblPressed;
+                bool rightPressed;
+                bool rightDblPressed;
+                bool reversePressed;
+                bool cautionIsOn;
+                bool leftFogIsOn;
+                bool rightFogIsOn;
+                bool relayIsOn;
+                bool rearCameraIsOn;
+                bool angelEyeIsOn;
+                bool displayIsOn;
+                CameraStates cameraState;
+      };
 
-    class StateInfo {
-    public:
-        StateInfo(
-                bool leftPressed,
-                bool leftDblPressed,
-                bool rightPressed,
-                bool rightDblPressed,
-                bool reversePressed,
-                bool cautionIsOn,
-                bool leftFogIsOn,
-                bool rightFogIsOn,
-                bool relayIsOn,
-                bool RearCameraIsOn,
-                bool frontCameraIsOn,
-                bool displayIsOn,
-                CameraStates cameraState
-        );
+        struct TimingSet{
+          bool isToWrite; 
+          Timings timings;
+        };
 
-    private:
-        byte package[2];
-    };
+        struct ControlCommandSet {
+                bool cautionIsOn;
+                bool leftFogIsOn;
+                bool rightFogIsOn;
+                bool relayIsOn;
+                bool rearCameraIsOn;
+                bool angelEyeIsOn;
+                bool displayIsOn;
+                CameraStates cameraState;
+};
+void sendPackage(byte* packageToSend, int bytesToSend);
+    void package(StateInfoSet stateSet);
 
-    class TimingsPackage {
-    public:
-        TimingsPackage(bool isToWrite, Timings timings);
-
-    private:
-        byte package[9];
-    };
-
-    inline void sendState(StateInfo stateInfo);
-
-    // inline virtual void sendTimings(byte p [9]);
+    inline  void sendTimings(TimingSet timingsSet);
 
 //inline virtual void checkForIncomingData();
 
 //inline virtual void setTimingsIncome(byte p[9]);
 
 //inline virtual void setStateIncome(byte p [2]);
+private:
+byte packageToSend[9];
+int bytesToSend=0;
 };
 
 #endif

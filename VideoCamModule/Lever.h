@@ -24,6 +24,7 @@ public:
 
     void checkState();
 
+    bool isChangedFlag = false;
 private:
     Timings *timings;
     bool state = false;
@@ -32,7 +33,7 @@ private:
     unsigned long lastTimeChanged = 0;
     unsigned long lastTimeTurnedOn = 0;
     unsigned long lastTimeTurnedOff = 0;
-    
+
     bool isDoubleClicking(unsigned long timeStamp);
 };
 
