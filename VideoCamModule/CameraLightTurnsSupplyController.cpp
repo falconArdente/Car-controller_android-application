@@ -34,8 +34,27 @@ void CameraLightTurnsSupplyController::initiate() {
     leftTurnLever = Lever(A0, timings);
     rightTurnLever = Lever(12, timings);
     setCameraState(CAMS_OFF);
+    if (!network.isAbstract) {
+        network.setUpdateTimingsCallback(updateTimings);
+        network.setExecuteCommandCallback(executeCommand);
+        network.setSendUpTimingsCallback(sendUpTimings);
+    }
     getGearsState();
 }
+
+void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
+
+}
+
+void
+CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
+
+}
+
+void CameraLightTurnsSupplyController::sendUpTimings() {
+
+}
+
 
 void CameraLightTurnsSupplyController::communicationLoopStep() {
     if (!reverseGear.isChangedFlag && !leftTurnLever.isChangedFlag &&
@@ -56,7 +75,7 @@ void CameraLightTurnsSupplyController::communicationLoopStep() {
             digitalRead(outDisplayOn),
             cameraState,
     };
-    network.package(state);
+    network.sendState(state);
     reverseGear.isChangedFlag = false;
     leftTurnLever.isChangedFlag = false;
     rightTurnLever.isChangedFlag = false;

@@ -30,6 +30,12 @@ public:
 
     void setCommunicationDevice(CommunicationUnit network);
 
+    static void updateTimings(Timings newTimings);
+
+    static void executeCommand(CommunicationUnit::ControlCommandSet command);
+
+    static void sendUpTimings();
+
 private:
     CommunicationUnit network;
     Timings *timings;
