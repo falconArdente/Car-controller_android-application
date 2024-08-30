@@ -16,6 +16,9 @@ const Lever &Lever::operator=(const Lever &B) {
     if (this == &B) return *this;
     pinNumber = B.pinNumber;
     timings = B.timings;
+    lastTimeChanged = B.lastTimeChanged;
+    lastTimeTurnedOn = B.lastTimeTurnedOn;
+    lastTimeTurnedOff = B.lastTimeTurnedOff;
     return *this;
 }
 
@@ -25,6 +28,14 @@ bool Lever::isOn() {
 
 bool Lever::isDoubleClicked() {
     return doubleClicked;
+}
+
+bool Lever::isDoubleClicking(unsigned long timeStamp) {
+    if (lastTimeTurnedOn + timings->REPEATER_DELAY > timeStamp &&
+        lastTimeTurnedOn < lastTimeTurnedOff)
+        return true;
+    else
+        return false;
 }
 
 unsigned long Lever::getLastTimeTurnedOff() {
@@ -43,6 +54,9 @@ void Lever::checkState() {
         state = stateStamp;
         lastTimeChanged = timeStamp;
         isChangedFlag = true;
+    } else {
+        if (state) lastTimeTurnedOn = timeStamp;
+        else lastTimeTurnedOff = timeStamp;
     }
     if (lastTimeChanged == timeStamp) {// it`s time to set on/off stamp
         if (state) {
@@ -53,14 +67,4 @@ void Lever::checkState() {
             lastTimeTurnedOff = timeStamp;
         }
     }
-
-    //if(state) lastTimeTurnedOn = timeStamp else lastTimeTurnedOff = timeStamp;
-}
-
-bool Lever::isDoubleClicking(unsigned long timeStamp) {
-    if (lastTimeTurnedOn + timings->REPEATER_DELAY > timeStamp &&
-        lastTimeTurnedOn < lastTimeTurnedOff)
-        return true;
-    else
-        return false;
 }

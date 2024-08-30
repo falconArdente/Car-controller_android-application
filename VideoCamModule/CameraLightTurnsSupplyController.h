@@ -5,27 +5,31 @@
 #include "CommunicationUnit.h"
 #include <Arduino.h>
 
-
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 
 class CameraLightTurnsSupplyController {
 public:
-    typedef void (*ChangeStateCallback)(CameraStates);
- 
     CameraLightTurnsSupplyController(Timings appTimings);
 
     CameraLightTurnsSupplyController();
 
     const CameraLightTurnsSupplyController &operator=(const CameraLightTurnsSupplyController &B);
 
+    typedef void (*ChangeStateCallback)(CameraStates);
+
     void initiate();
 
+    bool isChangedFlag = false;
+
     void checkGearsLoopStep();
+
     void communicationLoopStep();
+
     void setChangeStateCallback(ChangeStateCallback callback);
+
     void setCommunicationDevice(CommunicationUnit network);
-    bool isChangedFlag=false;
+
 private:
     CommunicationUnit network;
     Timings *timings;
