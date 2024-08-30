@@ -1,5 +1,6 @@
 #include "CommunicationUnit.h"
-#include "CameraStatesEnum.h"
+
+//#include "CameraLightTurnsSupplyController.h"
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {
 
@@ -44,16 +45,16 @@ void CommunicationUnit::sendTimings(Timings timings) {
 }
 
 void CommunicationUnit::setUpdateTimingsCallback(UpdateTimingsCallback timingsCallback) {
-    this->updateTimings = timingsCallback;
+    updateTimings = timingsCallback;
 }
 
-void CommunicationUnit::setExecuteCommandCallback(ExecuteCommandCallback commandCallback) {
-    this->executeCommand = commandCallback;
-}
+//void CommunicationUnit::setExecuteCommandCallback(ExecuteCommandCallback commandCallback) {
+//    this->executeCommand = commandCallback;
+//}
 
-void CommunicationUnit::setSendUpTimingsCallback(SendUpTimingsCallback sendUpTimingsCallback) {
-    this->sendUpTimings = sendUpTimingsCallback;
-}
+//void CommunicationUnit::setSendUpTimingsCallback(SendUpTimingsCallback sendUpTimingsCallback) {
+//    this->sendUpTimings = sendUpTimingsCallback;
+//}
 
 //CommunicationUnit::ControlCommand::ControlCommand(
 //                bool cautionIsOn,

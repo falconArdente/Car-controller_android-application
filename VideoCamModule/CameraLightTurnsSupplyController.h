@@ -2,8 +2,9 @@
 
 #include "Timings.h"
 #include "Lever.h"
-#include "CommunicationUnit.h"
+#include "CameraStatesEnum.h"
 #include <Arduino.h>
+#include "CommunicationUnit.h"
 
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
@@ -30,11 +31,11 @@ public:
 
     void setCommunicationDevice(CommunicationUnit network);
 
-    static void updateTimings(Timings newTimings);
+    void updateTimings(Timings newTimings);
 
-    static void executeCommand(CommunicationUnit::ControlCommandSet command);
+//    void executeCommand(CommunicationUnit::ControlCommandSet command);
 
-    static void sendUpTimings();
+//    void sendUpTimings();
 
 private:
     CommunicationUnit network;

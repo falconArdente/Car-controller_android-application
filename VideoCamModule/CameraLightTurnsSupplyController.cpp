@@ -1,6 +1,7 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
 
+
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
 const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operator=
@@ -35,25 +36,26 @@ void CameraLightTurnsSupplyController::initiate() {
     rightTurnLever = Lever(12, timings);
     setCameraState(CAMS_OFF);
     if (!network.isAbstract) {
-        network.setUpdateTimingsCallback(updateTimings);
-        network.setExecuteCommandCallback(executeCommand);
-        network.setSendUpTimingsCallback(sendUpTimings);
+        network.setUpdateTimingsCallback(&updateTimings);
+        //network.setExecuteCommandCallback(executeCommand);
+        //network.setSendUpTimingsCallback(sendUpTimings);
     }
     getGearsState();
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
-
+    Serial.print("updatingTimings");
 }
 
-void
-CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
-
-}
-
-void CameraLightTurnsSupplyController::sendUpTimings() {
-
-}
+//void
+//CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
+//
+//}
+//
+// void CameraLightTurnsSupplyController::sendUpTimings() {
+//if (network.isAbstract)return;
+//    this.network.sendTimings(timings);
+//}
 
 
 void CameraLightTurnsSupplyController::communicationLoopStep() {
@@ -80,6 +82,8 @@ void CameraLightTurnsSupplyController::communicationLoopStep() {
     leftTurnLever.isChangedFlag = false;
     rightTurnLever.isChangedFlag = false;
     isChangedFlag = false;
+    network:
+    updateTimings(*timings);
 }
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
