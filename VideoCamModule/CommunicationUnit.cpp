@@ -13,11 +13,8 @@ void CommunicationUnit::checkForIncome() {
 }
 
 void CommunicationUnit::sendUpTimings() {
-    Serial.print("sendUpTimings");
-    (hostObject->*sendUpTimingsCallback)();
-    //hostObject->sendUpTimings();
-    Serial.println("done");
-}
+            hostObject->sendUpTimings();
+    }
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {
 
@@ -59,17 +56,4 @@ void CommunicationUnit::sendTimings(Timings timings) {
     packageToSend[7] = timings.REAR_CAM_SHOWTIME_DELAY;
     packageToSend[8] = (timings.REAR_CAM_SHOWTIME_DELAY) >> 8;
     sendPackage(packageToSend, 9);
-}
-
-void CommunicationUnit::setUpdateTimingsCallback(UpdateTimingsCallback timingsCallback) {
-    updateTimings = timingsCallback;
-}
-
-void CommunicationUnit::setExecuteCommandCallback(ExecuteCommandCallback commandCallback) {
-    executeCommand = commandCallback;
-}
-
-void CommunicationUnit::setSendUpTimingsCallback(
-        void (CameraLightTurnsSupplyController::* sendUpTimings)()) {
-    sendUpTimingsCallback = sendUpTimings;
 }

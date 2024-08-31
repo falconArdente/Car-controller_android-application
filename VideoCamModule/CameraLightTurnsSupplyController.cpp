@@ -35,26 +35,20 @@ void CameraLightTurnsSupplyController::initiate() {
     leftTurnLever = Lever(A0, timings);
     rightTurnLever = Lever(12, timings);
     setCameraState(CAMS_OFF);
-    if (!network.isAbstract) {
-        network.setUpdateTimingsCallback(&updateTimings);
-        network.setExecuteCommandCallback(&executeCommand);
-        network.setSendUpTimingsCallback(&sendUpTimings);
-    }
     getGearsState();
-
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
-    Serial.print("updatingTimings");
+    Serial.println("updatingTimingsPayload");
 }
 
 void
 CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
-    Serial.print("executeCommand");
+    Serial.println("executeCommandPayload");
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
-    Serial.print("sendUpTimings");
+    Serial.println("sendUpTimingsPayload");
 }
 
 
