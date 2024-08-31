@@ -11,14 +11,13 @@ CameraLightTurnsSupplyController device;
 CommunicationUnit network = CommunicationUnit(&device);
 
 void setup() {
+
     Serial.begin(9600);
+    Serial.setTimeout(50);
     device = CameraLightTurnsSupplyController(appTimings);
     device.setChangeStateCallback(callbackTest);
-    //network.setUpdateTimingsCallback(updateTimings);
-
     device.setCommunicationDevice(network);
     device.initiate();
-    // device.network->*sendUpTimings(appTimings);
 }
 
 void loop() {
@@ -30,5 +29,3 @@ void loop() {
 void callbackTest(CameraStates state) {
     // empty for now
 }
-
-void updateTimings(Timings newTimings) {}

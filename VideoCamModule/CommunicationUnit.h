@@ -11,6 +11,9 @@ class CameraLightTurnsSupplyController;
 
 class CommunicationUnit {
 public:
+    static const char START_PACKAGE_SIGNATURE = '█';
+    static const char END_PACKAGE_SIGNATURE = '\n';
+    static const int MAX_PACKAGE_SIZE = 9;
     struct StateInfoSet {
         bool leftPressed;
         bool leftDblPressed;
@@ -50,6 +53,8 @@ public:
     void sendTimings(Timings timings);
 // virtual void checkForIncomingData()const=0;
 private:
+    void parseIncomingPackage(byte package[9], int packetSize);
+
     CameraLightTurnsSupplyController *hostObject;
 
     void sendUpTimings();
@@ -58,6 +63,7 @@ private:
 
     byte packageToSend[9];
     int bytesToSend = 0;
+    int errorsCount = 0;
 };
 
 #endif

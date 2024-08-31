@@ -9,7 +9,37 @@ CommunicationUnit::CommunicationUnit(CameraLightTurnsSupplyController *hostPoint
 CommunicationUnit::CommunicationUnit() {}
 
 void CommunicationUnit::checkForIncome() {
-    sendUpTimings();
+    char target[] = {'s', 'a'};  //{NEW_LINE,START_PACKAGE_SIGNATURE};
+    if (Serial.available()) {
+        if (Serial.find(target, 2)) {
+            byte package[9];
+            int packageByteCursor = 0;
+            byte inByte = 0;
+            while (inByte != END_PACKAGE_SIGNATURE && packageByteCursor < MAX_PACKAGE_SIZE) {
+                inByte = Serial.read();
+                package[packageByteCursor++] = inByte;
+            }
+            parseIncomingPackage(package, packageByteCursor);
+        }
+    }
+}
+
+void CommunicationUnit::parseIncomingPackage(byte package[9], int packetSize) {
+    switch (packetSize) {
+        case 1: //timings Request?
+
+            break;
+        case 2: //controlCommand?
+
+            break;
+        case 9: //newTimings?
+
+            break;
+        case else:
+            errorsCount++;
+    }
+    if (packetSize > 0)Serial.write(package, packetSize);
+    Serial.println();
 }
 
 void CommunicationUnit::sendUpTimings() {
