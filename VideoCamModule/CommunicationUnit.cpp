@@ -25,7 +25,7 @@ void CommunicationUnit::checkForIncome() {
     }
 }
 
-void CommunicationUnit::parseIncomingPackage(byte package[9], int packetSize) {
+void CommunicationUnit::parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int packetSize) {
     switch (packetSize) {
         case 1: //timings Request?
             Serial.println("1 Byte parsing");
@@ -36,19 +36,7 @@ void CommunicationUnit::parseIncomingPackage(byte package[9], int packetSize) {
         case 2: //controlCommand?
             Serial.println("2 Byte parsing");
             if (bitRead(package[0], 0) && !bitRead(package[0], 1)) {
-                CameraStates cameraState = 0;
-                bitWrite(cameraState, 0, bitRead(package[1], 1));
-                bitWrite(cameraState, 1, bitRead(package[1], 2));
-                ControlCommandSet command{
-                        bitRead(package[0], 2),
-                        bitRead(package[0], 3),
-                        bitRead(package[0], 4),
-                        bitRead(package[0], 5),
-                        bitRead(package[0], 6),
-                        bitRead(package[0], 7),
-                        bitRead(package[1], 0),
-                        cameraState};
-                hostObject->executeCommand(command);
+                commandToControllerDevice(package);
             }
             errorsCount++;
             break;
@@ -65,6 +53,22 @@ void CommunicationUnit::parseIncomingPackage(byte package[9], int packetSize) {
             Serial.println(errorsCount);
     }
 
+}
+
+void CommunicationUnit::commandToControllerDevice(byte package[MAX_PACKAGE_SIZE]) {
+    CameraStates cameraState = 0;
+    bitWrite(cameraState, 0, bitRead(package[1], 1));
+    bitWrite(cameraState, 1, bitRead(package[1], 2));
+    ControlCommandSet command{
+            bitRead(package[0], 2),
+            bitRead(package[0], 3),
+            bitRead(package[0], 4),
+            bitRead(package[0], 5),
+            bitRead(package[0], 6),
+            bitRead(package[0], 7),
+            bitRead(package[1], 0),
+            cameraState};
+    hostObject->executeCommand(command);
 }
 
 void CommunicationUnit::sendUpTimings() {

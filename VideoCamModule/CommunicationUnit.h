@@ -53,7 +53,10 @@ public:
     void sendTimings(Timings timings);
 // virtual void checkForIncomingData()const=0;
 private:
-    void parseIncomingPackage(byte package[9], int packetSize);
+
+    void parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int packetSize);
+
+    void commandToControllerDevice(byte package[MAX_PACKAGE_SIZE]);
 
     CameraLightTurnsSupplyController *hostObject;
 
@@ -61,7 +64,7 @@ private:
 
     void sendPackage(byte *packageToSend, int bytesToSend);
 
-    byte packageToSend[9];
+    byte packageToSend[MAX_PACKAGE_SIZE];
     int bytesToSend = 0;
     int errorsCount = 0;
 };
