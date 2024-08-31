@@ -1,6 +1,23 @@
 #include "CommunicationUnit.h"
 
-//#include "CameraLightTurnsSupplyController.h"
+#include "CameraLightTurnsSupplyController.h"
+
+CommunicationUnit::CommunicationUnit(CameraLightTurnsSupplyController *hostPointer) {
+    hostObject = hostPointer;
+}
+
+CommunicationUnit::CommunicationUnit() {}
+
+void CommunicationUnit::checkForIncome() {
+    sendUpTimings();
+}
+
+void CommunicationUnit::sendUpTimings() {
+    Serial.print("sendUpTimings");
+    (hostObject->*sendUpTimingsCallback)();
+    //hostObject->sendUpTimings();
+    Serial.println("done");
+}
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {
 
@@ -48,29 +65,11 @@ void CommunicationUnit::setUpdateTimingsCallback(UpdateTimingsCallback timingsCa
     updateTimings = timingsCallback;
 }
 
-//void CommunicationUnit::setExecuteCommandCallback(ExecuteCommandCallback commandCallback) {
-//    this->executeCommand = commandCallback;
-//}
+void CommunicationUnit::setExecuteCommandCallback(ExecuteCommandCallback commandCallback) {
+    executeCommand = commandCallback;
+}
 
-//void CommunicationUnit::setSendUpTimingsCallback(SendUpTimingsCallback sendUpTimingsCallback) {
-//    this->sendUpTimings = sendUpTimingsCallback;
-//}
-
-//CommunicationUnit::ControlCommand::ControlCommand(
-//                bool cautionIsOn,
-//                bool leftFogIsOn,
-//                bool rightFogIsOn,
-//                bool relayIsOn,
-//                bool rearCameraIsOn,
-//                bool angelEyeIsOn,
-//                bool displayIsOn,
-//                CameraStates cameraState){
-//                  controlCommandSet.cautionIsOn=cautionIsOn;
-//}
-//byte[2] CommunicationUnit::ControlCommand::makePackage(){
-//        byte package[2];
-//        bitWrite(package[0], 0, 1);
-//        bitWrite(package[0], 1, 0);
-//
-//        return &package;
-//}
+void CommunicationUnit::setSendUpTimingsCallback(
+        void (CameraLightTurnsSupplyController::* sendUpTimings)()) {
+    sendUpTimingsCallback = sendUpTimings;
+}

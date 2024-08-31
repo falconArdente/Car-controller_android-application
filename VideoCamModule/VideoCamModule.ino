@@ -8,15 +8,17 @@ const Timings appTimings{
         3000, // FRONT_CAM_SHOWTIME_DELAY
         1500}; // REAR_CAM_SHOWTIME_DELAY
 CameraLightTurnsSupplyController device;
-CommunicationUnit network = CommunicationUnit();
+CommunicationUnit network = CommunicationUnit(&device);
 
 void setup() {
     Serial.begin(9600);
     device = CameraLightTurnsSupplyController(appTimings);
     device.setChangeStateCallback(callbackTest);
     //network.setUpdateTimingsCallback(updateTimings);
+
     device.setCommunicationDevice(network);
     device.initiate();
+    // device.network->*sendUpTimings(appTimings);
 }
 
 void loop() {

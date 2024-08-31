@@ -1,6 +1,10 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
+#include "CommunicationUnit.h"
 
+CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
+    this->timings = &appTimings;
+}
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
@@ -8,10 +12,6 @@ const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operat
         (const CameraLightTurnsSupplyController &B) {
     timings = B.timings;
     return *this;
-}
-
-CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
-    this->timings = &appTimings;
 }
 
 void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network) {
@@ -37,53 +37,53 @@ void CameraLightTurnsSupplyController::initiate() {
     setCameraState(CAMS_OFF);
     if (!network.isAbstract) {
         network.setUpdateTimingsCallback(&updateTimings);
-        //network.setExecuteCommandCallback(executeCommand);
-        //network.setSendUpTimingsCallback(sendUpTimings);
+        network.setExecuteCommandCallback(&executeCommand);
+        network.setSendUpTimingsCallback(&sendUpTimings);
     }
     getGearsState();
+
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
     Serial.print("updatingTimings");
 }
 
-//void
-//CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
-//
-//}
-//
-// void CameraLightTurnsSupplyController::sendUpTimings() {
-//if (network.isAbstract)return;
-//    this.network.sendTimings(timings);
-//}
+void
+CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
+    Serial.print("executeCommand");
+}
+
+void CameraLightTurnsSupplyController::sendUpTimings() {
+    Serial.print("sendUpTimings");
+}
 
 
 void CameraLightTurnsSupplyController::communicationLoopStep() {
     if (!reverseGear.isChangedFlag && !leftTurnLever.isChangedFlag &&
-        !rightTurnLever.isChangedFlag && !isChangedFlag)
-        return;
-    CommunicationUnit::StateInfoSet state{
-            leftTurnLever.isOn(),
-            leftTurnLever.isDoubleClicked(),
-            rightTurnLever.isOn(),
-            rightTurnLever.isDoubleClicked(),
-            reverseGear.isOn(),
-            digitalRead(outCautionSignal),
-            digitalRead(outLeftFogLight),
-            digitalRead(outRightFogLight),
-            digitalRead(outRelayCameraSwitch),
-            digitalRead(outRearCamPower),
-            digitalRead(outAngelEye),
-            digitalRead(outDisplayOn),
-            cameraState,
-    };
-    network.sendState(state);
-    reverseGear.isChangedFlag = false;
-    leftTurnLever.isChangedFlag = false;
-    rightTurnLever.isChangedFlag = false;
-    isChangedFlag = false;
-    network:
-    updateTimings(*timings);
+        !rightTurnLever.isChangedFlag && !isChangedFlag) {
+        network.checkForIncome();
+    } else {
+        CommunicationUnit::StateInfoSet state{
+                leftTurnLever.isOn(),
+                leftTurnLever.isDoubleClicked(),
+                rightTurnLever.isOn(),
+                rightTurnLever.isDoubleClicked(),
+                reverseGear.isOn(),
+                digitalRead(outCautionSignal),
+                digitalRead(outLeftFogLight),
+                digitalRead(outRightFogLight),
+                digitalRead(outRelayCameraSwitch),
+                digitalRead(outRearCamPower),
+                digitalRead(outAngelEye),
+                digitalRead(outDisplayOn),
+                cameraState,
+        };
+        network.sendState(state);
+        reverseGear.isChangedFlag = false;
+        leftTurnLever.isChangedFlag = false;
+        rightTurnLever.isChangedFlag = false;
+        isChangedFlag = false;
+    }
 }
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {

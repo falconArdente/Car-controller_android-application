@@ -33,12 +33,13 @@ public:
 
     void updateTimings(Timings newTimings);
 
-//    void executeCommand(CommunicationUnit::ControlCommandSet command);
+    void executeCommand(CommunicationUnit::ControlCommandSet command);
 
-//    void sendUpTimings();
+    void sendUpTimings();
 
-private:
     CommunicationUnit network;
+private:
+
     Timings *timings;
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
