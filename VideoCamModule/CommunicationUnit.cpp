@@ -13,11 +13,10 @@ void CommunicationUnit::checkForIncome() {
 }
 
 void CommunicationUnit::sendUpTimings() {
-            hostObject->sendUpTimings();
-    }
+    hostObject->sendUpTimings();
+}
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {
-
     bitWrite(packageToSend[0], 0, 0);
     bitWrite(packageToSend[0], 1, 0);
     bitWrite(packageToSend[0], 2, stateSet.leftPressed);

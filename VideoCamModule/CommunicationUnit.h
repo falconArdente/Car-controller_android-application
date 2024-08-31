@@ -11,7 +11,7 @@ class CameraLightTurnsSupplyController;
 
 class CommunicationUnit {
 public:
-   struct StateInfoSet {
+    struct StateInfoSet {
         bool leftPressed;
         bool leftDblPressed;
         bool rightPressed;
@@ -36,18 +36,26 @@ public:
         bool displayIsOn;
         CameraStates cameraState;
     };
+
     CommunicationUnit(CameraLightTurnsSupplyController *hostObject);
+
     CommunicationUnit();
+
     bool isAbstract = true;
+
     void checkForIncome();
-    void sendState(StateInfoSet stateSet);    
+
+    void sendState(StateInfoSet stateSet);
+
+    void sendTimings(Timings timings);
 // virtual void checkForIncomingData()const=0;
 private:
     CameraLightTurnsSupplyController *hostObject;
 
-    void sendTimings(Timings timings);
     void sendUpTimings();
+
     void sendPackage(byte *packageToSend, int bytesToSend);
+
     byte packageToSend[9];
     int bytesToSend = 0;
 };

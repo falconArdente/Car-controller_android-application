@@ -44,7 +44,14 @@ void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
 
 void
 CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
-    Serial.println("executeCommandPayload");
+    digitalWrite(outCautionSignal, command.cautionIsOn);
+    digitalWrite(outLeftFogLight, command.leftFogIsOn);
+    digitalWrite(outRightFogLight, command.rightFogIsOn);
+    digitalWrite(outRelayCameraSwitch, command.relayIsOn);
+    digitalWrite(outRearCamPower, command.rearCameraIsOn);
+    digitalWrite(outAngelEye, command.angelEyeIsOn);
+    digitalWrite(outDisplayOn, command.displayIsOn);
+    setCameraState(command.cameraState);
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
@@ -146,7 +153,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             turnFogLightOn();
             break;
     }
-
     cameraState = state;
     if (changeStateCallback != NULL)changeStateCallback(state);
 }
