@@ -15,11 +15,12 @@ void CommunicationUnit::checkForIncome() {
             byte package[9];
             int packageByteCursor = 0;
             byte inByte = 0;
-            while (inByte != END_PACKAGE_SIGNATURE && packageByteCursor < MAX_PACKAGE_SIZE) {
+            while (packageByteCursor < MAX_PACKAGE_SIZE) {
                 inByte = Serial.read();
+                if (inByte == END_PACKAGE_SIGNATURE)break;
                 package[packageByteCursor++] = inByte;
             }
-            parseIncomingPackage(package, packageByteCursor);
+            if (packageByteCursor > 0) parseIncomingPackage(package, packageByteCursor);
         }
     }
 }
@@ -27,19 +28,43 @@ void CommunicationUnit::checkForIncome() {
 void CommunicationUnit::parseIncomingPackage(byte package[9], int packetSize) {
     switch (packetSize) {
         case 1: //timings Request?
+            Serial.println("1 Byte parsing");
+            if (bitRead(!package[0], 0) && bitRead(package[0], 1)) {
 
+            } else errorsCount++;
             break;
         case 2: //controlCommand?
-
+            Serial.println("2 Byte parsing");
+            if (bitRead(package[0], 0) && !bitRead(package[0], 1)) {
+                CameraStates cameraState = 0;
+                bitWrite(cameraState, 0, bitRead(package[1], 1));
+                bitWrite(cameraState, 1, bitRead(package[1], 2));
+                ControlCommandSet command{
+                        bitRead(package[0], 2),
+                        bitRead(package[0], 3),
+                        bitRead(package[0], 4),
+                        bitRead(package[0], 5),
+                        bitRead(package[0], 6),
+                        bitRead(package[0], 7),
+                        bitRead(package[1], 0),
+                        cameraState};
+                hostObject->executeCommand(command);
+            }
+            errorsCount++;
             break;
         case 9: //newTimings?
+            Serial.println("9 Byte parsing");
+            if (bitRead(package[0], 0) && bitRead(package[0], 1)) {
 
-            break;
-        case else:
+            }
             errorsCount++;
+            break;
+        default:
+            errorsCount++;
+            Serial.print("Errors: ");
+            Serial.println(errorsCount);
     }
-    if (packetSize > 0)Serial.write(package, packetSize);
-    Serial.println();
+
 }
 
 void CommunicationUnit::sendUpTimings() {
