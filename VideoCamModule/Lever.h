@@ -12,6 +12,8 @@ public:
 
     Lever();
 
+    bool isChangedFlag = false;
+
     const Lever &operator=(const Lever &B);
 
     bool isOn();
@@ -24,7 +26,6 @@ public:
 
     void checkState();
 
-    bool isChangedFlag = false;
 private:
     Timings *timings;
     bool state = false;

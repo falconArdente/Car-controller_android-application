@@ -6,16 +6,19 @@ const Timings appTimings{
         60, // BOUNCE_DELAY
         900, // REPEATER_DELAY
         3000, // FRONT_CAM_SHOWTIME_DELAY
-        3000}; // REAR_CAM_SHOWTIME_DELAY
+        1500}; // REAR_CAM_SHOWTIME_DELAY
 CameraLightTurnsSupplyController device;
-CommunicationUnit network = CommunicationUnit();
+CommunicationUnit network = CommunicationUnit(&device);
 
 void setup() {
     Serial.begin(9600);
     device = CameraLightTurnsSupplyController(appTimings);
     device.setChangeStateCallback(callbackTest);
+    //network.setUpdateTimingsCallback(updateTimings);
+
     device.setCommunicationDevice(network);
     device.initiate();
+    // device.network->*sendUpTimings(appTimings);
 }
 
 void loop() {
@@ -27,3 +30,5 @@ void loop() {
 void callbackTest(CameraStates state) {
     // empty for now
 }
+
+void updateTimings(Timings newTimings) {}

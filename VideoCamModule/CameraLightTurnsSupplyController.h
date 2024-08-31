@@ -2,32 +2,44 @@
 
 #include "Timings.h"
 #include "Lever.h"
-#include "CommunicationUnit.h"
+#include "CameraStatesEnum.h"
 #include <Arduino.h>
-
+#include "CommunicationUnit.h"
 
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 
 class CameraLightTurnsSupplyController {
 public:
-    typedef void (*ChangeStateCallback)(CameraStates);
- 
     CameraLightTurnsSupplyController(Timings appTimings);
 
     CameraLightTurnsSupplyController();
 
     const CameraLightTurnsSupplyController &operator=(const CameraLightTurnsSupplyController &B);
 
+    typedef void (*ChangeStateCallback)(CameraStates);
+
     void initiate();
 
+    bool isChangedFlag = false;
+
     void checkGearsLoopStep();
+
     void communicationLoopStep();
+
     void setChangeStateCallback(ChangeStateCallback callback);
+
     void setCommunicationDevice(CommunicationUnit network);
-    bool isChangedFlag=false;
-private:
+
+    void updateTimings(Timings newTimings);
+
+    void executeCommand(CommunicationUnit::ControlCommandSet command);
+
+    void sendUpTimings();
+
     CommunicationUnit network;
+private:
+
     Timings *timings;
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;

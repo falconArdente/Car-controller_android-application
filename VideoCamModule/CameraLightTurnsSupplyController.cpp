@@ -1,12 +1,9 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
+#include "CommunicationUnit.h"
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
     this->timings = &appTimings;
-}
-
-void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network) {
-    this->network = network;
 }
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
@@ -15,6 +12,10 @@ const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operat
         (const CameraLightTurnsSupplyController &B) {
     timings = B.timings;
     return *this;
+}
+
+void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network) {
+    this->network = network;
 }
 
 void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallback callback) {
@@ -37,31 +38,53 @@ void CameraLightTurnsSupplyController::initiate() {
     getGearsState();
 }
 
+void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
+    Serial.println("updatingTimingsPayload");
+}
+
+void
+CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
+    digitalWrite(outCautionSignal, command.cautionIsOn);
+    digitalWrite(outLeftFogLight, command.leftFogIsOn);
+    digitalWrite(outRightFogLight, command.rightFogIsOn);
+    digitalWrite(outRelayCameraSwitch, command.relayIsOn);
+    digitalWrite(outRearCamPower, command.rearCameraIsOn);
+    digitalWrite(outAngelEye, command.angelEyeIsOn);
+    digitalWrite(outDisplayOn, command.displayIsOn);
+    setCameraState(command.cameraState);
+}
+
+void CameraLightTurnsSupplyController::sendUpTimings() {
+    Serial.println("sendUpTimingsPayload");
+}
+
+
 void CameraLightTurnsSupplyController::communicationLoopStep() {
     if (!reverseGear.isChangedFlag && !leftTurnLever.isChangedFlag &&
-        !rightTurnLever.isChangedFlag && !isChangedFlag)
-        return;
-    CommunicationUnit::StateInfoSet state{
-            leftTurnLever.isOn(),
-            leftTurnLever.isDoubleClicked(),
-            rightTurnLever.isOn(),
-            rightTurnLever.isDoubleClicked(),
-            reverseGear.isOn(),
-            digitalRead(outCautionSignal),
-            digitalRead(outLeftFogLight),
-            digitalRead(outRightFogLight),
-            digitalRead(outRelayCameraSwitch),
-            digitalRead(outRearCamPower),
-            digitalRead(outAngelEye),
-            digitalRead(outDisplayOn),
-            cameraState,
-    };
-    network.package(state);
-    reverseGear.isChangedFlag = false;
-    leftTurnLever.isChangedFlag = false;
-    rightTurnLever.isChangedFlag = false;
-    isChangedFlag = false;
-
+        !rightTurnLever.isChangedFlag && !isChangedFlag) {
+        network.checkForIncome();
+    } else {
+        CommunicationUnit::StateInfoSet state{
+                leftTurnLever.isOn(),
+                leftTurnLever.isDoubleClicked(),
+                rightTurnLever.isOn(),
+                rightTurnLever.isDoubleClicked(),
+                reverseGear.isOn(),
+                digitalRead(outCautionSignal),
+                digitalRead(outLeftFogLight),
+                digitalRead(outRightFogLight),
+                digitalRead(outRelayCameraSwitch),
+                digitalRead(outRearCamPower),
+                digitalRead(outAngelEye),
+                digitalRead(outDisplayOn),
+                cameraState,
+        };
+        network.sendState(state);
+        reverseGear.isChangedFlag = false;
+        leftTurnLever.isChangedFlag = false;
+        rightTurnLever.isChangedFlag = false;
+        isChangedFlag = false;
+    }
 }
 
 void CameraLightTurnsSupplyController::checkGearsLoopStep() {
@@ -72,54 +95,27 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(REAR_CAM_ON);
             } else if (leftTurnLever.isDoubleClicked() || rightTurnLever.isDoubleClicked())
                 setCameraState(FRONT_CAM_ON);
-            this->isChangedFlag = true;
             break;
         case FRONT_CAM_ON:
             if (reverseGear.isOn()) {
                 setCameraState(REAR_CAM_ON);
             } else if (!leftTurnLever.isDoubleClicked()
                        && !rightTurnLever.isDoubleClicked()
-                       && isTimeOutForFront()
-                       && isTimeOutForRear())
+                       && isTimeOutForFront())
                 setCameraState(CAMS_OFF);
-            //this->isChangedFlag=true;
             break;
         case REAR_CAM_ON:
-            if ((!isTimeOutForFront() || leftTurnLever.isDoubleClicked() ||
+            if ((leftTurnLever.isDoubleClicked() ||
                  rightTurnLever.isDoubleClicked())
                 && !reverseGear.isOn()) {
                 setCameraState(FRONT_CAM_ON);
-            } else if (isTimeOutForRear())
+            } else if (isTimeOutForRear() && !reverseGear.isOn())
                 setCameraState(CAMS_OFF);
-            // this->isChangedFlag=true;
             break;
         case TEST_MODE:
-            //this->isChangedFlag=true;
             break;
     }
     if (!reverseGear.isOn() && cameraState != TEST_MODE)digitalWrite(outCautionSignal, LOW);
-}
-
-bool CameraLightTurnsSupplyController::isTimeOutForFront() {
-    unsigned long timeStamp = millis() - timings->FRONT_CAM_SHOWTIME_DELAY;
-    if (leftTurnLever.getLastTimeTurnedOff() < timeStamp
-        && rightTurnLever.getLastTimeTurnedOff() < timeStamp)
-        return true;
-    else
-        return false;
-}
-
-bool CameraLightTurnsSupplyController::isTimeOutForRear() {
-    if (reverseGear.getLastTimeTurnedOn() + timings->REAR_CAM_SHOWTIME_DELAY < millis())
-        return true;
-    else
-        return false;
-}
-
-void CameraLightTurnsSupplyController::getGearsState() {
-    reverseGear.checkState();
-    leftTurnLever.checkState();
-    rightTurnLever.checkState();
 }
 
 void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
@@ -133,6 +129,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outControllerLed, LOW);
             digitalWrite(outCautionSignal, LOW);
             turnOffFogLight();
+            this->isChangedFlag = true;
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
@@ -140,6 +137,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, HIGH);
+            this->isChangedFlag = true;
             turnOffFogLight();
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
                 digitalWrite(outCautionSignal, HIGH);
@@ -151,10 +149,10 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
             digitalWrite(outCautionSignal, LOW);
+            this->isChangedFlag = true;
             turnFogLightOn();
             break;
     }
-
     cameraState = state;
     if (changeStateCallback != NULL)changeStateCallback(state);
 }
@@ -162,7 +160,10 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
 void CameraLightTurnsSupplyController::turnFogLightOn() {
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
+    } else if (rightTurnLever.isOn()) {
+        digitalWrite(outRightFogLight, HIGH);
     } else {
+        digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
     }
 }
@@ -170,4 +171,26 @@ void CameraLightTurnsSupplyController::turnFogLightOn() {
 void CameraLightTurnsSupplyController::turnOffFogLight() {
     digitalWrite(outLeftFogLight, LOW);
     digitalWrite(outRightFogLight, LOW);
+}
+
+bool CameraLightTurnsSupplyController::isTimeOutForFront() {
+    unsigned long timeStamp = millis() - timings->FRONT_CAM_SHOWTIME_DELAY;
+    if (timeStamp < leftTurnLever.getLastTimeTurnedOn()
+        || timeStamp < rightTurnLever.getLastTimeTurnedOn())
+        return false;
+    else
+        return true;
+}
+
+bool CameraLightTurnsSupplyController::isTimeOutForRear() {
+    if (reverseGear.getLastTimeTurnedOn() + timings->REAR_CAM_SHOWTIME_DELAY < millis())
+        return true;
+    else
+        return false;
+}
+
+void CameraLightTurnsSupplyController::getGearsState() {
+    reverseGear.checkState();
+    leftTurnLever.checkState();
+    rightTurnLever.checkState();
 }
