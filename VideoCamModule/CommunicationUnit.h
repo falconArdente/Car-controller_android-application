@@ -51,22 +51,22 @@ public:
     void sendState(StateInfoSet stateSet);
 
     void sendTimings(Timings timings);
+
+    void sendAdditionalInfo();
 // virtual void checkForIncomingData()const=0;
 private:
+    CameraLightTurnsSupplyController *hostObject;
+    byte packageToSend[MAX_PACKAGE_SIZE];
+    int bytesToSend = 0;
+    int errorsCount = 0;
 
     void parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int packetSize);
 
     void commandToControllerDevice(byte package[MAX_PACKAGE_SIZE]);
 
-    CameraLightTurnsSupplyController *hostObject;
-
-    void sendUpTimings();
+    void newTimingsToControllerDevice(byte package[MAX_PACKAGE_SIZE]);
 
     void sendPackage(byte *packageToSend, int bytesToSend);
-
-    byte packageToSend[MAX_PACKAGE_SIZE];
-    int bytesToSend = 0;
-    int errorsCount = 0;
 };
 
 #endif

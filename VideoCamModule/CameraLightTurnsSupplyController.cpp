@@ -55,7 +55,7 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
-    Serial.println("sendUpTimingsPayload");
+    network.sendTimings(*timings);
 }
 
 
@@ -129,7 +129,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outControllerLed, LOW);
             digitalWrite(outCautionSignal, LOW);
             turnOffFogLight();
-            this->isChangedFlag = true;
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
@@ -137,7 +136,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outControllerLed, HIGH);
-            this->isChangedFlag = true;
             turnOffFogLight();
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
                 digitalWrite(outCautionSignal, HIGH);
@@ -149,10 +147,10 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
             digitalWrite(outCautionSignal, LOW);
-            this->isChangedFlag = true;
             turnFogLightOn();
             break;
     }
+    this->isChangedFlag = true;
     cameraState = state;
     if (changeStateCallback != NULL)changeStateCallback(state);
 }

@@ -39,7 +39,6 @@ public:
 
     CommunicationUnit network;
 private:
-
     Timings *timings;
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
