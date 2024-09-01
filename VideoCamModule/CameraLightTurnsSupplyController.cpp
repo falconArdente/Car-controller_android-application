@@ -93,6 +93,7 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(FRONT_CAM_ON);
             break;
         case FRONT_CAM_ON:
+                  turnFogLightOn();      
             if (reverseGear.isOn()) {
                 setCameraState(REAR_CAM_ON);
             } else if (!leftTurnLever.isDoubleClicked()
@@ -136,14 +137,13 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
                 digitalWrite(outCautionSignal, HIGH);
             break;
-        case FRONT_CAM_ON:
+        case FRONT_CAM_ON: // Fog lights turn on logic is inside checkGearsLoopStep case
             digitalWrite(outDisplayOn, HIGH);
             digitalWrite(outAngelEye, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
-            digitalWrite(outCautionSignal, LOW);
-            turnFogLightOn();
+            digitalWrite(outCautionSignal, LOW);            
             break;
     }
     this->isChangedFlag = true;
@@ -154,8 +154,10 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
 void CameraLightTurnsSupplyController::turnFogLightOn() {
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
+        digitalWrite(outRightFogLight, LOW);
     } else if (rightTurnLever.isOn()) {
         digitalWrite(outRightFogLight, HIGH);
+        digitalWrite(outLeftFogLight, LOW);
     } else {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
