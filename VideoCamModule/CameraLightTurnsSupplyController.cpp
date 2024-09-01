@@ -1,6 +1,7 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
 #include "CommunicationUnit.h"
+#include "Utils.cpp"
 #include <EEPROM.h>
 
 const int TIMINGS_ADDR = 0;
@@ -33,7 +34,8 @@ void CameraLightTurnsSupplyController::initiate() {
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
-    Serial.println("updatingTimingsPayload");
+    timings = newTimings;
+    putTimingsToStorage();
 }
 
 void
@@ -190,7 +192,7 @@ void CameraLightTurnsSupplyController::getGearsState() {
 void CameraLightTurnsSupplyController::getTimingsFromStorage() {
     Timings timingsFromStorage;
     EEPROM.get(TIMINGS_ADDR, timingsFromStorage);
-    byte checkByte = crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
+    byte checkByte = utils::crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
     timingsFromStorage.crc = 0;
     if (checkByte == 0) {
         if (!(timings == timingsFromStorage)) timings = timingsFromStorage;
@@ -204,18 +206,6 @@ void CameraLightTurnsSupplyController::getTimingsFromStorage() {
 }
 
 void CameraLightTurnsSupplyController::putTimingsToStorage() {
-    timings.crc = crc8((byte * ) & timings, sizeof(timings));
+    timings.crc = utils::crc8((byte * ) & timings, sizeof(timings));
     EEPROM.put(TIMINGS_ADDR, timings);
-}
-
-byte CameraLightTurnsSupplyController::crc8(byte *buffer, byte size) {
-    byte crc = 0;
-    for (byte i = 0; i < size; i++) {
-        byte data = buffer[i];
-        for (int j = 8; j > 0; j--) {
-            crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
-            data >>= 1;
-        }
-    }
-    return crc;
 }

@@ -85,6 +85,7 @@ void CommunicationUnit::sendPackage(byte *packageToSend, int bytesToSend) {
         Serial.write(packageToSend[i]);
         Serial.write(END_PACKAGE_SIGNATURE);
     }
+    //TODO crc8 byte add
 }
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {
