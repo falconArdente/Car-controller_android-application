@@ -13,12 +13,13 @@
 class CameraLightTurnsSupplyController {
 public:
     CameraLightTurnsSupplyController();
+
     typedef void (*ChangeStateCallback)(CameraStates);
 
     void initiate();
 
     bool isChangedFlag = false;
-    
+
     void checkGearsLoopStep();
 
     void communicationLoopStep();
@@ -35,12 +36,12 @@ public:
 
     CommunicationUnit network;
 private:
-    Timings timings=Timings( //default one
-        60, // BOUNCE_DELAY
-        900, // REPEATER_DELAY
-        3000, // FRONT_CAM_SHOWTIME_DELAY
-        1500); // REAR_CAM_SHOWTIME_DELAY
-       
+    Timings timings = Timings( //default one
+            60, // BOUNCE_DELAY
+            900, // REPEATER_DELAY
+            3000, // FRONT_CAM_SHOWTIME_DELAY
+            1500); // REAR_CAM_SHOWTIME_DELAY
+
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
 //input gears
@@ -68,8 +69,11 @@ private:
     void turnFogLightOn();
 
     void turnOffFogLight();
+
     void getTimingsFromStorage();
+
     void putTimingsToStorage();
+
     byte crc8(byte *buffer, byte size);
 };
 

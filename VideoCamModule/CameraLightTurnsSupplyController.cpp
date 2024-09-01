@@ -3,7 +3,7 @@
 #include "CommunicationUnit.h"
 #include <EEPROM.h>
 
- const int TIMINGS_ADDR = 0;
+const int TIMINGS_ADDR = 0;
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
@@ -186,33 +186,36 @@ void CameraLightTurnsSupplyController::getGearsState() {
     leftTurnLever.checkState();
     rightTurnLever.checkState();
 }
-    void CameraLightTurnsSupplyController::getTimingsFromStorage(){
-     Timings timingsFromStorage;
-     EEPROM.get(TIMINGS_ADDR, timingsFromStorage); 
-     byte checkByte=crc8((byte*) &timingsFromStorage, sizeof(timingsFromStorage));
-     timingsFromStorage.crc=0;
-     if (checkByte==0){
-      if(!(timings==timingsFromStorage)) timings=timingsFromStorage;
-     }else{
-      setCameraState(TEST_MODE);
-      digitalWrite(outCautionSignal, HIGH);
-      delay(1500);
-      digitalWrite(outCautionSignal, LOW);
-      setCameraState(CAMS_OFF);
-     }
+
+void CameraLightTurnsSupplyController::getTimingsFromStorage() {
+    Timings timingsFromStorage;
+    EEPROM.get(TIMINGS_ADDR, timingsFromStorage);
+    byte checkByte = crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
+    timingsFromStorage.crc = 0;
+    if (checkByte == 0) {
+        if (!(timings == timingsFromStorage)) timings = timingsFromStorage;
+    } else {
+        setCameraState(TEST_MODE);
+        digitalWrite(outCautionSignal, HIGH);
+        delay(1500);
+        digitalWrite(outCautionSignal, LOW);
+        setCameraState(CAMS_OFF);
     }
-    void CameraLightTurnsSupplyController::putTimingsToStorage(){
-     timings.crc=crc8((byte*) &timings, sizeof(timings));
-      EEPROM.put(TIMINGS_ADDR, timings);
+}
+
+void CameraLightTurnsSupplyController::putTimingsToStorage() {
+    timings.crc = crc8((byte * ) & timings, sizeof(timings));
+    EEPROM.put(TIMINGS_ADDR, timings);
+}
+
+byte CameraLightTurnsSupplyController::crc8(byte *buffer, byte size) {
+    byte crc = 0;
+    for (byte i = 0; i < size; i++) {
+        byte data = buffer[i];
+        for (int j = 8; j > 0; j--) {
+            crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+            data >>= 1;
+        }
     }
-    byte CameraLightTurnsSupplyController::crc8(byte *buffer, byte size) {
-  byte crc = 0;
-  for (byte i = 0; i < size; i++) {
-    byte data = buffer[i];
-    for (int j = 8; j > 0; j--) {
-      crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
-      data >>= 1;
-    }
-  }
-  return crc;
+    return crc;
 }

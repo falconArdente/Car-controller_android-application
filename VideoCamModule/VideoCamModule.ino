@@ -2,7 +2,7 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
 
-CameraLightTurnsSupplyController device=CameraLightTurnsSupplyController();
+CameraLightTurnsSupplyController device = CameraLightTurnsSupplyController();
 CommunicationUnit network = CommunicationUnit(&device);
 
 void setup() {
