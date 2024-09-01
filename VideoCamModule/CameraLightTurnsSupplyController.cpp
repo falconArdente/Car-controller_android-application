@@ -1,18 +1,11 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
 #include "CommunicationUnit.h"
+#include <EEPROM.h>
 
-CameraLightTurnsSupplyController::CameraLightTurnsSupplyController(Timings appTimings) {
-    this->timings = &appTimings;
-}
+const int TIMINGS_ADDR = 0;
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
-
-const CameraLightTurnsSupplyController &CameraLightTurnsSupplyController::operator=
-        (const CameraLightTurnsSupplyController &B) {
-    timings = B.timings;
-    return *this;
-}
 
 void CameraLightTurnsSupplyController::setCommunicationDevice(CommunicationUnit network) {
     this->network = network;
@@ -31,10 +24,11 @@ void CameraLightTurnsSupplyController::initiate() {
     pinMode(outRightFogLight, OUTPUT);
     pinMode(outRelayCameraSwitch, OUTPUT);
     pinMode(outControllerLed, OUTPUT);
-    reverseGear = Lever(A1, timings);
-    leftTurnLever = Lever(A0, timings);
-    rightTurnLever = Lever(12, timings);
+    reverseGear = Lever(A1, &timings);
+    leftTurnLever = Lever(A0, &timings);
+    rightTurnLever = Lever(12, &timings);
     setCameraState(CAMS_OFF);
+    getTimingsFromStorage();
     getGearsState();
 }
 
@@ -55,7 +49,7 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
-    network.sendTimings(*timings);
+    network.sendTimings(timings);
 }
 
 
@@ -172,7 +166,7 @@ void CameraLightTurnsSupplyController::turnOffFogLight() {
 }
 
 bool CameraLightTurnsSupplyController::isTimeOutForFront() {
-    unsigned long timeStamp = millis() - timings->FRONT_CAM_SHOWTIME_DELAY;
+    unsigned long timeStamp = millis() - timings.FRONT_CAM_SHOWTIME_DELAY;
     if (timeStamp < leftTurnLever.getLastTimeTurnedOn()
         || timeStamp < rightTurnLever.getLastTimeTurnedOn())
         return false;
@@ -181,7 +175,7 @@ bool CameraLightTurnsSupplyController::isTimeOutForFront() {
 }
 
 bool CameraLightTurnsSupplyController::isTimeOutForRear() {
-    if (reverseGear.getLastTimeTurnedOn() + timings->REAR_CAM_SHOWTIME_DELAY < millis())
+    if (reverseGear.getLastTimeTurnedOn() + timings.REAR_CAM_SHOWTIME_DELAY < millis())
         return true;
     else
         return false;
@@ -191,4 +185,37 @@ void CameraLightTurnsSupplyController::getGearsState() {
     reverseGear.checkState();
     leftTurnLever.checkState();
     rightTurnLever.checkState();
+}
+
+void CameraLightTurnsSupplyController::getTimingsFromStorage() {
+    Timings timingsFromStorage;
+    EEPROM.get(TIMINGS_ADDR, timingsFromStorage);
+    byte checkByte = crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
+    timingsFromStorage.crc = 0;
+    if (checkByte == 0) {
+        if (!(timings == timingsFromStorage)) timings = timingsFromStorage;
+    } else {
+        setCameraState(TEST_MODE);
+        digitalWrite(outCautionSignal, HIGH);
+        delay(1500);
+        digitalWrite(outCautionSignal, LOW);
+        setCameraState(CAMS_OFF);
+    }
+}
+
+void CameraLightTurnsSupplyController::putTimingsToStorage() {
+    timings.crc = crc8((byte * ) & timings, sizeof(timings));
+    EEPROM.put(TIMINGS_ADDR, timings);
+}
+
+byte CameraLightTurnsSupplyController::crc8(byte *buffer, byte size) {
+    byte crc = 0;
+    for (byte i = 0; i < size; i++) {
+        byte data = buffer[i];
+        for (int j = 8; j > 0; j--) {
+            crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
+            data >>= 1;
+        }
+    }
+    return crc;
 }
