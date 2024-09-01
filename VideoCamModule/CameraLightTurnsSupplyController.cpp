@@ -93,7 +93,7 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(FRONT_CAM_ON);
             break;
         case FRONT_CAM_ON:
-                  turnFogLightOn();      
+            turnFogLightOn();
             if (reverseGear.isOn()) {
                 setCameraState(REAR_CAM_ON);
             } else if (!leftTurnLever.isDoubleClicked()
@@ -143,7 +143,7 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
-            digitalWrite(outCautionSignal, LOW);            
+            digitalWrite(outCautionSignal, LOW);
             break;
     }
     this->isChangedFlag = true;
