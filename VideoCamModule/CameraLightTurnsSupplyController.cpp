@@ -1,6 +1,7 @@
 #include "Timings.h"
 #include "CameraLightTurnsSupplyController.h"
 #include "CommunicationUnit.h"
+#include "Utils.cpp"
 #include <EEPROM.h>
 
 const int TIMINGS_ADDR = 0;
@@ -33,7 +34,8 @@ void CameraLightTurnsSupplyController::initiate() {
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
-    Serial.println("updatingTimingsPayload");
+    timings = newTimings;
+    putTimingsToStorage();
 }
 
 void
@@ -91,6 +93,7 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
                 setCameraState(FRONT_CAM_ON);
             break;
         case FRONT_CAM_ON:
+            turnFogLightOn();
             if (reverseGear.isOn()) {
                 setCameraState(REAR_CAM_ON);
             } else if (!leftTurnLever.isDoubleClicked()
@@ -134,14 +137,13 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
                 digitalWrite(outCautionSignal, HIGH);
             break;
-        case FRONT_CAM_ON:
+        case FRONT_CAM_ON: // Fog lights turn on logic is inside checkGearsLoopStep case
             digitalWrite(outDisplayOn, HIGH);
             digitalWrite(outAngelEye, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outControllerLed, HIGH);
             digitalWrite(outCautionSignal, LOW);
-            turnFogLightOn();
             break;
     }
     this->isChangedFlag = true;
@@ -152,8 +154,10 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
 void CameraLightTurnsSupplyController::turnFogLightOn() {
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
+        digitalWrite(outRightFogLight, LOW);
     } else if (rightTurnLever.isOn()) {
         digitalWrite(outRightFogLight, HIGH);
+        digitalWrite(outLeftFogLight, LOW);
     } else {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
@@ -190,7 +194,7 @@ void CameraLightTurnsSupplyController::getGearsState() {
 void CameraLightTurnsSupplyController::getTimingsFromStorage() {
     Timings timingsFromStorage;
     EEPROM.get(TIMINGS_ADDR, timingsFromStorage);
-    byte checkByte = crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
+    byte checkByte = utils::crc8((byte * ) & timingsFromStorage, sizeof(timingsFromStorage));
     timingsFromStorage.crc = 0;
     if (checkByte == 0) {
         if (!(timings == timingsFromStorage)) timings = timingsFromStorage;
@@ -204,18 +208,6 @@ void CameraLightTurnsSupplyController::getTimingsFromStorage() {
 }
 
 void CameraLightTurnsSupplyController::putTimingsToStorage() {
-    timings.crc = crc8((byte * ) & timings, sizeof(timings));
+    timings.crc = utils::crc8((byte * ) & timings, sizeof(timings));
     EEPROM.put(TIMINGS_ADDR, timings);
-}
-
-byte CameraLightTurnsSupplyController::crc8(byte *buffer, byte size) {
-    byte crc = 0;
-    for (byte i = 0; i < size; i++) {
-        byte data = buffer[i];
-        for (int j = 8; j > 0; j--) {
-            crc = ((crc ^ data) & 1) ? (crc >> 1) ^ 0x8C : (crc >> 1);
-            data >>= 1;
-        }
-    }
-    return crc;
 }

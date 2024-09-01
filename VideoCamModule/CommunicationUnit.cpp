@@ -9,15 +9,15 @@ CommunicationUnit::CommunicationUnit(CameraLightTurnsSupplyController *hostPoint
 CommunicationUnit::CommunicationUnit() {}
 
 void CommunicationUnit::checkForIncome() {
-    char target[] = {'s', 'a'};  //{NEW_LINE,START_PACKAGE_SIGNATURE};
+    char target[2] = {BORDER_OF_PACKAGE_SIGN,START_PACKAGE_SIGNATURE};  
     if (Serial.available()) {
-        if (Serial.find(target, 2)) {
+        if (Serial.find(target, sizeof(target))) {
             byte package[9];
             int packageByteCursor = 0;
             byte inByte = 0;
             while (packageByteCursor < MAX_PACKAGE_SIZE) {
                 inByte = Serial.read();
-                if (inByte == END_PACKAGE_SIGNATURE)break;
+                if (inByte == BORDER_OF_PACKAGE_SIGN)break;
                 package[packageByteCursor++] = inByte;
             }
             if (packageByteCursor > 0) parseIncomingPackage(package, packageByteCursor);
@@ -81,10 +81,12 @@ void CommunicationUnit::commandToControllerDevice(byte package[MAX_PACKAGE_SIZE]
 
 void CommunicationUnit::sendPackage(byte *packageToSend, int bytesToSend) {
     for (int i = 0; i < bytesToSend; i++) {
+        Serial.write(BORDER_OF_PACKAGE_SIGN);
         Serial.write(START_PACKAGE_SIGNATURE);
         Serial.write(packageToSend[i]);
-        Serial.write(END_PACKAGE_SIGNATURE);
+        Serial.write(BORDER_OF_PACKAGE_SIGN);
     }
+    //TODO crc8 byte add
 }
 
 void CommunicationUnit::sendState(StateInfoSet stateSet) {

@@ -12,7 +12,7 @@ class CameraLightTurnsSupplyController;
 class CommunicationUnit {
 public:
     static const char START_PACKAGE_SIGNATURE = '█';
-    static const char END_PACKAGE_SIGNATURE = '\n';
+    static const char BORDER_OF_PACKAGE_SIGN = '\n';
     static const int MAX_PACKAGE_SIZE = 9;
     struct StateInfoSet {
         bool leftPressed;

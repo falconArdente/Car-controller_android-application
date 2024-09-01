@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Arduino.h>
-
 #include "Timings.h"
 #include "Lever.h"
 #include "CameraStatesEnum.h"
@@ -73,8 +72,6 @@ private:
     void getTimingsFromStorage();
 
     void putTimingsToStorage();
-
-    byte crc8(byte *buffer, byte size);
 };
 
 #endif
