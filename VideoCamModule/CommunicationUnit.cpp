@@ -1,15 +1,14 @@
 #include "CommunicationUnit.h"
+#include "ControllerForCommUnitInterface.h"
 
-#include "CameraLightTurnsSupplyController.h"
-
-CommunicationUnit::CommunicationUnit(CameraLightTurnsSupplyController *hostPointer) {
+CommunicationUnit::CommunicationUnit(ControllerForCommUnitInterface *hostPointer) {
     hostObject = hostPointer;
 }
 
 CommunicationUnit::CommunicationUnit() {}
 
 void CommunicationUnit::checkForIncome() {
-    char target[2] = {BORDER_OF_PACKAGE_SIGN,START_PACKAGE_SIGNATURE};  
+    char target[2] = {BORDER_OF_PACKAGE_SIGN, START_PACKAGE_SIGNATURE};
     if (Serial.available()) {
         if (Serial.find(target, sizeof(target))) {
             byte package[9];

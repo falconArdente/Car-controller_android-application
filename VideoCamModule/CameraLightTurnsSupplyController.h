@@ -5,11 +5,12 @@
 #include "Lever.h"
 #include "CameraStatesEnum.h"
 #include "CommunicationUnit.h"
+#include "ControllerForCommUnitInterface.h"
 
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 
-class CameraLightTurnsSupplyController {
+class CameraLightTurnsSupplyController: public ControllerForCommUnitInterface {
 public:
     CameraLightTurnsSupplyController();
 
@@ -32,10 +33,10 @@ public:
     void executeCommand(CommunicationUnit::ControlCommandSet command);
 
     void sendUpTimings();
-
-    CommunicationUnit network;
+  
 private:
-    Timings timings = Timings( //default one
+      CommunicationUnit network;
+      Timings timings = Timings( //default one
             60, // BOUNCE_DELAY
             900, // REPEATER_DELAY
             3000, // FRONT_CAM_SHOWTIME_DELAY

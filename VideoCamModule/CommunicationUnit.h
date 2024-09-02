@@ -3,11 +3,11 @@
 #include <Arduino.h>
 #include "CameraStatesEnum.h"
 #include "Timings.h"
-//
+
 #ifndef COMINT_H
 #define COMINT_H
 
-class CameraLightTurnsSupplyController;
+class ControllerForCommUnitInterface;
 
 class CommunicationUnit {
 public:
@@ -40,7 +40,7 @@ public:
         CameraStates cameraState;
     };
 
-    CommunicationUnit(CameraLightTurnsSupplyController *hostObject);
+    CommunicationUnit(ControllerForCommUnitInterface *hostObject);
 
     CommunicationUnit();
 
@@ -53,9 +53,9 @@ public:
     void sendTimings(Timings timings);
 
     void sendAdditionalInfo();
-// virtual void checkForIncomingData()const=0;
-private:
-    CameraLightTurnsSupplyController *hostObject;
+
+protected:
+    ControllerForCommUnitInterface *hostObject;
     byte packageToSend[MAX_PACKAGE_SIZE];
     int bytesToSend = 0;
     int errorsCount = 0;
