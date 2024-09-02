@@ -53,8 +53,8 @@ public:
     void sendTimings(Timings timings);
 
     void sendAdditionalInfo();
-// virtual void checkForIncomingData()const=0;
-private:
+
+protected:
     ControllerForCommUnitInterface *hostObject;
     byte packageToSend[MAX_PACKAGE_SIZE];
     int bytesToSend = 0;

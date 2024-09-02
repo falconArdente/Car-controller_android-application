@@ -1,5 +1,4 @@
 #include "CommunicationUnit.h"
-
 #include "ControllerForCommUnitInterface.h"
 
 CommunicationUnit::CommunicationUnit(ControllerForCommUnitInterface *hostPointer) {
