@@ -1,6 +1,6 @@
 package com.example.carcamerasandlightsbluetooth.domain.model
 
-class ControlCommand(
+data class ControlCommand(
     var cautionIsOn: Boolean,
     var leftFogIsOn: Boolean,
     var rightFogIsOn: Boolean,
