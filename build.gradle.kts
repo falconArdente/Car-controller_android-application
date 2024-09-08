@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.carcamerasandlightsbluetooth"
-        minSdk = 27
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -36,7 +36,11 @@ android {
 }
 
 dependencies {
-
+    implementation("io.insert-koin:koin-android:3.5.6")
+    implementation("com.github.weliem:blessed-kotlin:3.0.7")
+    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("com.markodevcic:peko:3.0.5")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
