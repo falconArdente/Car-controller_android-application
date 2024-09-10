@@ -3,6 +3,7 @@ package com.example.carcamerasandlightsbluetooth.data.bluetooth
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.util.Log
@@ -49,5 +50,17 @@ class BLEssedCentral {
         awaitClose {
             scanningJob?.cancel()//  cleanup
         }
+    }
+
+    private fun getFilterByName(deviceName: String): ScanFilter {
+        return ScanFilter.Builder()
+            .setDeviceName(deviceName)
+            .build()
+    }
+
+    private fun getFilterByAddress(deviceAddress: String): ScanFilter {
+        return ScanFilter.Builder()
+            .setDeviceAddress(deviceAddress)
+            .build()
     }
 }
