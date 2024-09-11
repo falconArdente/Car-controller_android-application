@@ -52,6 +52,60 @@ class BLEssedCentral {
         }
     }
 
+    suspend fun startScanByName(nameToScan: String): Flow<List<ScanResult>> = callbackFlow {
+        scanningJob?.cancel()
+        val scanCallback: ScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                trySend(listOf(result)).isSuccess
+            }
+
+            override fun onBatchScanResults(results: List<ScanResult?>?) {
+                if (results != null && !results.isNullOrEmpty()) {
+                    trySend(results.mapNotNull { scanResult ->
+                        scanResult!!
+                    }).isSuccess
+                }
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                Log.d("BLEssedScann", "fail")
+            }
+        }
+        scanningJob = launch {
+            scanner.startScan(listOf(getFilterByName(nameToScan)), scanSettings, scanCallback)
+        }
+        awaitClose {
+            scanningJob?.cancel()//  cleanup
+        }
+    }
+
+    suspend fun startScanByAddress(macToScan: String): Flow<List<ScanResult>> = callbackFlow {
+        scanningJob?.cancel()
+        val scanCallback: ScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                trySend(listOf(result)).isSuccess
+            }
+
+            override fun onBatchScanResults(results: List<ScanResult?>?) {
+                if (results != null && !results.isNullOrEmpty()) {
+                    trySend(results.mapNotNull { scanResult ->
+                        scanResult!!
+                    }).isSuccess
+                }
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                Log.d("BLEssedScann", "fail")
+            }
+        }
+        scanningJob = launch {
+            scanner.startScan(listOf(getFilterByAddress(macToScan)), scanSettings, scanCallback)
+        }
+        awaitClose {
+            scanningJob?.cancel()//  cleanup
+        }
+    }
+
     private fun getFilterByName(deviceName: String): ScanFilter {
         return ScanFilter.Builder()
             .setDeviceName(deviceName)
