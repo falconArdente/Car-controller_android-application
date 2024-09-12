@@ -14,12 +14,13 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 
 class BLEssedCentral {
+    private var scanCallback: ScanCallback?=null
     private var adapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var scanner: BluetoothLeScanner = adapter.bluetoothLeScanner
     private val scanSettings = ScanSettings.Builder()
         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
         .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-        .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+        .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
         .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT)
         .setReportDelay(3L)
         .build()
@@ -41,10 +42,11 @@ class BLEssedCentral {
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScann", "fail")
+                Log.d("BLEssedScan", "fail")
             }
         }
         scanningJob = launch {
+            Log.d("BEL", "launchScan")
             scanner.startScan(null, scanSettings, scanCallback)
         }
         awaitClose {
@@ -116,5 +118,9 @@ class BLEssedCentral {
         return ScanFilter.Builder()
             .setDeviceAddress(deviceAddress)
             .build()
+    }
+    fun stopScan(){
+        scanningJob?.cancel()
+        scanner.stopScan(scanCallback)
     }
 }
