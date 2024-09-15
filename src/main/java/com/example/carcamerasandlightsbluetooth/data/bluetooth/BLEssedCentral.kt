@@ -11,7 +11,6 @@ import android.bluetooth.BluetoothGatt.GATT_FAILURE
 import android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -76,33 +75,8 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
         }
     }
 
-    suspend fun startScanByName(nameToScan: String): Flow<List<ScanResult>> = callbackFlow {
-        scanJob?.let { scanJob!!.cancel() }
-        val scanCallback: ScanCallback = object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) {
-                trySend(listOf(result)).isSuccess
-            }
-
-            override fun onBatchScanResults(results: List<ScanResult?>?) {
-                if (results != null && !results.isNullOrEmpty()) {
-                    trySend(results.mapNotNull { scanResult ->
-                        scanResult!!
-                    }).isSuccess
-                }
-            }
-
-            override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScann", "fail")
-            }
-        }
-        scanner.startScan(null, scanSettings, scanCallback)
-        awaitClose {
-            stopScan()
-        }
-    }
-
     suspend fun startScanByAddress(macToScan: String): Flow<List<ScanResult>> = callbackFlow {
-        scanJob?.let { scanJob!!.cancel() }
+        scanJob?.cancel()
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 trySend(listOf(result)).isSuccess
@@ -124,12 +98,6 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
         awaitClose {
             stopScan()
         }
-    }
-
-    private fun getFilterByName(deviceName: String): ScanFilter {
-        return ScanFilter.Builder()
-            .setDeviceName(deviceName)
-            .build()
     }
 
     private fun getFilterByAddress(deviceAddress: String): ScanFilter {
@@ -139,7 +107,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
     }
 
     fun stopScan() {
-        scanJob?.let { scanJob!!.cancel() }
+        scanJob?.cancel()
 
     }
 
@@ -170,53 +138,11 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                                     characteristic,
                                     true
                                 )
-                                delay(450L)
                             }
-                            if (characteristic.supportsReading()) {
-                                gatt.readCharacteristic(characteristic)
-                                delay(450L)
-                            }
-                            if (characteristic.descriptors.size > 0) {
-                                characteristic.descriptors.forEach { descriptor ->
-                                    if (descriptor.uuid.toString() == "00002902-0000-1000-8000-00805f9b34fb") {
-                                        descriptor.setValue(byteArrayOf(1, 1))
-                                        Log.d("BEL", "write to descriptor ${descriptor.uuid}")
-                                        delay(300L)
-                                    }
-
-                                    val res = gatt.readDescriptor(descriptor)
-                                    Log.d("BEL", "descr uuid ${descriptor.uuid} try to read $res")
-                                }
-                            }
-
                         }
                     }
                 }
             }
-        }
-
-        override fun onDescriptorRead(
-            gatt: BluetoothGatt?,
-            descriptor: BluetoothGattDescriptor?,
-            status: Int
-        ) {
-            Log.d(
-                "BEL",
-                "onDescriptorDeprRead ${descriptor!!.uuid} with value ${descriptor.value.asList()}"
-            )
-            super.onDescriptorRead(gatt, descriptor, status)
-        }
-
-        override fun onDescriptorWrite(
-            gatt: BluetoothGatt?,
-            descriptor: BluetoothGattDescriptor?,
-            status: Int
-        ) {
-            Log.d(
-                "BEL",
-                "descriptor ${descriptor?.uuid} writen with value ${descriptor?.value?.asList()}"
-            )
-            super.onDescriptorWrite(gatt, descriptor, status)
         }
 
         override fun onCharacteristicChanged(
@@ -263,12 +189,9 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                     gatt.close()
                 }
             } else {
-                // Произошла ошибка... разбираемся, что случилось!
                 Log.d("BEL", "Произошла ошибка... разбираемся, что случилось!")
                 gatt.close()
                 gatt.disconnect()
-
-
                 gatt.connect()
             }
         }
