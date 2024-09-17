@@ -46,10 +46,8 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
         .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT)
         .setReportDelay(3L)
         .build()
-    private var scanningRunnable: Runnable? = null
 
     suspend fun startRawScan(): Flow<List<ScanResult>> = callbackFlow {
-        scanJob?.let { scanJob!!.cancel() }
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 trySend(listOf(result)).isSuccess
@@ -67,6 +65,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 Log.d("BLEssedScan", "fail")
             }
         }
+        scanJob?.cancel()
         scanner.startScan(null, scanSettings, scanCallback)
         awaitClose {
             stopScan()
@@ -74,7 +73,6 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
     }
 
     suspend fun startScanByAddress(macToScan: String): Flow<List<ScanResult>> = callbackFlow {
-        scanJob?.cancel()
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 trySend(listOf(result)).isSuccess
@@ -92,6 +90,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 Log.d("BLEssedScann", "fail")
             }
         }
+        scanJob?.cancel()
         scanner.startScan(null, scanSettings, scanCallback)
         awaitClose {
             stopScan()
@@ -106,10 +105,9 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
 
     fun stopScan() {
         scanJob?.cancel()
-
     }
 
-    suspend fun connectTo(device: BluetoothDevice): Flow<String> = callbackFlow {
+    suspend fun connectTo(device: BluetoothDevice): Flow<ByteArray> = callbackFlow {
         val connectionStateCallback = object : BluetoothGattCallback() {
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gatt, status)
@@ -147,14 +145,13 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 gatt: BluetoothGatt?,
                 characteristic: BluetoothGattCharacteristic?
             ) {
-                trySend("Depricated chracteristic changed ${characteristic?.uuid} with value ${characteristic?.value?.asList()}")
+                if (characteristic?.value != null) trySend(characteristic.value!!)
             }
 
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (status == GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         val bondstate: Int? = controllerDevice?.getBondState()
-
                         // Обрабатываем bondState
                         if (bondstate == BOND_NONE || bondstate == BOND_BONDED) {
                             // Подключились к устройству, вызываем discoverServices с задержкой
@@ -191,9 +188,6 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 }
             }
         }
-
-
-
         Log.d("BEL", "connecting to ${device.name}")
         controllerDevice = device
         val gatt: BluetoothGatt =
