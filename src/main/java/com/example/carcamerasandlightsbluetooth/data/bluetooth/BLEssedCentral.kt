@@ -119,30 +119,30 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 gatt?.disconnect()
                 return
             }
-            scope.launch {
-                gatt!!.services.forEach { gattService ->
-                    Log.d(
-                        "BEL",
-                        "Discovered ${gattService.uuid} service:"
-                    )
-                    if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
-                        gattService.characteristics.forEach { characteristic ->
-                            Log.d(
-                                "BEL",
-                                "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
+
+            gatt!!.services.forEach { gattService ->
+                Log.d(
+                    "BEL",
+                    "Discovered ${gattService.uuid} service:"
+                )
+                if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
+                    gattService.characteristics.forEach { characteristic ->
+                        Log.d(
+                            "BEL",
+                            "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
+                        )
+                        Log.d("BEL", "has properties ${characteristic.properties}")
+                        if (characteristic.supportsNotify()) {
+                            Log.d("BEL", "try notify to ${characteristic.uuid}")
+                            gatt.setCharacteristicNotification(
+                                characteristic,
+                                true
                             )
-                            Log.d("BEL", "has properties ${characteristic.properties}")
-                            if (characteristic.supportsNotify()) {
-                                Log.d("BEL", "try notify to ${characteristic.uuid}")
-                                gatt.setCharacteristicNotification(
-                                    characteristic,
-                                    true
-                                )
-                            }
                         }
                     }
                 }
             }
+
         }
 
         override fun onCharacteristicChanged(
