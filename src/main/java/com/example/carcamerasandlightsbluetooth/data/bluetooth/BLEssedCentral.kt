@@ -28,10 +28,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 
 
 class BLEssedCentral(private val context: Activity, private val scope: CoroutineScope) {
@@ -111,98 +109,97 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
 
     }
 
-    private val connectionStateCallback = object : BluetoothGattCallback() {
-        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            super.onServicesDiscovered(gatt, status)
-            if (status == GATT_FAILURE) {
-                Log.d("BEL", "Service discovery failed")
-                gatt?.disconnect()
-                return
-            }
-
-            gatt!!.services.forEach { gattService ->
-                Log.d(
-                    "BEL",
-                    "Discovered ${gattService.uuid} service:"
-                )
-                if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
-                    gattService.characteristics.forEach { characteristic ->
-                        Log.d(
-                            "BEL",
-                            "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
-                        )
-                        Log.d("BEL", "has properties ${characteristic.properties}")
-                        if (characteristic.supportsNotify()) {
-                            Log.d("BEL", "try notify to ${characteristic.uuid}")
-                            gatt.setCharacteristicNotification(
-                                characteristic,
-                                true
-                            )
-                        }
-                    }
+    suspend fun connectTo(device: BluetoothDevice): Flow<String> = callbackFlow {
+        val connectionStateCallback = object : BluetoothGattCallback() {
+            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                super.onServicesDiscovered(gatt, status)
+                if (status == GATT_FAILURE) {
+                    Log.d("BEL", "Service discovery failed")
+                    gatt?.disconnect()
                 }
-            }
 
-        }
-
-        override fun onCharacteristicChanged(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic?
-        ) {
-            Log.d(
-                "BEL",
-                "Depricated chracteristic changed ${characteristic?.uuid} with value ${characteristic?.value?.asList()}"
-            )
-        }
-
-        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            if (status == GATT_SUCCESS) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    val bondstate: Int? = controllerDevice?.getBondState()
-
-                    // Обрабатываем bondState
-                    if (bondstate == BOND_NONE || bondstate == BOND_BONDED) {
-                        // Подключились к устройству, вызываем discoverServices с задержкой
-                        var delayWhenBonded = 0
-                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N) {
-                            delayWhenBonded = 1000
-                        }
-                        val delay = if (bondstate == BOND_BONDED) delayWhenBonded else 0
-                        discoverServicesRunnable = Runnable {
+                gatt!!.services.forEach { gattService ->
+                    Log.d(
+                        "BEL",
+                        "Discovered ${gattService.uuid} service:"
+                    )
+                    if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
+                        gattService.characteristics.forEach { characteristic ->
                             Log.d(
                                 "BEL",
-                                "discovering services of ${gatt.device} with delay of $delay ms"
+                                "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
                             )
-                            val result = gatt.discoverServices()
-                            if (!result) {
-                                Log.e("BEL", "discoverServices failed to start")
+                            Log.d("BEL", "has properties ${characteristic.properties}")
+                            if (characteristic.supportsNotify()) {
+                                Log.d("BEL", "try notify to ${characteristic.uuid}")
+                                gatt.setCharacteristicNotification(
+                                    characteristic,
+                                    true
+                                )
                             }
-                            discoverServicesRunnable = null
                         }
-                        bleHandler?.postDelayed(discoverServicesRunnable!!, delay.toLong())
-                    } else if (bondstate == BOND_BONDING) {
-                        // Bonding в процессе, ждем когда закончится
-                        Log.d("BEL", "waiting for bonding to complete")
+                    }
+                }
+
+            }
+
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt?,
+                characteristic: BluetoothGattCharacteristic?
+            ) {
+                trySend("Depricated chracteristic changed ${characteristic?.uuid} with value ${characteristic?.value?.asList()}")
+            }
+
+            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                if (status == GATT_SUCCESS) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        val bondstate: Int? = controllerDevice?.getBondState()
+
+                        // Обрабатываем bondState
+                        if (bondstate == BOND_NONE || bondstate == BOND_BONDED) {
+                            // Подключились к устройству, вызываем discoverServices с задержкой
+                            var delayWhenBonded = 0
+                            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N) {
+                                delayWhenBonded = 1000
+                            }
+                            val delay = if (bondstate == BOND_BONDED) delayWhenBonded else 0
+                            discoverServicesRunnable = Runnable {
+                                Log.d(
+                                    "BEL",
+                                    "discovering services of ${gatt.device} with delay of $delay ms"
+                                )
+                                val result = gatt.discoverServices()
+                                if (!result) {
+                                    Log.e("BEL", "discoverServices failed to start")
+                                }
+                                discoverServicesRunnable = null
+                            }
+                            bleHandler?.postDelayed(discoverServicesRunnable!!, delay.toLong())
+                        } else if (bondstate == BOND_BONDING) {
+                            // Bonding в процессе, ждем когда закончится
+                            Log.d("BEL", "waiting for bonding to complete")
+                        }
+                    } else {
+                        Log.d("BEL", "! STATE_CONNECTED")
+                        gatt.close()
                     }
                 } else {
-                    Log.d("BEL", "! STATE_CONNECTED")
+                    Log.d("BEL", "Произошла ошибка... разбираемся, что случилось!")
                     gatt.close()
+                    gatt.disconnect()
+                    gatt.connect()
                 }
-            } else {
-                Log.d("BEL", "Произошла ошибка... разбираемся, что случилось!")
-                gatt.close()
-                gatt.disconnect()
-                gatt.connect()
             }
         }
-    }
 
-    suspend fun connectTo(device: BluetoothDevice): Int {
+
 
         Log.d("BEL", "connecting to ${device.name}")
         controllerDevice = device
         val gatt: BluetoothGatt =
             controllerDevice!!.connectGatt(context, false, connectionStateCallback)
-        return 0
+        awaitClose {
+            stopScan()
+        }
     }
 }
