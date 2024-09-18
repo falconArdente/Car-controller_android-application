@@ -12,7 +12,6 @@ import android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothGattService.SERVICE_TYPE_PRIMARY
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -38,10 +37,8 @@ import java.util.UUID
 
 class BLEssedCentral(
     private val context: Activity,
-    private val serviceToFind: BluetoothGattService = BluetoothGattService(
-        UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
-        SERVICE_TYPE_PRIMARY
-    )
+    private val serviceToFindUUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
+    private val characteristicToFindUUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 ) {
     enum class BleStatus {
         NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
@@ -91,7 +88,7 @@ class BLEssedCentral(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScan", "fail")
+                Log.d("BLE", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -116,7 +113,7 @@ class BLEssedCentral(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScann", "fail")
+                Log.d("BLE", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -140,33 +137,22 @@ class BLEssedCentral(
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gatt, status)
                 if (status == GATT_FAILURE) {
-                    Log.d("BLEssedScann", "Service discovery failed")
+                    Log.d("BLE", "Service discovery failed")
                     gatt?.disconnect()
                 }
-                Log.d("BLEssedScann", showGattContents(gatt!!))
-//                gatt!!.services.forEach { gattService ->
-//                    Log.d(
-//                        "BEL", "Discovered ${gattService.uuid} service:"
-//                    )
-//                    if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
-//                        gattService.characteristics.forEach { characteristic ->
-//                            Log.d(
-//                                "BEL",
-//                                "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
-//                            )
-//                            Log.d(
-//                                "BEL",
-//                                "write with Response ${characteristic.supportsWritingWithResponse()} write no Response ${characteristic.supportsWritingWithoutResponse()}"
-//                            )
-//                            if (characteristic.supportsNotify()) {
-//                                Log.d("BEL", "try notify to ${characteristic.uuid}")
-//                                gatt.setCharacteristicNotification(
-//                                    characteristic, true
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
+
+                gatt!!.services.forEach { gattService ->
+                    Log.d("BEL", "discovered ${gattService.uuid} ")
+                    if (gattService.uuid == serviceToFindUUID) {
+                        gattService.characteristics.forEach { characteristic ->
+                            if (characteristic.uuid == characteristicToFindUUID) {
+                                gatt.setCharacteristicNotification(
+                                    characteristic, true
+                                )
+                            }
+                        }
+                    }
+                }
 
             }
 
@@ -188,9 +174,7 @@ class BLEssedCentral(
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         this@BLEssedCentral.status = BleStatus.CONNECTED
                         val bondstate: Int? = controllerDevice?.getBondState()
-                        // Обрабатываем bondState
                         if (bondstate == BOND_NONE || bondstate == BOND_BONDED) {
-                            // Подключились к устройству, вызываем discoverServices с задержкой
                             var delayWhenBonded = 0
                             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N) {
                                 delayWhenBonded = 1000
@@ -198,35 +182,33 @@ class BLEssedCentral(
                             val delay = if (bondstate == BOND_BONDED) delayWhenBonded else 0
                             discoverServicesRunnable = Runnable {
                                 Log.d(
-                                    "BEL",
+                                    "BLE",
                                     "discovering services of ${gatt.device} with delay of $delay ms"
                                 )
                                 val result = gatt.discoverServices()
                                 if (!result) {
-                                    Log.e("BEL", "discoverServices failed to start")
+                                    Log.e("BLE", "discoverServices failed to start")
                                 }
                                 discoverServicesRunnable = null
                             }
                             bleHandler?.postDelayed(discoverServicesRunnable!!, delay.toLong())
                         } else if (bondstate == BOND_BONDING) {
-                            // Bonding в процессе, ждем когда закончится
-                            Log.d("BEL", "waiting for bonding to complete")
+                            Log.d("BLE", "waiting for bonding to complete")
                         }
                     } else {
                         this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
-                        Log.d("BEL", "! STATE_CONNECTED")
+                        Log.d("BLE", "! STATE_CONNECTED")
                         gatt.close()
                     }
                 } else {
                     this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
-                    Log.d("BEL", "Произошла ошибка... разбираемся, что случилось!")
+                    Log.d("BLE", "Failed to connect")
                     gatt.close()
                     gatt.disconnect()
                     gatt.connect()
                 }
             }
         }
-        Log.d("BEL", "connecting to ${device.name}")
         controllerDevice = device
         controllerDevice!!.connectGatt(context, false, connectionStateCallback)
         awaitClose {
