@@ -11,8 +11,8 @@ class ControllerForCommUnitInterface;
 
 class CommunicationUnit {
 public:
-    static const char START_PACKAGE_SIGNATURE = '█';
-    static const char BORDER_OF_PACKAGE_SIGN = '\n';
+    static const char START_PACKAGE_SIGNATURE = 's';//'█'
+    static const char BORDER_OF_PACKAGE_SIGN = 'b';//'\n'
     static const int MAX_PACKAGE_SIZE = 9;
     struct StateInfoSet {
         bool leftPressed;
