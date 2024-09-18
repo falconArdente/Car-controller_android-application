@@ -1,5 +1,6 @@
 package com.example.carcamerasandlightsbluetooth.data.bluetooth
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -11,12 +12,7 @@ import android.bluetooth.BluetoothGatt.GATT_FAILURE
 import android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE
-import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE
-import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_SIGNED
+import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -27,24 +23,40 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.welie.blessed.supportsIndicate
 import com.welie.blessed.supportsNotify
-import com.welie.blessed.supportsNotifyOrIndicate
 import com.welie.blessed.supportsReading
-import kotlinx.coroutines.CoroutineScope
+import com.welie.blessed.supportsWritingWithResponse
+import com.welie.blessed.supportsWritingWithoutResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import java.util.Locale
+import java.util.UUID
 
+const val START_PACKAGE_SIGNATURE = 's'
+const val BORDER_OF_PACKAGE_SIGN = 'b'
 
-class BLEssedCentral(private val context: Activity, private val scope: CoroutineScope) {
+class BLEssedCentral(
+    private val context: Activity,
+    private val serviceToFindUUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
+    private val characteristicToFindUUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
+) {
     enum class BleStatus {
         NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
     }
 
     private var status: BleStatus = BleStatus.NOT_CONNECTED
+
+    //        set(value) {
+//            when (value) {
+//                BleStatus.NOT_CONNECTED -> currentGattProfile = null
+//                BleStatus.CONNECTED -> TODO()
+//                BleStatus.CONNECTED_NOTIFICATIONS -> TODO()
+//            }
+//            field = value
+//        }
     private var bleHandler = Handler(Looper.getMainLooper())
     private var scanJob: Job? = null
     private var discoverServicesRunnable: Runnable? = null
@@ -52,7 +64,9 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
     private var adapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var scanner: BluetoothLeScanner = adapter.bluetoothLeScanner
     private var currentGattProfile: BluetoothGatt? = null
-    private var currentCharacteristic: BluetoothGattCharacteristic? = null
+    private var serviceToCommunicateWith: BluetoothGattService? = null
+    private var characteristicToWriteTo: BluetoothGattCharacteristic? = null
+    private var characteristicToNotifyOf: BluetoothGattCharacteristic? = null
     private val scanSettings =
         ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
@@ -67,7 +81,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
             }
 
             override fun onBatchScanResults(results: List<ScanResult?>?) {
-                if (results != null && !results.isNullOrEmpty()) {
+                if (!results.isNullOrEmpty()) {
                     trySend(results.mapNotNull { scanResult ->
                         scanResult!!
                     }).isSuccess
@@ -75,7 +89,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScan", "fail")
+                Log.d("BLEssed", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -92,7 +106,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
             }
 
             override fun onBatchScanResults(results: List<ScanResult?>?) {
-                if (results != null && !results.isNullOrEmpty()) {
+                if (!results.isNullOrEmpty()) {
                     trySend(results.mapNotNull { scanResult ->
                         scanResult!!
                     }).isSuccess
@@ -100,7 +114,7 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssedScann", "fail")
+                Log.d("BLEssed", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -121,28 +135,20 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
     suspend fun connectTo(device: BluetoothDevice): Flow<ByteArray> = callbackFlow {
         val connectionStateCallback = object : BluetoothGattCallback() {
 
-            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                super.onServicesDiscovered(gatt, status)
+            override fun onServicesDiscovered(gattProfile: BluetoothGatt?, status: Int) {
+                super.onServicesDiscovered(gattProfile, status)
                 if (status == GATT_FAILURE) {
-                    Log.d("BEL", "Service discovery failed")
-                    gatt?.disconnect()
+                    Log.d("BLEssed", "Service discovery failed")
+                    gattProfile?.disconnect()
                 }
-                gatt!!.services.forEach { gattService ->
-                    Log.d(
-                        "BEL", "Discovered ${gattService.uuid} service:"
-                    )
-                    if (gattService.uuid.toString() == "0000ffe0-0000-1000-8000-00805f9b34fb") {
+
+                gattProfile!!.services.forEach { gattService ->
+                    Log.d("BLEssed", "discovered ${gattService.uuid} ")
+                    if (gattService.uuid == serviceToFindUUID) {
+                        serviceToCommunicateWith = gattService
                         gattService.characteristics.forEach { characteristic ->
-                            Log.d(
-                                "BEL",
-                                "characteristic ${characteristic.uuid} read ${characteristic.supportsReading()} : notify or indicate ${characteristic.supportsNotifyOrIndicate()} "
-                            )
-                            Log.d("BEL", "has properties ${characteristic.properties}")
-                            if (characteristic.supportsNotify()) {
-                                Log.d("BEL", "try notify to ${characteristic.uuid}")
-                                gatt.setCharacteristicNotification(
-                                    characteristic, true
-                                )
+                            if (characteristic.uuid == characteristicToFindUUID) {
+                                subscribeForNotifyAndWrite(gattProfile, characteristic)
                             }
                         }
                     }
@@ -159,50 +165,46 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
                 }
             }
 
-            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            override fun onConnectionStateChange(
+                gatt: BluetoothGatt, status: Int, newState: Int
+            ) {
                 if (status == GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         this@BLEssedCentral.status = BleStatus.CONNECTED
-                        val bondstate: Int? = controllerDevice?.getBondState()
-                        // Обрабатываем bondState
-                        if (bondstate == BOND_NONE || bondstate == BOND_BONDED) {
-                            // Подключились к устройству, вызываем discoverServices с задержкой
+                        currentGattProfile = gatt
+                        val bondState: Int? = controllerDevice?.getBondState()
+                        if (bondState == BOND_NONE || bondState == BOND_BONDED) {
                             var delayWhenBonded = 0
-                            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.N) {
-                                delayWhenBonded = 1000
-                            }
-                            val delay = if (bondstate == BOND_BONDED) delayWhenBonded else 0
+                            val delay = if (bondState == BOND_BONDED) delayWhenBonded else 0
                             discoverServicesRunnable = Runnable {
-                                Log.d(
-                                    "BEL",
-                                    "discovering services of ${gatt.device} with delay of $delay ms"
-                                )
+                                Log.d("BLEssed", "discover ${gatt.device} delay $delay ms")
                                 val result = gatt.discoverServices()
                                 if (!result) {
-                                    Log.e("BEL", "discoverServices failed to start")
+                                    Log.e("BLEssed", "discoverServices failed to start")
                                 }
                                 discoverServicesRunnable = null
                             }
-                            bleHandler?.postDelayed(discoverServicesRunnable!!, delay.toLong())
-                        } else if (bondstate == BOND_BONDING) {
-                            // Bonding в процессе, ждем когда закончится
-                            Log.d("BEL", "waiting for bonding to complete")
+                            bleHandler.postDelayed(discoverServicesRunnable!!, delay.toLong())
+                        } else if (bondState == BOND_BONDING) {
+                            Log.d("BLEssed", "waiting for bonding to complete")
                         }
                     } else {
                         this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
-                        Log.d("BEL", "! STATE_CONNECTED")
+                        serviceToCommunicateWith = null
+                        characteristicToNotifyOf = null
+                        characteristicToWriteTo = null
+                        Log.d("BLEssed", "${gatt.device.name} is no connected")
                         gatt.close()
                     }
                 } else {
                     this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
-                    Log.d("BEL", "Произошла ошибка... разбираемся, что случилось!")
+                    Log.d("BLEssed", "Failed to connect")
                     gatt.close()
                     gatt.disconnect()
                     gatt.connect()
                 }
             }
         }
-        Log.d("BEL", "connecting to ${device.name}")
         controllerDevice = device
         controllerDevice!!.connectGatt(context, false, connectionStateCallback)
         awaitClose {
@@ -210,10 +212,57 @@ class BLEssedCentral(private val context: Activity, private val scope: Coroutine
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
         if (status == BleStatus.NOT_CONNECTED) return
+        if (currentGattProfile == null && characteristicToWriteTo == null) return
+        val bytesToSend: ByteArray = byteArrayOf(
+            BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
+        ) + data + BORDER_OF_PACKAGE_SIGN.code.toByte()
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            currentGattProfile!!.writeCharacteristic(
+                characteristicToWriteTo!!,
+                bytesToSend,
+                BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            )
+        } else {
+            characteristicToWriteTo!!.setValue(bytesToSend)
+            characteristicToWriteTo!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            currentGattProfile!!.writeCharacteristic(characteristicToWriteTo)
+        }
 
+        Log.d("BLEssed", "send ${bytesToSend.toList()}")
+
+    }
+
+    fun showGattContents(profile: BluetoothGatt): String {
+        var outLog = ""
+        profile.services.forEach { gattService ->
+            outLog += "Discovered ${gattService.uuid} service:\n"
+            gattService.characteristics.forEach { characteristic ->
+                outLog += " Characteristic ${characteristic.uuid}\n  "
+                if (characteristic.supportsReading()) outLog += "read |"
+                if (characteristic.supportsWritingWithResponse()) outLog += "write with response |"
+                if (characteristic.supportsWritingWithoutResponse()) outLog += "write NO response |"
+                if (characteristic.supportsIndicate()) outLog += "indicate |"
+                if (characteristic.supportsNotify()) outLog += "notify |"
+                outLog += " \n"
+            }
+        }
+        return outLog
+    }
+
+    fun subscribeForNotifyAndWrite(
+        gattProfile: BluetoothGatt, characteristic: BluetoothGattCharacteristic
+    ) {
+        if (characteristic.supportsNotify()) {
+            characteristicToNotifyOf = characteristic
+            gattProfile.setCharacteristicNotification(characteristic, true)
+        }
+        if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
+            characteristicToWriteTo = characteristic
+        }
     }
 }

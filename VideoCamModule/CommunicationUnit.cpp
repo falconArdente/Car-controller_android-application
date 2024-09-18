@@ -27,20 +27,20 @@ void CommunicationUnit::checkForIncome() {
 void CommunicationUnit::parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int packetSize) {
     switch (packetSize) {
         case 1: //timings Request?
-            Serial.println("1 Byte parsing");
+            // Serial.println("1 Byte parsing");
             if (bitRead(!package[0], 0) && bitRead(package[0], 1)) {
                 hostObject->sendUpTimings();
             } else errorsCount++;
             break;
         case 2: //controlCommand?
-            Serial.println("2 Byte parsing");
+            // Serial.println("2 Byte parsing");
             if (bitRead(package[0], 0) && !bitRead(package[0], 1)) {
                 commandToControllerDevice(package);
             }
             errorsCount++;
             break;
         case 9: //newTimings?
-            Serial.println("9 Byte parsing");
+            // Serial.println("9 Byte parsing");
             if (bitRead(package[0], 0) && bitRead(package[0], 1)) {
                 newTimingsToControllerDevice(package);
             }
@@ -48,8 +48,8 @@ void CommunicationUnit::parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int
             break;
         default:
             errorsCount++;
-            Serial.print("Errors: ");
-            Serial.println(errorsCount);
+            //Serial.print("Errors: ");
+            //Serial.println(errorsCount);
     }
 }
 
