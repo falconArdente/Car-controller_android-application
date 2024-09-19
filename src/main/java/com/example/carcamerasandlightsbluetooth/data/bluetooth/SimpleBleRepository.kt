@@ -23,6 +23,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.welie.blessed.supportsIndicate
 import com.welie.blessed.supportsNotify
 import com.welie.blessed.supportsReading
@@ -38,7 +40,7 @@ import java.util.UUID
 const val START_PACKAGE_SIGNATURE = 's'
 const val BORDER_OF_PACKAGE_SIGN = 'b'
 
-class BLEssedCentral(
+class SimpleBleRepository(
     private val context: Activity,
     private val serviceToFindUUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
     private val characteristicToFindUUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
@@ -47,16 +49,8 @@ class BLEssedCentral(
         NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
     }
 
-    private var status: BleStatus = BleStatus.NOT_CONNECTED
-
-    //        set(value) {
-//            when (value) {
-//                BleStatus.NOT_CONNECTED -> currentGattProfile = null
-//                BleStatus.CONNECTED -> TODO()
-//                BleStatus.CONNECTED_NOTIFICATIONS -> TODO()
-//            }
-//            field = value
-//        }
+    private var statusLiveData = MutableLiveData(BleStatus.NOT_CONNECTED)
+    val statusToObserve: LiveData<BleStatus> = statusLiveData
     private var bleHandler = Handler(Looper.getMainLooper())
     private var scanJob: Job? = null
     private var discoverServicesRunnable: Runnable? = null
@@ -73,7 +67,7 @@ class BLEssedCentral(
             .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
             .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT).setReportDelay(3L).build()
 
-    fun getStatus() = status
+
     suspend fun startRawScan(): Flow<List<ScanResult>> = callbackFlow {
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -89,7 +83,7 @@ class BLEssedCentral(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssed", "scan failed")
+                Log.d("SimpleBle", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -114,7 +108,7 @@ class BLEssedCentral(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                Log.d("BLEssed", "scan failed")
+                Log.d("SimpleBle", "scan failed")
             }
         }
         scanJob?.cancel()
@@ -138,12 +132,12 @@ class BLEssedCentral(
             override fun onServicesDiscovered(gattProfile: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gattProfile, status)
                 if (status == GATT_FAILURE) {
-                    Log.d("BLEssed", "Service discovery failed")
+                    Log.d("SimpleBle", "Service discovery failed")
                     gattProfile?.disconnect()
                 }
 
                 gattProfile!!.services.forEach { gattService ->
-                    Log.d("BLEssed", "discovered ${gattService.uuid} ")
+                    Log.d("SimpleBle", "discovered ${gattService.uuid} ")
                     if (gattService.uuid == serviceToFindUUID) {
                         serviceToCommunicateWith = gattService
                         gattService.characteristics.forEach { characteristic ->
@@ -153,14 +147,12 @@ class BLEssedCentral(
                         }
                     }
                 }
-
             }
 
             override fun onCharacteristicChanged(
                 gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?
             ) {
                 if (characteristic?.value != null) {
-                    this@BLEssedCentral.status = BleStatus.CONNECTED_NOTIFICATIONS
                     trySend(characteristic.value!!)
                 }
             }
@@ -170,35 +162,38 @@ class BLEssedCentral(
             ) {
                 if (status == GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        this@BLEssedCentral.status = BleStatus.CONNECTED
+                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED)
+                            this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED)
                         currentGattProfile = gatt
                         val bondState: Int? = controllerDevice?.getBondState()
                         if (bondState == BOND_NONE || bondState == BOND_BONDED) {
                             var delayWhenBonded = 0
                             val delay = if (bondState == BOND_BONDED) delayWhenBonded else 0
                             discoverServicesRunnable = Runnable {
-                                Log.d("BLEssed", "discover ${gatt.device} delay $delay ms")
+                                Log.d("SimpleBle", "discover ${gatt.device} delay $delay ms")
                                 val result = gatt.discoverServices()
                                 if (!result) {
-                                    Log.e("BLEssed", "discoverServices failed to start")
+                                    Log.e("SimpleBle", "discoverServices failed to start")
                                 }
                                 discoverServicesRunnable = null
                             }
                             bleHandler.postDelayed(discoverServicesRunnable!!, delay.toLong())
                         } else if (bondState == BOND_BONDING) {
-                            Log.d("BLEssed", "waiting for bonding to complete")
+                            Log.d("SimpleBle", "waiting for bonding to complete")
                         }
                     } else {
-                        this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
+                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.NOT_CONNECTED)
+                            this@SimpleBleRepository.statusLiveData.postValue(BleStatus.NOT_CONNECTED)
                         serviceToCommunicateWith = null
                         characteristicToNotifyOf = null
                         characteristicToWriteTo = null
-                        Log.d("BLEssed", "${gatt.device.name} is no connected")
+                        Log.d("SimpleBle", "${gatt.device.name} is no connected")
                         gatt.close()
                     }
                 } else {
-                    this@BLEssedCentral.status = BleStatus.NOT_CONNECTED
-                    Log.d("BLEssed", "Failed to connect")
+                    if (this@SimpleBleRepository.statusLiveData.value != BleStatus.NOT_CONNECTED)
+                        this@SimpleBleRepository.statusLiveData.postValue(BleStatus.NOT_CONNECTED)
+                    Log.d("SimpleBle", "Failed to connect")
                     gatt.close()
                     gatt.disconnect()
                     gatt.connect()
@@ -214,7 +209,7 @@ class BLEssedCentral(
 
     @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
-        if (status == BleStatus.NOT_CONNECTED) return
+        if (statusLiveData.value == BleStatus.NOT_CONNECTED) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
@@ -233,7 +228,7 @@ class BLEssedCentral(
             currentGattProfile!!.writeCharacteristic(characteristicToWriteTo)
         }
 
-        Log.d("BLEssed", "send ${bytesToSend.toList()}")
+        Log.d("SimpleBle", "send ${bytesToSend.toList()}")
 
     }
 
@@ -260,6 +255,8 @@ class BLEssedCentral(
         if (characteristic.supportsNotify()) {
             characteristicToNotifyOf = characteristic
             gattProfile.setCharacteristicNotification(characteristic, true)
+            if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED_NOTIFICATIONS)
+                this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
         }
         if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
             characteristicToWriteTo = characteristic
