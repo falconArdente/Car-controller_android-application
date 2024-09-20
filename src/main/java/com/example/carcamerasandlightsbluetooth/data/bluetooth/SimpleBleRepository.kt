@@ -1,7 +1,6 @@
 package com.example.carcamerasandlightsbluetooth.data.bluetooth
 
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.Manifest.permission
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothDevice.BOND_BONDED
@@ -19,12 +18,16 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.carcamerasandlightsbluetooth.utils.runWithPermissionCheck
 import com.welie.blessed.supportsIndicate
 import com.welie.blessed.supportsNotify
 import com.welie.blessed.supportsReading
@@ -35,13 +38,14 @@ import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 const val START_PACKAGE_SIGNATURE = 's'
-const val BORDER_OF_PACKAGE_SIGN = 'b'
+const val BORDER_OF_PACKAGE_SIGN = '\n'
 
 class SimpleBleRepository(
-    private val context: Activity,
+    private val context: Context,
     private val serviceToFindUUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
     private val characteristicToFindUUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
 ) {
@@ -87,7 +91,7 @@ class SimpleBleRepository(
             }
         }
         scanJob?.cancel()
-        scanner.startScan(null, scanSettings, scanCallback)
+        scanRunPermissionSafe(filter = null, scanCallback)
         awaitClose {
             stopScan()
         }
@@ -112,7 +116,7 @@ class SimpleBleRepository(
             }
         }
         scanJob?.cancel()
-        scanner.startScan(null, scanSettings, scanCallback)
+        scanRunPermissionSafe(listOf(getFilterByAddress(macToScan)), scanCallback)
         awaitClose {
             stopScan()
         }
@@ -131,6 +135,7 @@ class SimpleBleRepository(
 
             override fun onServicesDiscovered(gattProfile: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gattProfile, status)
+
                 if (status == GATT_FAILURE) {
                     Log.d("SimpleBle", "Service discovery failed")
                     gattProfile?.disconnect()
@@ -162,8 +167,9 @@ class SimpleBleRepository(
             ) {
                 if (status == GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED)
+                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED) {
                             this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED)
+                        }
                         currentGattProfile = gatt
                         val bondState: Int? = controllerDevice?.getBondState()
                         if (bondState == BOND_NONE || bondState == BOND_BONDED) {
@@ -201,33 +207,27 @@ class SimpleBleRepository(
             }
         }
         controllerDevice = device
-        controllerDevice!!.connectGatt(context, false, connectionStateCallback)
+        gattOperationRunPermissionSafe({currentGattProfile=
+            controllerDevice!!.connectGatt(
+                context,
+                false,
+                connectionStateCallback
+            )}
+        )
         awaitClose {
             stopScan()
         }
     }
 
-    @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
         if (statusLiveData.value == BleStatus.NOT_CONNECTED) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
         ) + data + BORDER_OF_PACKAGE_SIGN.code.toByte()
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            currentGattProfile!!.writeCharacteristic(
-                characteristicToWriteTo!!,
-                bytesToSend,
-                BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-            )
-        } else {
-            characteristicToWriteTo!!.setValue(bytesToSend)
-            characteristicToWriteTo!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-            currentGattProfile!!.writeCharacteristic(characteristicToWriteTo)
-        }
-
+        characteristicToWriteTo!!.setValue(bytesToSend)
+        characteristicToWriteTo!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+        currentGattProfile!!.writeCharacteristic(characteristicToWriteTo)
         Log.d("SimpleBle", "send ${bytesToSend.toList()}")
 
     }
@@ -249,17 +249,86 @@ class SimpleBleRepository(
         return outLog
     }
 
+
     fun subscribeForNotifyAndWrite(
         gattProfile: BluetoothGatt, characteristic: BluetoothGattCharacteristic
     ) {
-        if (characteristic.supportsNotify()) {
-            characteristicToNotifyOf = characteristic
-            gattProfile.setCharacteristicNotification(characteristic, true)
-            if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED_NOTIFICATIONS)
-                this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
+        runBlocking() {
+            val subscribe: () -> Boolean =
+                { gattProfile.setCharacteristicNotification(characteristic, true) }
+            if (characteristic.supportsNotify()) {
+                characteristicToNotifyOf = characteristic
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        runWithPermissionCheck(
+                            run(subscribe),
+                            permission.BLUETOOTH_CONNECT,
+                            context
+                        )
+                    } else {
+                        runWithPermissionCheck(
+                            run(subscribe),
+                            permission.ACCESS_COARSE_LOCATION,
+                            context
+                        )
+                    }
+                }
+
+                if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED_NOTIFICATIONS)
+                    this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
+            }
+            if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
+                characteristicToWriteTo = characteristic
+            }
         }
-        if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
-            characteristicToWriteTo = characteristic
+    }
+
+    private suspend fun scanRunPermissionSafe(
+        filter: List<ScanFilter>? = null,
+        scanCallback: ScanCallback
+    ) {
+        Log.d("SimpleBle", "in scan permission ")
+        val scan: () -> Unit = { scanner.startScan(filter, scanSettings, scanCallback) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if ((ActivityCompat.checkSelfPermission(
+                    context,
+                    permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+                        )
+            ){
+                Log.d("SimpleBle", "in scan runWithPermissionCheck ")
+                runWithPermissionCheck(run(scan), permission.BLUETOOTH_SCAN, context)
+            }
+            else{
+                Log.d("SimpleBle", "in scan run raw ")
+                run(scan)
+            }
+        } else {
+            Log.d("SimpleBle", "in scan run old ACCESS_COARSE_LOCATION")
+            runWithPermissionCheck(run(scan), permission.ACCESS_COARSE_LOCATION, context)
+            scanner.startScan(filter, scanSettings, scanCallback)
+        }
+    }
+
+    private suspend fun gattOperationRunPermissionSafe(action: () -> Unit) {
+        runBlocking {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                runWithPermissionCheck(
+                    run(action),
+                    permission.BLUETOOTH_CONNECT,
+                    context
+                )
+            } else {
+                runWithPermissionCheck(
+                    run(action),
+                    permission.ACCESS_COARSE_LOCATION,
+                    context
+                )
+            }
         }
     }
 }
