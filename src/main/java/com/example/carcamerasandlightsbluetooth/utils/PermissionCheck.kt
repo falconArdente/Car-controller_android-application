@@ -1,5 +1,6 @@
 package com.example.carcamerasandlightsbluetooth.utils
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -8,6 +9,9 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.markodevcic.peko.PermissionRequester
 import com.markodevcic.peko.PermissionResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 suspend fun runWithPermissionCheck(
     action: Unit,
@@ -43,4 +47,17 @@ suspend fun runWithPermissionCheck(
             }
         }
     }
+}
+
+fun showAppPermissionsFrame(context: Context, message: String = "") {
+    if (context is Activity && message != "") {
+        runBlocking(Dispatchers.Main) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            delay(1500L)
+        }
+    }
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.data = Uri.fromParts("package", context.packageName, null)
+    context.startActivity(intent)
 }
