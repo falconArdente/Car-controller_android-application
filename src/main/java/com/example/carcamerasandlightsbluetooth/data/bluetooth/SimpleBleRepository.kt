@@ -35,10 +35,8 @@ import com.welie.blessed.supportsNotify
 import com.welie.blessed.supportsReading
 import com.welie.blessed.supportsWritingWithResponse
 import com.welie.blessed.supportsWritingWithoutResponse
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -51,8 +49,8 @@ const val BORDER_OF_PACKAGE_SIGN = '\n'
 
 class SimpleBleRepository(
     private val context: Context,
-    private val serviceToFindUUID: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"),
-    private val characteristicToFindUUID: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
+    private val serviceToFindUUID: UUID,
+    private val characteristicToFindUUID: UUID
 ) {
     enum class BleStatus {
         NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
@@ -76,7 +74,6 @@ class SimpleBleRepository(
             .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
             .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT).setReportDelay(3L).build()
 
-
     suspend fun startRawScan(): Flow<List<ScanResult>> = callbackFlow {
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -95,8 +92,12 @@ class SimpleBleRepository(
                 Log.d("SimpleBle", "scan failed")
             }
         }
-        scanJob?.cancel()
-        scanRunPermissionSafe(filter = null, scanCallback)
+        runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
+            runBlocking {
+                scanJob?.cancel()
+                scanJob = launch { scanner.startScan(null, scanSettings, scanCallback) }
+            }
+        }
         awaitClose {
             stopScan()
         }
@@ -122,7 +123,18 @@ class SimpleBleRepository(
                 Log.d("SimpleBle", "scan failed $errorCode")
             }
         }
-        scanRunPermissionSafe(listOf(getFilterByAddress(macToScan)), scanCallback)
+        runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
+            runBlocking {
+                scanJob?.cancel()
+                scanJob = launch {
+                    scanner.startScan(
+                        listOf(getFilterByAddress(macToScan)),
+                        scanSettings,
+                        scanCallback
+                    )
+                }
+            }
+        }
         awaitClose {
             stopScan()
         }
@@ -154,7 +166,12 @@ class SimpleBleRepository(
                         serviceToCommunicateWith = gattService
                         gattService.characteristics.forEach { characteristic ->
                             if (characteristic.uuid == characteristicToFindUUID) {
-                                subscribeForNotifyAndWrite(gattProfile, characteristic)
+                                runBlocking {
+                                    subscribeForNotifyAndWrite(
+                                        gattProfile,
+                                        characteristic
+                                    )
+                                }
                             }
                         }
                     }
@@ -180,15 +197,14 @@ class SimpleBleRepository(
                         currentGattProfile = gatt
                         val bondState: Int? = controllerDevice?.getBondState()
                         if (bondState == BOND_NONE || bondState == BOND_BONDED) {
-                            var delayWhenBonded = 0
-                            val delay = if (bondState == BOND_BONDED) delayWhenBonded else 0
+                            val delayWhenBonded = 0
+                            val delay = if (bondState == BOND_BONDED) delayWhenBonded else 300L
                             discoverServicesRunnable = Runnable {
                                 Log.d("SimpleBle", "discover ${gatt.device} delay $delay ms")
                                 val result = gatt.discoverServices()
                                 if (!result) {
                                     Log.e("SimpleBle", "discoverServices failed to start")
                                 }
-                                discoverServicesRunnable = null
                             }
                             bleHandler.postDelayed(discoverServicesRunnable!!, delay.toLong())
                         } else if (bondState == BOND_BONDING) {
@@ -200,7 +216,7 @@ class SimpleBleRepository(
                         serviceToCommunicateWith = null
                         characteristicToNotifyOf = null
                         characteristicToWriteTo = null
-                        Log.d("SimpleBle", "${gatt.device.name} is no connected")
+                        Log.d("SimpleBle", "${gatt.device.name} is no connected now")
                         gatt.close()
                     }
                 } else {
@@ -213,21 +229,17 @@ class SimpleBleRepository(
                 }
             }
         }
-        controllerDevice = device
-        currentGattProfile =
-                controllerDevice!!.connectGatt(
-                    context,
-                    false,
-                    connectionStateCallback
-                )
-//        gattOperationRunPermissionSafe {
-//            currentGattProfile =
-//                controllerDevice!!.connectGatt(
-//                    context,
-//                    false,
-//                    connectionStateCallback
-//                )
-//        }
+        runPermissionSafe {
+            runBlocking {
+                controllerDevice = device
+                currentGattProfile =
+                    controllerDevice!!.connectGatt(
+                        context,
+                        false,
+                        connectionStateCallback
+                    )
+            }
+        }
         awaitClose {
             stopScan()
         }
@@ -243,7 +255,6 @@ class SimpleBleRepository(
         characteristicToWriteTo!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
         currentGattProfile!!.writeCharacteristic(characteristicToWriteTo)
         Log.d("SimpleBle", "send ${bytesToSend.toList()}")
-
     }
 
     fun showGattContents(profile: BluetoothGatt): String {
@@ -264,108 +275,59 @@ class SimpleBleRepository(
     }
 
 
-    fun subscribeForNotifyAndWrite(
+    suspend fun subscribeForNotifyAndWrite(
         gattProfile: BluetoothGatt, characteristic: BluetoothGattCharacteristic
     ) {
-        runBlocking() {
-            val subscribe: () -> Boolean =
-                { gattProfile.setCharacteristicNotification(characteristic, true) }
-            if (characteristic.supportsNotify()) {
-                characteristicToNotifyOf = characteristic
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        permission.BLUETOOTH_CONNECT
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        runWithPermissionCheck(
-                            run {
-                                val state = subscribe
-                            },
-                            permission.BLUETOOTH_CONNECT,
-                            context
-                        )
-                    } else {
-                        showAppPermissionsFrame(
-                            context,
-                            context.getString(R.string.coarse_permission_rationale_notifications)
-                        )
-                    }
+        var subscribed = false
+        runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale_notifications)) {
+            runBlocking {
+                if (characteristic.supportsNotify()) {
+                    subscribed = gattProfile.setCharacteristicNotification(characteristic, true)
                 }
-
-                if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED_NOTIFICATIONS)
-                    this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
             }
+            if (subscribed) this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
+
             if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
                 characteristicToWriteTo = characteristic
             }
         }
     }
 
-    private suspend fun scanRunPermissionSafe(
-        filter: List<ScanFilter>? = null,
-        scanCallback: ScanCallback
+    fun onDestroy() {
+        currentGattProfile?.disconnect()
+        stopScan()
+        scanJob?.cancel()
+    }
+
+    private suspend fun runPermissionSafe(
+        rational: String = "",
+        action: () -> Unit
     ) {
-        Log.d("SimpleBle", "in scan permission ")
-        val scan: () -> Unit = {
-            runBlocking(Dispatchers.Default) {
-                scanJob?.cancel()
-                scanJob = launch { scanner.startScan(filter, scanSettings, scanCallback) }
-            }
-        }
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if ((ActivityCompat.checkSelfPermission(
-                        context,
-                        permission.BLUETOOTH_SCAN
-                    ) != PackageManager.PERMISSION_GRANTED
-                            )
-                ) {
-                    Log.d("SimpleBle", "in scan runWithPermissionCheck ")
-                    runWithPermissionCheck(run(scan), permission.BLUETOOTH_SCAN, context)
-                } else {
-                    Log.d("SimpleBle", "in scan run raw ")
-                    run(scan)
-                }
-            } else {
-                if ((ActivityCompat.checkSelfPermission(
+                runWithPermissionCheck(
+                    run(action),
+                    permission.BLUETOOTH_CONNECT,
+                    context
+                )
+            } else {  // old versions
+                if (ActivityCompat.checkSelfPermission(
                         context,
                         permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
-                            )
                 ) {
                     showAppPermissionsFrame(
                         context,
-                        context.getString(R.string.coarse_permission_rationale)
+                        rational
                     )
-                    Log.d("SimpleBle", "in scan run old ACCESS_COARSE_LOCATION")
-//            runWithPermissionCheck(Unit, permission.ACCESS_COARSE_LOCATION, context, rationaleMessage = "Необходимо для сканирования")
-//            runWithPermissionCheck(Unit, permission.ACCESS_BACKGROUND_LOCATION, context, rationaleMessage = "Необходимо для сканирования")
-                }
-                run(scan)
-            }
-        }
-
-        private suspend fun gattOperationRunPermissionSafe(action: () -> Unit) {
-            runBlocking(Dispatchers.Main) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    runWithPermissionCheck(
-                        run(action),
-                        permission.BLUETOOTH_CONNECT,
-                        context
-                    )
-                } else {
-                    runWithPermissionCheck(
-                        run(action),
-                        permission.ACCESS_COARSE_LOCATION,
-                        context
-                    )
+                } else {// all permissions are on
+                    run(action)
                 }
             }
-        }
-
-        fun onDestroy() {
-//        currentGattProfile?.disconnect()
-//        stopScan()
-//        scanJob?.cancel()
         }
     }
+}
