@@ -25,8 +25,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.utils.runWithPermissionCheck
 import com.example.carcamerasandlightsbluetooth.utils.showAppPermissionsFrame
@@ -39,6 +37,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -52,12 +52,13 @@ class SimpleBleRepository(
     private val serviceToFindUUID: UUID,
     private val characteristicToFindUUID: UUID
 ) {
-    enum class BleStatus {
+    enum class ConnectionState {
         NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
     }
 
-    private var statusLiveData = MutableLiveData(BleStatus.NOT_CONNECTED)
-    val statusToObserve: LiveData<BleStatus> = statusLiveData
+    private var mutableConnectionStateFlow: MutableStateFlow<ConnectionState> =
+        MutableStateFlow(ConnectionState.NOT_CONNECTED)
+    var connectionStateFlow: StateFlow<ConnectionState> = mutableConnectionStateFlow
     private var bleHandler = Handler(Looper.getMainLooper())
     private var scanJob: Job? = null
     private var discoverServicesRunnable: Runnable? = null
@@ -191,9 +192,7 @@ class SimpleBleRepository(
             ) {
                 if (status == GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.CONNECTED) {
-                            this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED)
-                        }
+                        mutableConnectionStateFlow.value = ConnectionState.CONNECTED
                         currentGattProfile = gatt
                         val bondState: Int? = controllerDevice?.getBondState()
                         if (bondState == BOND_NONE || bondState == BOND_BONDED) {
@@ -211,8 +210,7 @@ class SimpleBleRepository(
                             Log.d("SimpleBle", "waiting for bonding to complete")
                         }
                     } else {
-                        if (this@SimpleBleRepository.statusLiveData.value != BleStatus.NOT_CONNECTED)
-                            this@SimpleBleRepository.statusLiveData.postValue(BleStatus.NOT_CONNECTED)
+                        mutableConnectionStateFlow.value = ConnectionState.NOT_CONNECTED
                         serviceToCommunicateWith = null
                         characteristicToNotifyOf = null
                         characteristicToWriteTo = null
@@ -220,8 +218,7 @@ class SimpleBleRepository(
                         gatt.close()
                     }
                 } else {
-                    if (this@SimpleBleRepository.statusLiveData.value != BleStatus.NOT_CONNECTED)
-                        this@SimpleBleRepository.statusLiveData.postValue(BleStatus.NOT_CONNECTED)
+                    mutableConnectionStateFlow.value = ConnectionState.NOT_CONNECTED
                     Log.d("SimpleBle", "Failed to connect $status")
                     gatt.close()
                     gatt.disconnect()
@@ -246,7 +243,7 @@ class SimpleBleRepository(
     }
 
     fun sendBytes(data: ByteArray) {
-        if (statusLiveData.value == BleStatus.NOT_CONNECTED) return
+        if (mutableConnectionStateFlow.value == ConnectionState.NOT_CONNECTED) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
@@ -285,7 +282,7 @@ class SimpleBleRepository(
                     subscribed = gattProfile.setCharacteristicNotification(characteristic, true)
                 }
             }
-            if (subscribed) this@SimpleBleRepository.statusLiveData.postValue(BleStatus.CONNECTED_NOTIFICATIONS)
+            if (subscribed) mutableConnectionStateFlow.value = ConnectionState.CONNECTED_NOTIFICATIONS
 
             if (characteristic.supportsWritingWithResponse() || characteristic.supportsWritingWithoutResponse()) {
                 characteristicToWriteTo = characteristic
