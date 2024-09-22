@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">CarCamerasAndLightsBluetooth</string>
-    <string name="coarse_permission_rationale">Для подключения необходимо разрешение геолокации</string>
-    <string name="coarse_permission_rationale_notifications">Для подписки на оповещения контроллера необходимо разрешение геолокации</string>
+    <string name="coarse_permission_rationale">Для подключения к устройству необходимо разрешение на использование геолокации в фоне</string>
+    <string name="coarse_permission_rationale_notifications">Для подписки на оповещения контроллера необходимо разрешение на использование геолокации в фоне</string>
 </resources>
