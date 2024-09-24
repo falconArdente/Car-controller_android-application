@@ -51,18 +51,19 @@ const val START_PACKAGE_SIGNATURE = 's'
 const val BORDER_OF_PACKAGE_SIGN = '\n'
 
 @SuppressLint("LogNotTimber")
-class SimpleBleRepository(
+class SimpleBleConnectedController(
     private val context: Context,
     private val serviceToFindUUID: UUID,
     private val characteristicToFindUUID: UUID
 ) {
     enum class ConnectionState {
-        NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
+        NOT_CONNECTED, SCANNING, CONNECTED_NOTIFICATIONS, CONNECTED,
     }
 
     private var mutableConnectionStateFlow: MutableStateFlow<ConnectionState> =
         MutableStateFlow(ConnectionState.NOT_CONNECTED)
     var connectionStateFlow: StateFlow<ConnectionState> = mutableConnectionStateFlow
+    private var previousConnectionState = ConnectionState.NOT_CONNECTED
     private var bleHandler = Handler(Looper.getMainLooper())
     private var scanJob: Job? = null
     private var discoverServicesRunnable: Runnable? = null
@@ -100,7 +101,11 @@ class SimpleBleRepository(
         }
         runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
             scanJob?.cancel()
-            scanJob = launch { scanner.startScan(null, scanSettings, scanCallback) }
+            scanJob = launch {
+                previousConnectionState = mutableConnectionStateFlow.value
+                mutableConnectionStateFlow.value = ConnectionState.SCANNING
+                scanner.startScan(null, scanSettings, scanCallback)
+            }
         }
         awaitClose {
             stopScan()
@@ -131,6 +136,8 @@ class SimpleBleRepository(
         runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
             scanJob?.cancel()
             scanJob = launch {
+                previousConnectionState = mutableConnectionStateFlow.value
+                mutableConnectionStateFlow.value = ConnectionState.SCANNING
                 scanner.startScan(
                     listOf(getFilterByAddress(macToScan)),
                     scanSettings,
@@ -149,6 +156,7 @@ class SimpleBleRepository(
 
     fun stopScan() {
         scanJob?.cancel()
+        mutableConnectionStateFlow.value = previousConnectionState
     }
 
     @SuppressLint("MissingPermission")
@@ -253,7 +261,7 @@ class SimpleBleRepository(
 
     @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
-        if (mutableConnectionStateFlow.value == ConnectionState.NOT_CONNECTED) return
+        if (mutableConnectionStateFlow.value <= ConnectionState.SCANNING) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()

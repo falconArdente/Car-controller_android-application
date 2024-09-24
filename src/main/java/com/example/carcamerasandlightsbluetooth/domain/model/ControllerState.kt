@@ -1,6 +1,7 @@
 package com.example.carcamerasandlightsbluetooth.domain.model
 
 data class ControllerState(
+    val connectionState: ConnectionState,
     val leftPressed: Boolean,
     val leftDblPressed: Boolean,
     val rightPressed: Boolean,
@@ -14,4 +15,11 @@ data class ControllerState(
     val angelEyeIsOn: Boolean,
     val displayIsOn: Boolean,
     val cameraState: CameraState,
-)
+) {
+    enum class ConnectionState {
+        NOT_CONNECTED,
+        SCANNING,
+        CONNECTED,
+        CONNECTED_NOTIFIED,
+    }
+}
