@@ -1,15 +1,13 @@
-package com.example.carcamerasandlightsbluetooth.domain.api
+package com.example.carcamerasandlightsbluetooth.data.repository
 
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import kotlinx.coroutines.flow.Flow
 
-interface ControllerInteractor {
-
-    fun getStateFlow(): Flow<DeviceState>
+interface BluetoothRepository {
+    fun getState(): Flow<DeviceState>
     fun sendCommand(command: ControlCommand)
-    fun switchToTestMode(testIsOn: Boolean)
     fun getTimings(): Timings
     fun sendTimings(newTimings: Timings)
     fun scanForDevice()
