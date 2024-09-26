@@ -1,4 +1,4 @@
-package com.example.carcamerasandlightsbluetooth.domain.model
+package com.example.carcamerasandlightsbluetooth.data
 
 enum class CameraState {
     CAMS_OFF,

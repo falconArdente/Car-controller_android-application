@@ -1,75 +1,116 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothProfile
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.carcamerasandlightsbluetooth.R
-import com.example.carcamerasandlightsbluetooth.data.bluetooth.BLEssedCentral
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
+import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController
+import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState
+import com.example.carcamerasandlightsbluetooth.data.repository.BluetoothRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 
 class MainActivity : AppCompatActivity() {
-    private var countOfConnectedDevices:Int=0
+
+    private var countOfConnectedDevices: Int = 0
+    private var scanJob: Job? = null
+    private var sendJob: Job? = null
+    private val blessed: SimpleBleConnectedController by inject<SimpleBleConnectedController>()
+    private val repo: BluetoothRepository by inject()
+    private var handler: Handler? = null
+    private var switch = true
+    override fun onDestroy() {
+        super.onDestroy()
+        blessed.onDestroy()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handler = Handler(mainLooper)
         setContentView(R.layout.activity_main)
-        lifecycleScope.launch {
-            doScanStuff2()
+        lifecycleScope.launch(Dispatchers.IO) {
+            blessed.connectionStateFlow.collect {
+                parseNewConnectionState(it)
+            }
         }
+        doScanStuff3()
     }
 
-    private suspend fun doScanStuff2() {
-        val blessed = BLEssedCentral()
-        blessed.startRawScan()
-            .collect { listItem ->
-                if (!listItem.isNullOrEmpty()) {
-                    var device: BluetoothDevice? = null
-                    listItem.forEach { scannedResult ->
+    private fun doScanStuff3() {
+        lifecycleScope.launch { repo.scanForDevice() }
+    }
 
-                        Log.d("BEL", listItem.toString())
-                        if (scannedResult.device.address == "00:15:A5:02:0A:24") {
-                            device = scannedResult.device
-                        }
-                        device?.let {
-                            blessed.stopScan()
-                            connectTo(it)
+    private fun doScanStuff2() {
+        scanJob = lifecycleScope.launch(Dispatchers.IO) {
+            Log.d("SimpleBle", "new Scan run")
+            blessed.startScanByAddress("00:15:A5:02:0A:24")
+                .collect { listItem ->
+                    Log.d("SimpleBle", "collecting")
+                    if (!listItem.isNullOrEmpty()) {
+                        listItem.forEach { scannedResult ->
+                            Log.d("SimpleBle", listItem.toString())
+                            if (scannedResult.device.address == "00:15:A5:02:0A:24") {
+                                blessed.stopScan()
+                                Log.d("SimpleBle", "connecting")
+                                if (countOfConnectedDevices == 0) connectTo(scannedResult.device)
+                                countOfConnectedDevices++
+                                coroutineContext.cancel()
+                            }
                         }
                     }
                 }
-            }
-    }
-
-    private val connectionStateCallback = object : BluetoothGattCallback() {
-        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d("BEL", "connected to ${gatt.device}")
-                lifecycleScope.launch {
-                    Log.d("BEL", "starting searching descovery")
-                    gatt.discoverServices()
-                    delay(1200L)
-                    gatt.services.forEach {
-                        Log.d("BEL", "service ${it.uuid}")
-                    }
-                }
-
-            } else {
-                gatt.close()
-            }
         }
     }
 
-    private suspend fun connectTo(device: BluetoothDevice) {
-        Log.d("BEL", "connecting to ${device.name}")
+    private fun parseNewConnectionState(state: ConnectionState) {
+        when (state) {
+            ConnectionState.CONNECTED -> {
+                Log.d("SimpleBle", "A connected")
+                senderLauncher()
+            }
 
-        val gatt: BluetoothGatt =
-            device.connectGatt(this@MainActivity, false, connectionStateCallback)
+            ConnectionState.NOT_CONNECTED, ConnectionState.SCANNING -> Log.d(
+                "SimpleBle",
+                "A NOT con"
+            )
+
+            ConnectionState.CONNECTED_NOTIFICATIONS -> Log.d(
+                "SimpleBle",
+                "A CON with NOTIFY"
+            )
+        }
+    }
+
+    private var sender = Runnable {
+        if (switch) {
+            blessed.sendBytes(byteArrayOf(1, 1))
+            switch = false
+        } else {
+            blessed.sendBytes(byteArrayOf(1, 2))
+            switch = true
+        }
+        senderLauncher()
+    }
+
+    private fun senderLauncher() {
+        handler?.removeCallbacks(sender)
+        handler?.postDelayed(sender, 3000L)
+    }
+
+    private fun connectTo(device: BluetoothDevice) {
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            blessed.connectTo(device)
+                .collect { result ->
+                    Log.d("SimpleBle", (result.data as ByteArray).toList().toString())
+                }
+        }
     }
 }

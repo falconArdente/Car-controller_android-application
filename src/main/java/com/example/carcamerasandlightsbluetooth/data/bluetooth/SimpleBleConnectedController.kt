@@ -29,6 +29,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.carcamerasandlightsbluetooth.R
+import com.example.carcamerasandlightsbluetooth.utils.Result
 import com.example.carcamerasandlightsbluetooth.utils.runWithPermissionCheck
 import com.example.carcamerasandlightsbluetooth.utils.showAppPermissionsFrame
 import com.welie.blessed.supportsIndicate
@@ -51,18 +52,19 @@ const val START_PACKAGE_SIGNATURE = 's'
 const val BORDER_OF_PACKAGE_SIGN = '\n'
 
 @SuppressLint("LogNotTimber")
-class SimpleBleRepository(
+class SimpleBleConnectedController(
     private val context: Context,
     private val serviceToFindUUID: UUID,
-    private val characteristicToFindUUID: UUID
+    private val characteristicToFindUUID: UUID,
 ) {
     enum class ConnectionState {
-        NOT_CONNECTED, CONNECTED, CONNECTED_NOTIFICATIONS
+        NOT_CONNECTED, SCANNING, CONNECTED_NOTIFICATIONS, CONNECTED,
     }
 
     private var mutableConnectionStateFlow: MutableStateFlow<ConnectionState> =
         MutableStateFlow(ConnectionState.NOT_CONNECTED)
     var connectionStateFlow: StateFlow<ConnectionState> = mutableConnectionStateFlow
+    private var previousConnectionState = ConnectionState.NOT_CONNECTED
     private var bleHandler = Handler(Looper.getMainLooper())
     private var scanJob: Job? = null
     private var discoverServicesRunnable: Runnable? = null
@@ -100,7 +102,11 @@ class SimpleBleRepository(
         }
         runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
             scanJob?.cancel()
-            scanJob = launch { scanner.startScan(null, scanSettings, scanCallback) }
+            scanJob = launch {
+                previousConnectionState = mutableConnectionStateFlow.value
+                mutableConnectionStateFlow.value = ConnectionState.SCANNING
+                scanner.startScan(null, scanSettings, scanCallback)
+            }
         }
         awaitClose {
             stopScan()
@@ -131,6 +137,8 @@ class SimpleBleRepository(
         runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
             scanJob?.cancel()
             scanJob = launch {
+                previousConnectionState = mutableConnectionStateFlow.value
+                mutableConnectionStateFlow.value = ConnectionState.SCANNING
                 scanner.startScan(
                     listOf(getFilterByAddress(macToScan)),
                     scanSettings,
@@ -149,24 +157,29 @@ class SimpleBleRepository(
 
     fun stopScan() {
         scanJob?.cancel()
+        mutableConnectionStateFlow.value = previousConnectionState
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun connectTo(device: BluetoothDevice): Flow<ByteArray> = callbackFlow {
+    suspend fun connectTo(device: BluetoothDevice): Flow<Result<ByteArray>> = callbackFlow {
         stopScan()
         val connectionStateCallback = object : BluetoothGattCallback() {
 
             override fun onServicesDiscovered(gattProfile: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gattProfile, status)
                 if (status == GATT_FAILURE) {
-                    Log.e("SimpleBle", "Service discovery failed with status $status")
+                    trySend(
+                        Result.Error("Service discovery failed", status)
+                    ).isFailure
                     onDisconnect()
                     runPermissionSafe { gattProfile?.disconnect() }
                 }
 
                 gattProfile?.services?.forEach { gattService ->
-                    Log.d("SimpleBle", "discovered ${gattService.uuid} ")
                     if (gattService.uuid == serviceToFindUUID) {
+                        trySend(
+                            Result.Log("discovered ${gattService.uuid}")
+                        ).isSuccess
                         serviceToCommunicateWith = gattService
                         gattService.characteristics?.forEach { characteristic ->
                             if (characteristic.uuid == characteristicToFindUUID) {
@@ -185,7 +198,11 @@ class SimpleBleRepository(
                 gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?
             ) {
                 if (characteristic?.value != null) {
-                    trySend(characteristic.value!!)
+                    trySend(
+                        Result.Success(
+                            characteristic.value!!
+                        )
+                    )
                 }
             }
 
@@ -202,25 +219,35 @@ class SimpleBleRepository(
                             val delayWhenBonded = 0
                             val delay = if (bondState == BOND_BONDED) delayWhenBonded else 300L
                             discoverServicesRunnable = Runnable {
-                                Log.d("SimpleBle", "discover ${gatt.device} delay $delay ms")
+                                trySend(
+                                    Result.Log("discover ${gatt.device} delay $delay ms")
+                                ).isSuccess
                                 val result = gatt.discoverServices()
                                 if (!result) {
-                                    Log.e("SimpleBle", "discoverServices failed to start")
+                                    trySend(
+                                        Result.Error(
+                                            "discoverServices failed to start"
+                                        )
+                                    ).isSuccess
                                 }
                             }
                             bleHandler.postDelayed(discoverServicesRunnable!!, delay.toLong())
                         } else if (bondState == BOND_BONDING) {
-                            Log.d("SimpleBle", "waiting for bonding to complete")
+                            trySend(Result.Log("waiting for bonding to complete")).isSuccess
                         }
                     } else {
                         onDisconnect()
-                        Log.d("SimpleBle", "${gatt.device.name} is no connected now")
+                        trySend(
+                            Result.Error("${gatt.device.name} is no connected now")
+                        ).isSuccess
                         runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
                             gatt.close()
                         }
                     }
                 } else {
-                    Log.e("SimpleBle", "Failed to connect $status")
+                    trySend(
+                        Result.Error("Failed to connect", status)
+                    ).isSuccess
                     onDisconnect()
                     runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
                         gatt.close()
@@ -253,7 +280,7 @@ class SimpleBleRepository(
 
     @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
-        if (mutableConnectionStateFlow.value == ConnectionState.NOT_CONNECTED) return
+        if (mutableConnectionStateFlow.value <= ConnectionState.SCANNING) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
