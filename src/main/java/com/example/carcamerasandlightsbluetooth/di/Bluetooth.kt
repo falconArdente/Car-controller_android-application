@@ -18,7 +18,7 @@ val bluetoothModule = module {
     }
     factory<BluetoothRepository> {
         BluetoothRepositoryImpl(
-            deviceAdapter = get(),
+            communicator = get(),
             defaultMAC = "00:15:A5:02:0A:24"
         )
     }

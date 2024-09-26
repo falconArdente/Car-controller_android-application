@@ -15,6 +15,10 @@ class BasicLightCamInteractor: ControllerInteractor {
         TODO("Not yet implemented")
     }
 
+    override fun switchToTestMode(testIsOn: Boolean) {
+        TODO("Not yet implemented")
+    }
+
     override fun getTimings(): Timings {
         TODO("Not yet implemented")
     }

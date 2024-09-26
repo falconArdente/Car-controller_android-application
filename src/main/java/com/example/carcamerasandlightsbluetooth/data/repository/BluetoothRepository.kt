@@ -10,7 +10,7 @@ interface BluetoothRepository {
     fun sendCommand(command: ControlCommand)
     fun getTimings(): Timings
     fun sendTimings(newTimings: Timings)
-    fun scanForDevice()
+    suspend fun scanForDevice()
     fun stopScan()
     fun getServiceDataFlow(): Flow<String>
 }

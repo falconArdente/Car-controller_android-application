@@ -1,4 +1,4 @@
-package com.example.carcamerasandlightsbluetooth.data.map
+package com.example.carcamerasandlightsbluetooth.data.dto
 
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
