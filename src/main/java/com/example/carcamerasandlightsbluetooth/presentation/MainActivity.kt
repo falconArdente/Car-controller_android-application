@@ -13,6 +13,7 @@ import com.example.carcamerasandlightsbluetooth.data.repository.BluetoothReposit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -44,7 +45,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun doScanStuff3() {
-        lifecycleScope.launch { repo.scanForDevice() }
+
+        lifecycleScope.launch {
+            Log.d("repository", "go for service beforeScan")
+            launch { repo.scanForDevice() }
+            //delay(3000L)
+            Log.d("repository", "go for service")
+            repo.getServiceDataFlow()
+                .collect { string ->
+
+                    Log.d("repository", "at service flow $string")
+                }
+        }
     }
 
     private fun doScanStuff2() {

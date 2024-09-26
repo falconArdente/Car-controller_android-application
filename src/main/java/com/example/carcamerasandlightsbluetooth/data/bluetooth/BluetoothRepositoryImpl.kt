@@ -14,11 +14,17 @@ import com.example.carcamerasandlightsbluetooth.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class BluetoothRepositoryImpl(
@@ -26,11 +32,13 @@ class BluetoothRepositoryImpl(
     private val defaultMAC: String = "",
 ) : BluetoothRepository {
     private var scanJob: Job? = null
+    private var scanFlow: Flow<List<ScanResult>>? = null
     private val stateFlow: MutableStateFlow<DeviceState> =
         MutableStateFlow(DeviceState.NOT_INITIALIZED)
-    val serviceFlow: Flow<String> = flow<String> {
+     override val serviceFlow: Flow<String> = (1..150).asFlow().map { it.toString() }
+        .onEach { delay(3000L) }.onStart {
         emit("service flow connected")
-    }.flowOn(Dispatchers.IO)
+    }
 
 
     private var connectionFlow: Flow<Result<DeviceState>>? = null
@@ -41,6 +49,24 @@ class BluetoothRepositoryImpl(
             Log.d("repository", it.toString())
         }
     }
+
+    override suspend fun getServiceDataFlow(): Flow<String> {
+
+   if (scanFlow != null) {
+
+       Log.d("repository", "DO COMBINE!!!!")
+       return serviceFlow
+           //.dropWhile { scanFlow == null }
+           .combineTransform(scanFlow!!) { service, scanList ->
+               scanList.forEach { result ->
+                   emit("emitting ")
+                   emit(result.toString())
+               }
+           }
+   }
+        return serviceFlow
+    }
+
 
     override fun getState(): Flow<DeviceState> = stateFlow
 
@@ -61,18 +87,17 @@ class BluetoothRepositoryImpl(
             scanJob?.cancel()
             scanJob = if (defaultMAC.isNotEmpty())
                 launch(Dispatchers.IO) {
-                    communicator.startScanByAddress(defaultMAC)
-                        .collect(scanFlowCollector)
+                    scanFlow = communicator.startScanByAddress(defaultMAC)
+                    scanFlow!!.collect(scanFlowCollector)
                 }
-            else launch(Dispatchers.IO) { communicator.startRawScan().collect(scanFlowCollector) }
+            else launch(Dispatchers.IO) {
+                scanFlow = communicator.startRawScan()
+                scanFlow!!.collect(scanFlowCollector)
+            }
         }
     }
 
     override fun stopScan() {
-        TODO("Not yet implemented")
-    }
-
-    override fun getServiceDataFlow(): Flow<String> {
         TODO("Not yet implemented")
     }
 
