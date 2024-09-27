@@ -3,4 +3,10 @@
     <string name="coarse_permission_rationale">Для подключения к устройству необходимо разрешение на использование геолокации в фоне</string>
     <string name="coarse_permission_rationale_notifications">Для подписки на оповещения контроллера необходимо разрешение на использование геолокации в фоне</string>
     <string name="camera_on_air">на экране</string>
+    <string name="got_new_timings_message">Настройки задержек получены</string>
+    <string name="got_income_data_error_message">Ошибка приема данных: </string>
+    <string name="got_packet_recognition_error_message">Ошибка приема данных</string>
+    <string name="is_reachable"> доступно</string>
+    <string name="scan_started_message">Ищу устройство…</string>
+    <string name="connecting_to">Подключаюсь к адресу </string>
 </resources>

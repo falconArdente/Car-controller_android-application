@@ -38,25 +38,48 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         lifecycleScope.launch(Dispatchers.IO) {
             blessed.connectionStateFlow.collect {
-                parseNewConnectionState(it)
+                //parseNewConnectionState(it)
             }
         }
         doScanStuff3()
     }
 
     private fun doScanStuff3() {
-
+        Log.d("repository", "Launch It")
         lifecycleScope.launch {
-            Log.d("repository", "go for service beforeScan")
-            launch { repo.scanForDevice() }
-            //delay(3000L)
-            Log.d("repository", "go for service")
-            repo.getServiceDataFlow()
-                .collect { string ->
+            launch {
+                repo.getServiceDataFlow()
+                    .collect { string ->
+                        Log.d("repository", "service: $string")
 
-                    Log.d("repository", "at service flow $string")
-                }
+                    }
+            }
+            //delay(3000L)
+            repo.scanForDevice()
         }
+//        lifecycleScope.launch {
+//            launch {
+//                repo.getServiceDataFlow()
+//                    .collect { string ->
+//                        Log.d("repository", "INIT subcr $string")
+//                    }
+//            }
+//
+//            var counter = 0
+//            while (true) {
+//                delay(15000L)
+//                Log.d("repository", "go for service $counter")
+//                launch {
+//                    repo.getServiceDataFlow()
+//                        .collect { string ->
+//
+//                            Log.d("repository", "at $counter flow $string")
+//                        }
+//                }
+//                Log.d("repository", "subscribed service on $counter")
+//                counter++
+//            }
+//        }
     }
 
     private fun doScanStuff2() {
@@ -66,12 +89,12 @@ class MainActivity : AppCompatActivity() {
                 .collect { listItem ->
                     Log.d("SimpleBle", "collecting")
                     if (!listItem.isNullOrEmpty()) {
-                        listItem.forEach { scannedResult ->
+                        listItem.forEach { device ->
                             Log.d("SimpleBle", listItem.toString())
-                            if (scannedResult.device.address == "00:15:A5:02:0A:24") {
+                            if (device.address == "00:15:A5:02:0A:24") {
                                 blessed.stopScan()
                                 Log.d("SimpleBle", "connecting")
-                                if (countOfConnectedDevices == 0) connectTo(scannedResult.device)
+                                if (countOfConnectedDevices == 0) connectTo(device)
                                 countOfConnectedDevices++
                                 coroutineContext.cancel()
                             }
