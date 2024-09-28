@@ -31,6 +31,7 @@ class BluetoothRepositoryImpl(
     context: Context,
 ) : BluetoothRepository {
     private val gotTimingsMessage = context.getString(R.string.got_new_timings_message)
+    private val gotDeviceErrorsCount = context.getString(R.string.got_device_error_count)
     private val gotPacketRecognitionErrorMessage =
         context.getString(R.string.got_packet_recognition_error_message)
     private val gotIncomeDataErrorMessage =
@@ -53,9 +54,14 @@ class BluetoothRepositoryImpl(
     private var macAddress: String = ""
     private var connectionFlowCollector: FlowCollector<Result<DeviceState>> =
         FlowCollector { result ->
-            serviceSender?.sendMessage(result.data.toString())
-            if (result is Result.Log) {
-                Log.d("repository", result.message.toString())
+            when (result) {
+                is Result.Error ->{
+                    Log.d("repository", "ERROR you know")
+                }
+                is Result.Log -> Log.d("repository", result.message.toString())
+                is Result.Success -> {
+                    Log.d("repository", "SUCCESSFULLY")
+                }
             }
         }
 
@@ -159,8 +165,12 @@ class BluetoothRepositoryImpl(
                 .collect { result ->
                     when (result) {
                         is Result.Success -> {
+                            Log.d("repository", "before report")
                             when (val report = PacketsMapper.toReport(result.data!!)) {
                                 is DeviceReports.StateReport -> {
+                                    Log.d("repository", "before emit")
+                                    delay(3000L)
+                                    Log.d("repository", "... and ...")
                                     emit(
                                         Result.Success(
                                             PacketsMapper.combineReportWithState(
@@ -172,13 +182,17 @@ class BluetoothRepositoryImpl(
                                 }
 
                                 is DeviceReports.TimingReport -> {
-                                    TODO()
                                     serviceSender?.sendMessage(gotTimingsMessage)
+                                    TODO()
                                 }
 
                                 is DeviceReports.Error -> {
-                                    TODO()
                                     serviceSender?.sendMessage(gotPacketRecognitionErrorMessage)
+                                }
+
+                                is DeviceReports.AdditionalReport -> {
+                                    serviceSender?.sendMessage(gotDeviceErrorsCount)
+                                    TODO()
                                 }
                             }
                         }
@@ -197,9 +211,4 @@ class BluetoothRepositoryImpl(
                 }
         }
     }
-
-    private fun parseDeviceDataFlow() {
-
-    }
-
 }

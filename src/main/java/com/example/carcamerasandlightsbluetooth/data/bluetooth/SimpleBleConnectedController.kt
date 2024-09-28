@@ -48,9 +48,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
-const val START_PACKAGE_SIGNATURE = 's'
-const val BORDER_OF_PACKAGE_SIGN = '\n'
-
 @SuppressLint("LogNotTimber")
 class SimpleBleConnectedController(
     private val context: Context,
@@ -295,8 +292,9 @@ class SimpleBleConnectedController(
         if (mutableConnectionStateFlow.value <= ConnectionState.SCANNING) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
-            BORDER_OF_PACKAGE_SIGN.code.toByte(), START_PACKAGE_SIGNATURE.code.toByte()
-        ) + data + BORDER_OF_PACKAGE_SIGN.code.toByte()
+            Constants.BORDER_OF_PACKAGE_SIGN.code.toByte(),
+            Constants.START_PACKAGE_SIGNATURE.code.toByte()
+        ) + data + Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()
         runPermissionSafe {
             characteristicToWriteTo?.setValue(bytesToSend)
             characteristicToWriteTo?.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE

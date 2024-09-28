@@ -5,7 +5,8 @@
     <string name="camera_on_air">на экране</string>
     <string name="got_new_timings_message">Настройки задержек получены</string>
     <string name="got_income_data_error_message">Ошибка приема данных: </string>
-    <string name="got_packet_recognition_error_message">Ошибка приема данных</string>
+    <string name="got_packet_recognition_error_message">Ошибка разбора пакетов</string>
+    <string name="got_device_error_count">Получено число ошибок передачи, обнаруженных контроллером</string>
     <string name="is_reachable"> доступно</string>
     <string name="connecting_to">Подключаюсь к адресу </string>
     <string name="remote_not_connected">Контроллер не подключен</string>
