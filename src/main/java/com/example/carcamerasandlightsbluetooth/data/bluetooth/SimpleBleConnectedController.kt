@@ -117,13 +117,11 @@ class SimpleBleConnectedController(
     suspend fun startScanByAddress(macToScan: String): Flow<List<BluetoothDevice>> = callbackFlow {
         val scanCallback: ScanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
-                Log.d("SimpleBle", "scan single")
                 trySend(listOf(result.device)).isSuccess
             }
 
             override fun onBatchScanResults(results: List<ScanResult?>?) {
                 if (!results.isNullOrEmpty()) {
-                    Log.d("SimpleBle", "scan Batch")
                     trySend(results.mapNotNull { scanResult ->
                         scanResult!!.device
                     }).isSuccess
@@ -163,12 +161,10 @@ class SimpleBleConnectedController(
     @SuppressLint("MissingPermission")
     suspend fun connectTo(device: BluetoothDevice): Flow<Result<ByteArray>> = callbackFlow {
         stopScan()
-
         val connectionStateCallback = object : BluetoothGattCallback() {
 
             override fun onServicesDiscovered(gattProfile: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gattProfile, status)
-                Log.d("repository", "descovering")
                 if (status == GATT_FAILURE) {
                     trySend(
                         Result.Error("Service discovery failed", status)
@@ -182,7 +178,6 @@ class SimpleBleConnectedController(
                         trySend(
                             Result.Log("discovered ${gattService.uuid}")
                         ).isSuccess
-                        Log.d("repository", "discovered ${gattService.uuid}")
                         serviceToCommunicateWith = gattService
                         gattService.characteristics?.forEach { characteristic ->
                             if (characteristic.uuid == characteristicToFindUUID) {
@@ -201,7 +196,6 @@ class SimpleBleConnectedController(
                 gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?
             ) {
                 if (characteristic?.value != null) {
-                    Log.d("repository", "inB ${characteristic.value.toList()}")
                     trySend(
                         Result.Success(
                             characteristic.value!!
@@ -278,7 +272,6 @@ class SimpleBleConnectedController(
                 false,
                 connectionStateCallback
             )
-        Log.d("repository", "Literraly connected")
         awaitClose {
             stopScan()
         }

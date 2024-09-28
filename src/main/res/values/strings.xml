@@ -7,6 +7,10 @@
     <string name="got_income_data_error_message">Ошибка приема данных: </string>
     <string name="got_packet_recognition_error_message">Ошибка приема данных</string>
     <string name="is_reachable"> доступно</string>
-    <string name="scan_started_message">Ищу устройство…</string>
+    <string name="scan_started_message">Ищу контроллер…</string>
     <string name="connecting_to">Подключаюсь к адресу </string>
+    <string name="remote_not_connected">Контроллер не подключен</string>
+    <string name="remote_scanning">Да, ищу контроллер</string>
+    <string name="remote_connected">Связь установлена</string>
+    <string name="remote_connected_notifications">Уведомления подключены</string>
 </resources>

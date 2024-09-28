@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +38,12 @@ class BluetoothRepositoryImpl(
         context.getString(R.string.is_reachable)
     private val scanStartedMessage = context.getString(R.string.scan_started_message)
     private val connectingToMessage = context.getString(R.string.connecting_to)
+
+    private val remoteNotConnected = context.getString(R.string.remote_not_connected)
+    private val remoteScanning = context.getString(R.string.remote_scanning)
+    private val remoteConnected = context.getString(R.string.remote_connected)
+    private val remoteConnectedNotifications =
+        context.getString(R.string.remote_connected_notifications)
     private var connectionReactionsJob: Job? = null
     private var scanJob: Job? = null
     private var connectionFlow: Flow<Result<DeviceState>>? = null
@@ -63,7 +68,6 @@ class BluetoothRepositoryImpl(
             if (device.address == defaultMAC) {
                 serviceSender?.sendMessage("$connectingToMessage ${device.address}")
                 connectionFlow = connectToDevice(device)
-                //delay(1200L)
                 connectionFlow!!.collect(connectionFlowCollector)
                 scanJob?.cancel()
             }
@@ -78,10 +82,13 @@ class BluetoothRepositoryImpl(
 
     private val deviceStatesCollector = FlowCollector<ConnectionState> { connectionState ->
         when (connectionState) {
-            ConnectionState.NOT_CONNECTED -> TODO()
-            ConnectionState.SCANNING -> TODO()
-            ConnectionState.CONNECTED_NOTIFICATIONS -> TODO()
-            ConnectionState.CONNECTED -> TODO()
+            ConnectionState.NOT_CONNECTED -> serviceSender?.sendMessage(remoteNotConnected)
+            ConnectionState.SCANNING -> serviceSender?.sendMessage(remoteScanning)
+            ConnectionState.CONNECTED_NOTIFICATIONS -> serviceSender?.sendMessage(
+                remoteConnectedNotifications
+            )
+
+            ConnectionState.CONNECTED -> serviceSender?.sendMessage(remoteConnected)
         }
     }
 
@@ -106,13 +113,13 @@ class BluetoothRepositoryImpl(
 
     override suspend fun scanForDevice() {
         coroutineScope {
-//            if (connectionReactionsJob == null) {
-//                connectionReactionsJob =
-//                    launch(Dispatchers.IO) {
-//                        communicator.connectionStateFlow
-//                            .collect(deviceStatesCollector)
-//                    }
-//            }
+            if (connectionReactionsJob == null) {
+                connectionReactionsJob =
+                    launch(Dispatchers.IO) {
+                        communicator.connectionStateFlow
+                            .collect (deviceStatesCollector)
+                    }
+            }
             scanJob?.cancel()
             scanJob = launch(Dispatchers.IO) {
                 if (defaultMAC.isNotEmpty())
@@ -125,21 +132,18 @@ class BluetoothRepositoryImpl(
 
 
     override fun stopScan() {
-        TODO("Not yet implemented")
+        scanJob?.cancel()
     }
 
 
     private suspend fun connectToDevice(device: BluetoothDevice): Flow<Result<DeviceState>> {
         return flow {
-            Log.d("repository", "BeforeRunningconnect")
             communicator.connectTo(device)
                 .collect { result ->
-                    Log.d("repository", "HaveData")
                     when (result) {
                         is Result.Success -> {
                             when (val report = PacketsMapper.toReport(result.data!!)) {
                                 is DeviceReports.StateReport -> {
-                                    serviceSender?.sendMessage("Got Somethig")
                                     emit(
                                         Result.Success(
                                             PacketsMapper.combineReportWithState(
