@@ -7,10 +7,18 @@
     <string name="got_income_data_error_message">Ошибка приема данных: </string>
     <string name="got_packet_recognition_error_message">Ошибка приема данных</string>
     <string name="is_reachable"> доступно</string>
-    <string name="scan_started_message">Ищу контроллер…</string>
     <string name="connecting_to">Подключаюсь к адресу </string>
     <string name="remote_not_connected">Контроллер не подключен</string>
-    <string name="remote_scanning">Да, ищу контроллер</string>
+    <string name="remote_scanning">Ищу контроллер…</string>
     <string name="remote_connected">Связь установлена</string>
     <string name="remote_connected_notifications">Уведомления подключены</string>
+    <string name="service_discovered">Изучил службу</string>
+    <string name="service_discovery_failed">Изучить службу не удалось</string>
+    <string name="discover_service">Смотрю службы</string>
+    <string name="delay">с задержкой</string>
+    <string name="discover_service_failed_to_start">Не удалось начать изучение служб</string>
+    <string name="is_not_connected_now">отключился</string>
+    <string name="failed_to_connect">Подключится не удалось</string>
+    <string name="scan_failed_with_error">Ошибка сканирования </string>
+    <string name="waiting_bonding_completion">Ждем завершения привязки устройства</string>
 </resources>
