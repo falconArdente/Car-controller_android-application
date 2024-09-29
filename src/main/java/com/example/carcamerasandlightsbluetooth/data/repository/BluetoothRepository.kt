@@ -12,5 +12,6 @@ interface BluetoothRepository {
     fun sendTimings(newTimings: Timings)
     suspend fun scanForDevice()
     fun stopScan()
-    fun getServiceDataFlow(): Flow<String>
+    suspend fun getServiceDataFlow(): Flow<String>
+    val serviceFlow: Flow<String>
 }

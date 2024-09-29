@@ -12,5 +12,9 @@ sealed class DeviceReports {
         val state: DeviceState
     ) : DeviceReports()
 
+    data class AdditionalReport(
+        val errorsCount: Int
+    ) : DeviceReports()
+
     data object Error : DeviceReports()
 }

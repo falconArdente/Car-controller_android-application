@@ -19,7 +19,8 @@ val bluetoothModule = module {
     factory<BluetoothRepository> {
         BluetoothRepositoryImpl(
             communicator = get(),
-            defaultMAC = "00:15:A5:02:0A:24"
+            defaultMAC = "00:15:A5:02:0A:24",
+            androidApplication()
         )
     }
 }
