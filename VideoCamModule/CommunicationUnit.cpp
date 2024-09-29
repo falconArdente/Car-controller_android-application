@@ -79,12 +79,12 @@ void CommunicationUnit::commandToControllerDevice(byte package[MAX_PACKAGE_SIZE]
 }
 
 void CommunicationUnit::sendPackage(byte *packageToSend, int bytesToSend) {
+    Serial.write(BORDER_OF_PACKAGE_SIGN);
+    Serial.write(START_PACKAGE_SIGNATURE);
     for (int i = 0; i < bytesToSend; i++) {
-        Serial.write(BORDER_OF_PACKAGE_SIGN);
-        Serial.write(START_PACKAGE_SIGNATURE);
         Serial.write(packageToSend[i]);
-        Serial.write(BORDER_OF_PACKAGE_SIGN);
     }
+    Serial.write(BORDER_OF_PACKAGE_SIGN);
     //TODO crc8 byte add
 }
 
