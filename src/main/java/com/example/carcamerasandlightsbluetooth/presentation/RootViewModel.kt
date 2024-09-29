@@ -18,4 +18,8 @@ class RootViewModel(
     }
 
 
+    override fun onCleared() {
+        device.stopScan()
+        super.onCleared()
+    }
 }

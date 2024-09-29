@@ -14,4 +14,5 @@ interface BluetoothRepository {
     fun getServiceDataFlow(): Flow<String>
     fun getStateFlow(): Flow<DeviceState>
     fun switchToTestMode(testIsOn: Boolean)
+    fun finish()
 }

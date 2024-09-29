@@ -219,4 +219,8 @@ class BluetoothRepositoryImpl(
     override fun stopScan() {
         scanJob?.cancel()
     }
+
+    override fun finish() {
+        communicator.finish()
+    }
 }

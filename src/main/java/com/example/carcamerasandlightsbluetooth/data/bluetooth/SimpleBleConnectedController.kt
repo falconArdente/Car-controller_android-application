@@ -68,6 +68,7 @@ class SimpleBleConnectedController(
     private val failedToConnect = context.getString(R.string.failed_to_connect)
     private val scanFailedWithError = context.getString(R.string.scan_failed_with_error)
     private val waitingBondingCompletion = context.getString(R.string.waiting_bonding_completion)
+
     /**
      * Поток событий статуса соединения здесь. Gatt отдельно
      */
@@ -254,6 +255,7 @@ class SimpleBleConnectedController(
     }
 
     private fun onDisconnect() {
+
         mutableConnectionStateFlow.value = ConnectionState.NOT_CONNECTED
         serviceToCommunicateWith = null
         characteristicToNotifyOf = null
@@ -368,5 +370,11 @@ class SimpleBleConnectedController(
                 }
             }
         }
+    }
+
+    fun finish() {
+        stopScan()
+        currentGattProfile?.close()
+        controllerDevice = null
     }
 }

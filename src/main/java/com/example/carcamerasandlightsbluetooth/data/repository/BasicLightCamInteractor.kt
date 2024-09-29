@@ -38,4 +38,8 @@ class BasicLightCamInteractor(private val repository: BluetoothRepository) : Con
     override fun getServiceDataFlow(): Flow<String> {
         return repository.getServiceDataFlow()
     }
+
+    override fun finish() {
+        repository.finish()
+    }
 }
