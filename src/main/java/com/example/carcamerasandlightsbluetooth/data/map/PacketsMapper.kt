@@ -12,16 +12,10 @@ object PacketsMapper {
         if (!(data[0] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()
                     && data[1] == Constants.START_PACKAGE_SIGNATURE.code.toByte())
         ) return DeviceReports.Error
-
-        Log.d("repository", "Go into packet. size is ${data.size}")
-        Log.d("repository", "${data.toList()}")
         val packet = reduceToContent(data)
-        Log.d("repository", "packet ${packet.size} ${packet.toList()}")
-        // TODO rebuild array
         return when (packet.size) {
-            5 -> {// 2 of data 2 of border and 1 start byte
-                Log.d("repository", "looks as state")
-                val bits = BitSet.valueOf(byteArrayOf(data[2], data[3]))
+            2 -> {
+                val bits = BitSet.valueOf(byteArrayOf(packet[0], packet[1]))
                 if ((bits.get(0) || bits.get(1))) return DeviceReports.Error
                 return DeviceReports.StateReport(
                     state = DeviceState(
@@ -42,20 +36,20 @@ object PacketsMapper {
                 )
             }
 
-            6 -> {// 3
-                val bits = BitSet.valueOf(byteArrayOf(data[2]))
+            3 -> {
+                val bits = BitSet.valueOf(byteArrayOf(packet[0]))
                 if (!(bits.get(0) && !bits.get(1))) return DeviceReports.Error
-                DeviceReports.AdditionalReport(errorsCount = twoBytesToInt(data[3], data[4]))
+                DeviceReports.AdditionalReport(errorsCount = twoBytesToInt(packet[1], packet[2]))
             }
 
-            12 -> {// 9
-                if (data[2].toInt() != 2) return DeviceReports.Error
+            9 -> {
+                if (packet[0].toInt() != 2) return DeviceReports.Error
                 DeviceReports.TimingReport(
                     timings = Timings(
-                        bounce = twoBytesToInt(data[3], data[4]),
-                        repeater = twoBytesToInt(data[5], data[6]),
-                        frontDelay = twoBytesToInt(data[7], data[8]),
-                        rearDelay = twoBytesToInt(data[9], data[10])
+                        bounce = twoBytesToInt(packet[1], packet[2]),
+                        repeater = twoBytesToInt(packet[3], packet[4]),
+                        frontDelay = twoBytesToInt(packet[5], packet[6]),
+                        rearDelay = twoBytesToInt(packet[7], packet[8])
                     )
                 )
             }
