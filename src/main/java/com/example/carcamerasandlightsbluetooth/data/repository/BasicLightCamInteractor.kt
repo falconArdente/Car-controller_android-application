@@ -19,7 +19,7 @@ class BasicLightCamInteractor: ControllerInteractor {
         TODO("Not yet implemented")
     }
 
-    override fun getTimings(): Timings {
+    override fun requestTimings() {
         TODO("Not yet implemented")
     }
 

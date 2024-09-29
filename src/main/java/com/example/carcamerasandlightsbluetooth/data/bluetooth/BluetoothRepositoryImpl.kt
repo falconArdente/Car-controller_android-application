@@ -55,12 +55,18 @@ class BluetoothRepositoryImpl(
     private var connectionFlowCollector: FlowCollector<Result<DeviceState>> =
         FlowCollector { result ->
             when (result) {
-                is Result.Error ->{
-                    Log.d("repository", "ERROR you know")
+                is Result.Error -> {
+                    Log.d("repository", " connectionFlow ERROR you know")
                 }
-                is Result.Log -> Log.d("repository", result.message.toString())
-                is Result.Success -> {
-                    Log.d("repository", "SUCCESSFULLY")
+
+                is Result.Log -> Log.d(
+                    "repository", "connectionFlow ${result.message}"
+                )
+
+                is Result.Success
+
+                -> {
+                    Log.d("repository", "connectionFlow ${result.data!!}")
                 }
             }
         }
@@ -105,6 +111,7 @@ class BluetoothRepositoryImpl(
                 if (previousRemoteState == ConnectionState.CONNECTED_NOTIFICATIONS
                     || previousRemoteState == ConnectionState.CONNECTED
                 ) scanForDevice()
+
             }
 
             ConnectionState.SCANNING -> serviceSender?.sendMessage(remoteScanning)
@@ -124,15 +131,15 @@ class BluetoothRepositoryImpl(
     override fun getState(): Flow<DeviceState> = stateFlow
 
     override fun sendCommand(command: ControlCommand) {
-        TODO("Not yet implemented")
+        communicator.sendBytes(PacketsMapper.commandToPacket(command))
     }
 
-    override fun getTimings(): Timings {
-        TODO("Not yet implemented")
+    override fun requestTimings() {
+        communicator.sendBytes(byteArrayOf(Constants.TIMINGS_REQUEST.toByte()))
     }
 
     override fun sendTimings(newTimings: Timings) {
-        TODO("Not yet implemented")
+        communicator.sendBytes(PacketsMapper.commandToPacket(newTimings))
     }
 
     override suspend fun scanForDevice() {
@@ -147,10 +154,7 @@ class BluetoothRepositoryImpl(
             scanJob?.cancel()
             scanJob = launch(Dispatchers.IO) {
                 delay(300L)
-                if (defaultMAC.isNotEmpty())
-                    communicator.startScanByAddress(defaultMAC).collect(scanFlowCollector)
-                else
-                    communicator.startRawScan().collect(scanFlowCollector)
+                communicator.startScanByAddress(defaultMAC).collect(scanFlowCollector)
             }
         }
     }
@@ -165,12 +169,8 @@ class BluetoothRepositoryImpl(
                 .collect { result ->
                     when (result) {
                         is Result.Success -> {
-                            Log.d("repository", "before report")
                             when (val report = PacketsMapper.toReport(result.data!!)) {
                                 is DeviceReports.StateReport -> {
-                                    Log.d("repository", "before emit")
-                                    delay(3000L)
-                                    Log.d("repository", "... and ...")
                                     emit(
                                         Result.Success(
                                             PacketsMapper.combineReportWithState(
@@ -208,6 +208,7 @@ class BluetoothRepositoryImpl(
                             serviceSender?.sendMessage(result.message.toString())
                         }
                     }
+
                 }
         }
     }

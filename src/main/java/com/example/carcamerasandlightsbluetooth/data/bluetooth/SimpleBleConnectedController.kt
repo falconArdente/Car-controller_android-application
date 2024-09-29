@@ -68,7 +68,9 @@ class SimpleBleConnectedController(
     private val failedToConnect = context.getString(R.string.failed_to_connect)
     private val scanFailedWithError = context.getString(R.string.scan_failed_with_error)
     private val waitingBondingCompletion = context.getString(R.string.waiting_bonding_completion)
-
+    /**
+     * Поток событий статуса соединения здесь. Gatt отдельно
+     */
     private var mutableConnectionStateFlow: MutableStateFlow<ConnectionState> =
         MutableStateFlow(ConnectionState.NOT_CONNECTED)
     var connectionStateFlow: StateFlow<ConnectionState> = mutableConnectionStateFlow
@@ -89,41 +91,9 @@ class SimpleBleConnectedController(
             .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
             .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT).setReportDelay(3L).build()
 
-    @SuppressLint("MissingPermission")
-    suspend fun startRawScan(): Flow<Result<List<BluetoothDevice>>> = callbackFlow {
-        val scanCallback: ScanCallback = object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) {
-                trySend(Result.Success(listOf(result.device))).isSuccess
-            }
-
-            override fun onBatchScanResults(results: List<ScanResult?>?) {
-                if (!results.isNullOrEmpty()) {
-                    trySend(
-                        Result.Success(
-                            results.mapNotNull { scanResult ->
-                                scanResult!!.device
-                            })
-                    ).isSuccess
-                }
-            }
-
-            override fun onScanFailed(errorCode: Int) {
-                trySend(Result.Error(scanFailedWithError, errorCode)).isSuccess
-            }
-        }
-        runPermissionSafe(rational = context.getString(R.string.coarse_permission_rationale)) {
-            scanJob?.cancel()
-            scanJob = launch {
-                previousConnectionState = mutableConnectionStateFlow.value
-                mutableConnectionStateFlow.value = ConnectionState.SCANNING
-                scanner.startScan(null, scanSettings, scanCallback)
-            }
-        }
-        awaitClose {
-            stopScan()
-        }
-    }
-
+    /**
+     * Запускает сконирование по адресу и поток данных по нему
+     */
     @SuppressLint("MissingPermission")
     suspend fun startScanByAddress(macToScan: String): Flow<Result<List<BluetoothDevice>>> =
         callbackFlow {
@@ -170,6 +140,9 @@ class SimpleBleConnectedController(
         mutableConnectionStateFlow.value = previousConnectionState
     }
 
+    /**
+     * Создает поток событий GATT профиля, включая получение данных
+     */
     @SuppressLint("MissingPermission")
     suspend fun connectTo(device: BluetoothDevice): Flow<Result<ByteArray>> = callbackFlow {
         stopScan()
@@ -230,7 +203,7 @@ class SimpleBleConnectedController(
                             val delay = if (bondState == BOND_BONDED) delayWhenBonded else 300L
                             discoverServicesRunnable = Runnable {
                                 trySend(
-                                    Result.Log("$discoverService ${gatt.device} $delay $delay ms")
+                                    Result.Log("$discoverService ${gatt.device} ${this@SimpleBleConnectedController.delay} $delay ms")
                                 ).isSuccess
                                 val result = gatt.discoverServices()
                                 if (!result) {
@@ -287,6 +260,10 @@ class SimpleBleConnectedController(
         characteristicToWriteTo = null
     }
 
+    /**
+     * Отправляет команды в устройство, упаковывая данные в пакеты
+     * Gatt службу и характеристику мы знаем заранее
+     */
     @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
         if (mutableConnectionStateFlow.value <= ConnectionState.SCANNING) return
@@ -307,6 +284,9 @@ class SimpleBleConnectedController(
         }
     }
 
+    /**
+     * Отдает строкой все службы и характеристики устройства
+     */
     fun showGattContents(profile: BluetoothGatt): String {
         var outLog = ""
         runPermissionSafe {
@@ -351,6 +331,11 @@ class SimpleBleConnectedController(
         scanJob?.cancel()
     }
 
+    /**
+     * Заправшивает разрешения у пользователя на новых версиях
+     * и показав сообщение о необходимости выдачи разрешение открывает
+     * настройку приложения на старых
+     */
     private fun runPermissionSafe(
         rational: String = "",
         action: () -> Unit

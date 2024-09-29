@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface BluetoothRepository {
     fun getState(): Flow<DeviceState>
     fun sendCommand(command: ControlCommand)
-    fun getTimings(): Timings
+    fun requestTimings()
     fun sendTimings(newTimings: Timings)
     suspend fun scanForDevice()
     fun stopScan()

@@ -3,6 +3,7 @@ package com.example.carcamerasandlightsbluetooth.data.map
 import android.util.Log
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.Constants
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
+import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import java.util.BitSet
@@ -31,7 +32,8 @@ object PacketsMapper {
                         frontCameraIsShown = bits.get(10),
                         rearCameraIsOn = bits.get(11),
                         angelEyeIsOn = bits.get(12),
-                        displayIsOn = bits.get(13)
+                        displayIsOn = bits.get(13),
+                        timings = Timings.NOT_INITIALIZED
                     )
                 )
             }
@@ -95,5 +97,41 @@ object PacketsMapper {
             }
         }
         return income
+    }
+
+    fun commandToPacket(command: ControlCommand): ByteArray {
+        val bits = BitSet(16)
+        with(command) {
+            val cameraBits = BitSet(cameraState.ordinal)
+            bits[0] = true
+            bits[1] = false
+            bits[2] = cautionIsOn
+            bits[3] = leftFogIsOn
+            bits[4] = rightFogIsOn
+            bits[5] = relayIsOn
+            bits[6] = rearCameraIsOn
+            bits[7] = angelEyeIsOn
+            bits[8] = displayIsOn
+            bits[9] = cameraBits[0]
+            bits[10] = cameraBits[1]
+            bits[15] = true
+        }
+        return bits.toByteArray()
+    }
+
+    fun commandToPacket(timings: Timings): ByteArray {
+        val bytes = ByteArray(9)
+        with(timings) {
+            bytes[0] = 3
+            bytes[1] = bounce.toByte()
+            bytes[2] = (bounce shr (8)).toByte()
+            bytes[3] = repeater.toByte()
+            bytes[4] = (repeater shr (8)).toByte()
+            bytes[5] = frontDelay.toByte()
+            bytes[6] = (frontDelay shr (8)).toByte()
+            bytes[7] = rearDelay.toByte()
+            bytes[8] = (rearDelay shr (8)).toByte()
+        }
+        return bytes
     }
 }

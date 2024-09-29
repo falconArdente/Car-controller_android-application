@@ -10,7 +10,7 @@ interface ControllerInteractor {
     fun getStateFlow(): Flow<DeviceState>
     fun sendCommand(command: ControlCommand)
     fun switchToTestMode(testIsOn: Boolean)
-    fun getTimings(): Timings
+    fun requestTimings()
     fun sendTimings(newTimings: Timings)
     fun scanForDevice()
     fun stopScan()
