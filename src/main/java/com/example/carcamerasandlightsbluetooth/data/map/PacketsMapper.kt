@@ -12,10 +12,13 @@ object PacketsMapper {
         if (!(data[0] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()
                     && data[1] == Constants.START_PACKAGE_SIGNATURE.code.toByte())
         ) return DeviceReports.Error
+
         Log.d("repository", "Go into packet. size is ${data.size}")
         Log.d("repository", "${data.toList()}")
-            // TODO rebuild array
-        return when (data.size) {
+        val packet = reduceToContent(data)
+        Log.d("repository", "packet ${packet.size} ${packet.toList()}")
+        // TODO rebuild array
+        return when (packet.size) {
             5 -> {// 2 of data 2 of border and 1 start byte
                 Log.d("repository", "looks as state")
                 val bits = BitSet.valueOf(byteArrayOf(data[2], data[3]))
@@ -57,7 +60,7 @@ object PacketsMapper {
                 )
             }
 
-            else ->{
+            else -> {
                 Log.d("repository", "looks as ELSE")
                 return DeviceReports.Error
             }
@@ -88,5 +91,15 @@ object PacketsMapper {
                 displayIsOn = displayIsOn
             )
         }
+    }
+
+    private fun reduceToContent(income: ByteArray): ByteArray {
+        val startByte = 2
+        for (i in startByte..income.size step 1) {
+            if (income[i] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()) {
+                return income.copyOfRange(startByte, i)
+            }
+        }
+        return income
     }
 }
