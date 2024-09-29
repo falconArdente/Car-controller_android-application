@@ -1,6 +1,5 @@
 package com.example.carcamerasandlightsbluetooth.data.map
 
-import android.util.Log
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.Constants
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
@@ -57,7 +56,6 @@ object PacketsMapper {
             }
 
             else -> {
-                Log.d("repository", "looks as ELSE")
                 return DeviceReports.Error
             }
         }

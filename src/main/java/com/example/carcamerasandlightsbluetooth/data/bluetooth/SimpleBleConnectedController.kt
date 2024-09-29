@@ -135,7 +135,7 @@ class SimpleBleConnectedController(
         return ScanFilter.Builder().setDeviceAddress(deviceAddress).build()
     }
 
-    fun stopScan() {
+    private fun stopScan() {
         scanJob?.cancel()
         mutableConnectionStateFlow.value = previousConnectionState
     }
