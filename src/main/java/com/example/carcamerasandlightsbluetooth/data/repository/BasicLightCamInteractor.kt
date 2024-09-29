@@ -6,36 +6,36 @@ import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import kotlinx.coroutines.flow.Flow
 
-class BasicLightCamInteractor: ControllerInteractor {
-    override fun getStateFlow(): Flow <DeviceState> {
-        TODO("Not yet implemented")
+class BasicLightCamInteractor(private val repository: BluetoothRepository) : ControllerInteractor {
+    override fun getStateFlow(): Flow<DeviceState> {
+        return repository.getStateFlow()
     }
 
     override fun sendCommand(command: ControlCommand) {
-        TODO("Not yet implemented")
+        repository.sendCommand(command)
     }
 
     override fun switchToTestMode(testIsOn: Boolean) {
-        TODO("Not yet implemented")
+        repository.switchToTestMode(testIsOn)
     }
 
     override fun requestTimings() {
-        TODO("Not yet implemented")
+        repository.requestTimings()
     }
 
     override fun sendTimings(newTimings: Timings) {
-        TODO("Not yet implemented")
+        repository.sendTimings(newTimings)
     }
 
-    override fun scanForDevice() {
-        TODO("Not yet implemented")
+    override suspend fun scanForDevice() {
+        repository.scanForDevice()
     }
 
     override fun stopScan() {
-        TODO("Not yet implemented")
+        repository.stopScan()
     }
 
     override fun getServiceDataFlow(): Flow<String> {
-        TODO("Not yet implemented")
+        return repository.getServiceDataFlow()
     }
 }

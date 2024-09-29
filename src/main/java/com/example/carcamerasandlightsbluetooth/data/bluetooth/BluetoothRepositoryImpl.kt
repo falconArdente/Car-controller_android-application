@@ -3,6 +3,7 @@ package com.example.carcamerasandlightsbluetooth.data.bluetooth
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.example.carcamerasandlightsbluetooth.R
+import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
 import com.example.carcamerasandlightsbluetooth.data.map.PacketsMapper
@@ -46,7 +47,9 @@ class BluetoothRepositoryImpl(
     private var serviceSender: ServiceMessageSender? = null
     val communicationErrorsStateFlow = MutableStateFlow(0)
 
-    // to make a log textView:
+    /**
+     * Распределяет данные, возникающие, при сканировании по потокам состояний и сервисным
+     */
     private val scanFlowCollector = FlowCollector<Result<List<BluetoothDevice>>> { result ->
         when (result) {
             is Result.Success -> {
@@ -70,6 +73,10 @@ class BluetoothRepositoryImpl(
             is Result.Log -> serviceSender?.sendMessage(result.message.toString())
         }
     }
+
+    /**
+     * Закидывает в состояния подключения контроллера в поток состояний
+     */
     private val deviceStatesCollector = FlowCollector<ConnectionState> { connectionState ->
         when (connectionState) {
             ConnectionState.NOT_CONNECTED -> {
@@ -87,6 +94,10 @@ class BluetoothRepositoryImpl(
         }
         previousRemoteState = connectionState
     }
+
+    /**
+     * Разделяет данные по потокам состояний и сервисным после соединения с контроллером
+     */
     private val connectionFlowCollector = FlowCollector<Result<ByteArray>> { result ->
         when (result) {
             is Result.Success -> {
@@ -105,7 +116,7 @@ class BluetoothRepositoryImpl(
     }
 
 
-    override suspend fun getServiceDataFlow(): Flow<String> {
+    override fun getServiceDataFlow(): Flow<String> {
         return callbackFlow {
             serviceSender = ServiceMessageSender { message ->
                 trySend(message)
@@ -152,6 +163,26 @@ class BluetoothRepositoryImpl(
                 }
             }
             awaitClose {}
+        }
+    }
+
+    /**
+     * Отправка текущего состояния с модификатором камеры TEST_MODE
+     */
+    override fun switchToTestMode(testIsOn: Boolean) {
+        with(lastDeviceState) {
+            sendCommand(
+                ControlCommand(
+                    cautionIsOn = cautionIsOn,
+                    leftFogIsOn = leftFogIsOn,
+                    rightFogIsOn = rightFogIsOn,
+                    relayIsOn = frontCameraIsShown,
+                    rearCameraIsOn = rearCameraIsOn,
+                    angelEyeIsOn = angelEyeIsOn,
+                    displayIsOn = displayIsOn,
+                    cameraState = if (testIsOn) CameraState.TEST_MODE else CameraState.CAMS_OFF
+                )
+            )
         }
     }
 

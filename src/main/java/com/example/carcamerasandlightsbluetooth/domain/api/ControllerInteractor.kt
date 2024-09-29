@@ -12,7 +12,7 @@ interface ControllerInteractor {
     fun switchToTestMode(testIsOn: Boolean)
     fun requestTimings()
     fun sendTimings(newTimings: Timings)
-    fun scanForDevice()
+    suspend fun scanForDevice()
     fun stopScan()
     fun getServiceDataFlow(): Flow<String>
 }
