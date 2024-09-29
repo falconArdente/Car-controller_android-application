@@ -2,12 +2,12 @@ package com.example.carcamerasandlightsbluetooth.data.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
 import com.example.carcamerasandlightsbluetooth.data.map.PacketsMapper
 import com.example.carcamerasandlightsbluetooth.data.repository.BluetoothRepository
+import com.example.carcamerasandlightsbluetooth.data.repository.DeviceStateSender
 import com.example.carcamerasandlightsbluetooth.data.repository.ServiceMessageSender
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
 class BluetoothRepositoryImpl(
@@ -39,31 +38,13 @@ class BluetoothRepositoryImpl(
     private val deviceIsReachable =
         context.getString(R.string.is_reachable)
     private val connectingToMessage = context.getString(R.string.connecting_to)
-    private val remoteNotConnected = context.getString(R.string.remote_not_connected)
-    private val remoteScanning = context.getString(R.string.remote_scanning)
-    private val remoteConnected = context.getString(R.string.remote_connected)
-    private val remoteConnectedNotifications =
-        context.getString(R.string.remote_connected_notifications)
     private var previousRemoteState = ConnectionState.NOT_CONNECTED
+    private var lastDeviceState: DeviceState = DeviceState.NOT_INITIALIZED
     private var connectionReactionsJob: Job? = null
     private var scanJob: Job? = null
-    private var connectionFlow: Flow<Result<DeviceState>>? = null
-    private val stateFlow: MutableStateFlow<DeviceState> =
-        MutableStateFlow(DeviceState.NOT_INITIALIZED)
+    private var stateSender: DeviceStateSender? = null
     private var serviceSender: ServiceMessageSender? = null
-    private var macAddress: String = ""
-    private var connectionFlowCollector: FlowCollector<Result<DeviceState>> =
-        FlowCollector { result ->
-            when (result) {
-                is Result.Error ->{
-                    Log.d("repository", "ERROR you know")
-                }
-                is Result.Log -> Log.d("repository", result.message.toString())
-                is Result.Success -> {
-                    Log.d("repository", "SUCCESSFULLY")
-                }
-            }
-        }
+    val communicationErrorsStateFlow = MutableStateFlow(0)
 
     // to make a log textView:
     private val scanFlowCollector = FlowCollector<Result<List<BluetoothDevice>>> { result ->
@@ -73,9 +54,8 @@ class BluetoothRepositoryImpl(
                     serviceSender?.sendMessage("${device.address} $deviceIsReachable")
                     if (device.address == defaultMAC) {
                         serviceSender?.sendMessage("$connectingToMessage ${device.address}")
-                        connectionFlow = connectToDevice(device)
-                        connectionFlow!!.collect(connectionFlowCollector)
-                        scanJob?.cancel()
+                        communicator.connectTo(device).collect(connectionFlowCollector)
+                        stopScan()
                     }
                 }
             }
@@ -90,49 +70,101 @@ class BluetoothRepositoryImpl(
             is Result.Log -> serviceSender?.sendMessage(result.message.toString())
         }
     }
-
-    override var serviceFlow: Flow<String> = callbackFlow {
-        serviceSender = ServiceMessageSender { message ->
-            trySend(message)
-        }
-        awaitClose {}
-    }
-
     private val deviceStatesCollector = FlowCollector<ConnectionState> { connectionState ->
         when (connectionState) {
             ConnectionState.NOT_CONNECTED -> {
-                serviceSender?.sendMessage(remoteNotConnected)
+                stateSender?.send(DeviceState.ConnectionState.NOT_CONNECTED)
                 if (previousRemoteState == ConnectionState.CONNECTED_NOTIFICATIONS
                     || previousRemoteState == ConnectionState.CONNECTED
                 ) scanForDevice()
             }
 
-            ConnectionState.SCANNING -> serviceSender?.sendMessage(remoteScanning)
-            ConnectionState.CONNECTED_NOTIFICATIONS -> serviceSender?.sendMessage(
-                remoteConnectedNotifications
-            )
+            ConnectionState.SCANNING -> stateSender?.send(DeviceState.ConnectionState.SCANNING)
+            ConnectionState.CONNECTED_NOTIFICATIONS ->
+                stateSender?.send(DeviceState.ConnectionState.CONNECTED_NOTIFIED)
 
-            ConnectionState.CONNECTED -> serviceSender?.sendMessage(remoteConnected)
+            ConnectionState.CONNECTED -> stateSender?.send(DeviceState.ConnectionState.CONNECTED)
         }
         previousRemoteState = connectionState
     }
+    private val connectionFlowCollector = FlowCollector<Result<ByteArray>> { result ->
+        when (result) {
+            is Result.Success -> {
+                stateSender?.send(PacketsMapper.toReport(result.data!!))
+            }
+
+            is Result.Error -> {
+                serviceSender?.sendMessage(
+                    "$gotIncomeDataErrorMessage ${result.message} "
+                            + result.errorCode?.toString()
+                )
+            }
+
+            is Result.Log -> serviceSender?.sendMessage(result.message.toString())
+        }
+    }
+
 
     override suspend fun getServiceDataFlow(): Flow<String> {
-        return serviceFlow
+        return callbackFlow {
+            serviceSender = ServiceMessageSender { message ->
+                trySend(message)
+            }
+            awaitClose {}
+        }
     }
 
-    override fun getState(): Flow<DeviceState> = stateFlow
+    override fun getStateFlow(): Flow<DeviceState> {
+        return callbackFlow {
+            stateSender = object : DeviceStateSender {
+                override fun send(deviceReport: DeviceReports) {
+                    when (deviceReport) {
+                        is DeviceReports.StateReport -> {
+                            lastDeviceState = PacketsMapper.combineReportWithState(
+                                stateReport = deviceReport,
+                                deviceState = lastDeviceState
+                            )
+                            trySend(lastDeviceState).isSuccess
+                        }
+
+                        is DeviceReports.TimingReport -> {
+                            serviceSender?.sendMessage(gotTimingsMessage)
+                            lastDeviceState = lastDeviceState.copy(timings = deviceReport.timings)
+                            trySend(lastDeviceState).isSuccess
+                        }
+
+                        is DeviceReports.Error -> {
+                            serviceSender?.sendMessage(gotPacketRecognitionErrorMessage)
+                        }
+
+                        is DeviceReports.AdditionalReport -> {
+                            serviceSender?.sendMessage("$gotDeviceErrorsCount: ${deviceReport.errorsCount}")
+                            communicationErrorsStateFlow.value = deviceReport.errorsCount
+                        }
+                    }
+                }
+
+                override fun send(connectionState: DeviceState.ConnectionState) {
+                    lastDeviceState = lastDeviceState.copy(
+                        connectionState = connectionState
+                    )
+                    trySend(lastDeviceState).isSuccess
+                }
+            }
+            awaitClose {}
+        }
+    }
 
     override fun sendCommand(command: ControlCommand) {
-        TODO("Not yet implemented")
+        communicator.sendBytes(PacketsMapper.commandToPacket(command))
     }
 
-    override fun getTimings(): Timings {
-        TODO("Not yet implemented")
+    override fun requestTimings() {
+        communicator.sendBytes(byteArrayOf(Constants.TIMINGS_REQUEST.toByte()))
     }
 
     override fun sendTimings(newTimings: Timings) {
-        TODO("Not yet implemented")
+        communicator.sendBytes(PacketsMapper.commandToPacket(newTimings))
     }
 
     override suspend fun scanForDevice() {
@@ -147,68 +179,13 @@ class BluetoothRepositoryImpl(
             scanJob?.cancel()
             scanJob = launch(Dispatchers.IO) {
                 delay(300L)
-                if (defaultMAC.isNotEmpty())
-                    communicator.startScanByAddress(defaultMAC).collect(scanFlowCollector)
-                else
-                    communicator.startRawScan().collect(scanFlowCollector)
+                stateSender?.send(DeviceState.ConnectionState.SCANNING)
+                communicator.startScanByAddress(defaultMAC).collect(scanFlowCollector)
             }
         }
     }
 
     override fun stopScan() {
         scanJob?.cancel()
-    }
-
-    private suspend fun connectToDevice(device: BluetoothDevice): Flow<Result<DeviceState>> {
-        return flow {
-            communicator.connectTo(device)
-                .collect { result ->
-                    when (result) {
-                        is Result.Success -> {
-                            Log.d("repository", "before report")
-                            when (val report = PacketsMapper.toReport(result.data!!)) {
-                                is DeviceReports.StateReport -> {
-                                    Log.d("repository", "before emit")
-                                    delay(3000L)
-                                    Log.d("repository", "... and ...")
-                                    emit(
-                                        Result.Success(
-                                            PacketsMapper.combineReportWithState(
-                                                stateReport = report,
-                                                deviceState = stateFlow.value
-                                            )
-                                        )
-                                    )
-                                }
-
-                                is DeviceReports.TimingReport -> {
-                                    serviceSender?.sendMessage(gotTimingsMessage)
-                                    TODO()
-                                }
-
-                                is DeviceReports.Error -> {
-                                    serviceSender?.sendMessage(gotPacketRecognitionErrorMessage)
-                                }
-
-                                is DeviceReports.AdditionalReport -> {
-                                    serviceSender?.sendMessage(gotDeviceErrorsCount)
-                                    TODO()
-                                }
-                            }
-                        }
-
-                        is Result.Error -> {
-                            serviceSender?.sendMessage(
-                                "$gotIncomeDataErrorMessage ${result.message} "
-                                        + result.errorCode?.toString()
-                            )
-                        }
-
-                        is Result.Log -> {
-                            serviceSender?.sendMessage(result.message.toString())
-                        }
-                    }
-                }
-        }
     }
 }

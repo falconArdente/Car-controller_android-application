@@ -6,12 +6,11 @@ import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import kotlinx.coroutines.flow.Flow
 
 interface BluetoothRepository {
-    fun getState(): Flow<DeviceState>
     fun sendCommand(command: ControlCommand)
-    fun getTimings(): Timings
+    fun requestTimings()
     fun sendTimings(newTimings: Timings)
     suspend fun scanForDevice()
     fun stopScan()
     suspend fun getServiceDataFlow(): Flow<String>
-    val serviceFlow: Flow<String>
+    fun getStateFlow(): Flow<DeviceState>
 }

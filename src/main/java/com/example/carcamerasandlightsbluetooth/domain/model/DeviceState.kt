@@ -14,6 +14,7 @@ data class DeviceState(
     val rearCameraIsOn: Boolean,
     val angelEyeIsOn: Boolean,
     val displayIsOn: Boolean,
+    val timings: Timings
 ) {
     enum class ConnectionState {
         NOT_CONNECTED,
@@ -37,6 +38,7 @@ data class DeviceState(
             rearCameraIsOn = false,
             angelEyeIsOn = false,
             displayIsOn = false,
+            timings = Timings.NOT_INITIALIZED
         )
     }
 

@@ -5,4 +5,8 @@ data class Timings(
     val repeater: Int,
     val frontDelay: Int,
     val rearDelay: Int,
-)
+) {
+    companion object {
+        val NOT_INITIALIZED = Timings(-1, -1, -1, -1)
+    }
+}
