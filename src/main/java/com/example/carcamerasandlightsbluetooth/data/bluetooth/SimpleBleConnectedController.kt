@@ -307,7 +307,9 @@ class SimpleBleConnectedController(
         }
         return outLog
     }
-
+    /**
+     * Активирует ССС дескриптор и подписывается на оповещения изменений харастеристики сервиса
+     */
     @SuppressLint("MissingPermission")
     fun subscribeForNotifyAndWrite(
         gattProfile: BluetoothGatt, characteristic: BluetoothGattCharacteristic?
@@ -328,9 +330,19 @@ class SimpleBleConnectedController(
 
     @SuppressLint("MissingPermission")
     fun onDestroy() {
-        currentGattProfile?.disconnect()
+        finish()
+    }
+
+    /**
+     * Отменяет сканирование, завершает соединение, освобождает запись реестра GATT клиентов
+     */
+    fun finish() {
         stopScan()
-        scanJob?.cancel()
+        runPermissionSafe {
+            currentGattProfile?.disconnect()
+            currentGattProfile?.close()
+        }
+        controllerDevice = null
     }
 
     /**
@@ -370,11 +382,5 @@ class SimpleBleConnectedController(
                 }
             }
         }
-    }
-
-    fun finish() {
-        stopScan()
-        currentGattProfile?.close()
-        controllerDevice = null
     }
 }

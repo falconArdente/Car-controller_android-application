@@ -6,22 +6,30 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".presentation.MainActivity">
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/shift_set_margin_top">
-    <include
-        android:id="@+id/shifts"
-        layout="@layout/shift_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"         />
-    <androidx.appcompat.widget.AppCompatImageView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:scaleType="centerInside"
-        android:src="@drawable/bluetooth_common"
-        />
-</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/shift_set_margin_top"
+        android:background="?attr/colorPrimary"
+        android:elevation="8dp"
+        android:outlineAmbientShadowColor="?attr/colorSecondary">
+
+        <include
+            android:id="@+id/shifts"
+            layout="@layout/shift_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:scaleType="centerInside"
+            android:src="@drawable/bluetooth_common"
+
+            />
+    </LinearLayout>
+
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="0dp"

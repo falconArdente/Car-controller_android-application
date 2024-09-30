@@ -45,7 +45,15 @@ class BluetoothRepositoryImpl(
     private var scanJob: Job? = null
     private var stateSender: DeviceStateSender? = null
     private var serviceSender: ServiceMessageSender? = null
+
+    /**
+     * Поток: число ошибок связи, обнаруженных контроллером
+     */
     val communicationErrorsStateFlow = MutableStateFlow(0)
+    /**
+     * Передоставляет поток: число ошибок связи, обнаруженных контроллером
+     */
+    override fun getErrorsCountFlow(): Flow<Int> =communicationErrorsStateFlow
 
     /**
      * Распределяет данные, возникающие, при сканировании по потокам состояний и сервисным

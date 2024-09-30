@@ -13,6 +13,7 @@ interface BluetoothRepository {
     fun stopScan()
     fun getServiceDataFlow(): Flow<String>
     fun getStateFlow(): Flow<DeviceState>
+    fun getErrorsCountFlow(): Flow<Int>
     fun switchToTestMode(testIsOn: Boolean)
     fun finish()
 }

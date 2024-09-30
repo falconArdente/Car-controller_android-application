@@ -14,7 +14,7 @@ import java.util.UUID
 
 val bluetoothModule = module {
     viewModel<RootViewModel> {
-        RootViewModel(device = get(), androidContext())
+        RootViewModel(deviceInteractor = get(), androidContext())
     }
     single<SimpleBleConnectedController> {
         SimpleBleConnectedController(

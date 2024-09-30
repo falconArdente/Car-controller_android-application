@@ -2,4 +2,18 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="DarkBack">#130426</color>
+    <color name="DarkOnPrimary">#1f59eb</color>
+    <color name="DarkHighLight">#5d87f0</color>
+    <color name="DarkSecondSurface">#1a184c</color>
+    <color name="DarkDisabled">#9aa0ab</color>
+    <color name="GreenBack">#00c3d0</color>
+
+    <color name="LightBack">#ffffff</color>
+    <color name="LightSurface">#d7e5ff</color>
+    <color name="LightOnPrimary">#000000</color>
+    <color name="LightHighLight">#fd9727</color>
+    <color name="LightSecondSurface">#263247</color>
+    <color name="LightDisabled">#7e8aa1</color>
+
 </resources>

@@ -49,6 +49,11 @@ interface ControllerInteractor {
     fun getServiceDataFlow(): Flow<String>
 
     /**
+     * Поток: число ошибок связи, обнаруженных контроллером
+     */
+    fun getErrorsCountFlow(): Flow<Int>
+
+    /**
      * Выполняет набор действий для корректного завершения связи
      */
     fun finish()
