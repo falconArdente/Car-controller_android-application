@@ -30,11 +30,16 @@ class RootViewModel(
 
     private val mutableStatesLiveData = MutableLiveData(DeviceState.NOT_INITIALIZED)
     val stateToObserve: LiveData<DeviceState> = mutableStatesLiveData
+    private val mutableLogLiveData = MutableLiveData("")
+    val serviceLogToObserve: LiveData<String> = mutableLogLiveData
+    private var logStorage = ""
     private val stateFlowCollector = FlowCollector<DeviceState> { incomeState ->
         mutableStatesLiveData.postValue(incomeState)
         Log.d("SimpleBle", incomeState.toString())
     }
     private val serviceLogCollector = FlowCollector<String> { message ->
+        logStorage += message + '\n'
+        mutableLogLiveData.postValue(logStorage)
         Log.d("SimpleBle", "service: $message")
     }
     private val errorCountCollector = FlowCollector<Int> {

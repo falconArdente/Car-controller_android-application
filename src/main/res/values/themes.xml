@@ -10,5 +10,31 @@
         <item name="colorControlHighlight">@color/LightHighLight</item>
     </style>
 
+    <style name="CameraSign" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="cardBackgroundColor">?attr/colorPrimary</item>
+        <item name="cardElevation">@dimen/command_card_elevation</item>
+    </style>
+    <style name="CameraTextView" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:elevation">@dimen/command_card_elevation</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:text">@string/camera_on_air</item>
+        <item name="android:textAlignment">gravity</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/camera_text_size</item>
+    </style>
+
+    <style name="FogButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:background">@color/transparent</item>
+        <item name="cardElevation">@dimen/command_card_elevation</item>
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
+        <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
+    </style>
+
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />
 </resources>

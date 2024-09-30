@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        android:elevation="16dp"
+        android:elevation="@dimen/elevation"
         android:outlineAmbientShadowColor="?attr/colorSecondary">
 
         <include
@@ -25,15 +25,19 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:scaleType="centerInside"
-            android:src="@drawable/b_scaning"
-
-            />
+            android:src="@drawable/b_disconnected" />
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/LogView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingHorizontal="@dimen/icon_slide"
+        android:paddingVertical="@dimen/bottom_guide_line_margin"
+        android:scrollbars="vertical"
+        android:text=""
+        android:textColor="?attr/colorOnPrimary" />
 
     <include
         android:id="@+id/commands_block"

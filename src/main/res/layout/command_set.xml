@@ -3,14 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/command_set_container"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="@drawable/command_back"
+    android:outlineSpotShadowColor="?attr/colorOnPrimary">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_gide"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="16dp"
+        app:layout_constraintGuide_begin="@dimen/sides_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -18,18 +20,13 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_end="16dp"
+        app:layout_constraintGuide_end="@dimen/sides_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="@dimen/command_card_elevation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/front_cam_back"
+        style="@style/CameraSign"
         android:layout_width="@dimen/camera_button_width"
         android:layout_height="@dimen/button_size"
         android:layout_marginTop="@dimen/icon_slide"
@@ -41,6 +38,7 @@
         android:id="@+id/front_cam"
         android:layout_width="@dimen/button_size"
         android:layout_height="@dimen/button_size"
+        android:elevation="@dimen/command_card_elevation"
         android:rotation="270"
         android:src="@drawable/camera_void"
         app:layout_constraintStart_toStartOf="@id/front_cam_back"
@@ -48,22 +46,13 @@
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/front_cam_text"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:gravity="center"
-        android:text="@string/camera_on_air"
-        android:textAlignment="gravity"
-        android:textAllCaps="true"
-        android:textSize="@dimen/camera_text_size"
+        style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/front_cam_back"
         app:layout_constraintTop_toTopOf="@id/front_cam_back" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/left_fog"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:layout_margin="@dimen/icon_slide"
-        android:layout_marginTop="@dimen/icon_row_divider"
+        style="@style/FogButton"
         android:scaleType="fitCenter"
         android:src="@drawable/fog_lamp"
         app:layout_constraintStart_toStartOf="@id/start_gide"
@@ -71,10 +60,7 @@
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/right_fog"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:layout_margin="@dimen/icon_slide"
-        android:layout_marginTop="@dimen/icon_row_divider"
+        style="@style/FogButton"
         android:rotation="180"
         android:rotationX="180"
         android:scaleType="fitCenter"
@@ -82,11 +68,13 @@
         app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/left_fog"
         app:layout_constraintTop_toBottomOf="@id/front_cam" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/back_cam_back"
+        style="@style/CameraSign"
         android:layout_width="@dimen/camera_button_width"
         android:layout_height="@dimen/button_size"
-        android:layout_marginTop="@dimen/icon_slide"
+        android:layout_marginTop="@dimen/icon_row_divider"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toStartOf="@id/start_gide"
         app:layout_constraintTop_toBottomOf="@id/left_fog" />
@@ -95,6 +83,7 @@
         android:id="@+id/back_cam"
         android:layout_width="@dimen/button_size"
         android:layout_height="@dimen/button_size"
+        android:elevation="@dimen/command_card_elevation"
         android:rotation="90"
         android:src="@drawable/camera_void"
         app:layout_constraintStart_toStartOf="@id/back_cam_back"
@@ -102,13 +91,14 @@
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/back_cam_text"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:gravity="center"
-        android:text="@string/camera_on_air"
-        android:textAlignment="gravity"
-        android:textAllCaps="true"
-        android:textSize="@dimen/camera_text_size"
+        style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/back_cam_back"
         app:layout_constraintTop_toTopOf="@id/back_cam_back" />
+
+    <View
+        android:layout_width="@dimen/icon_slide"
+        android:layout_height="@dimen/icon_slide"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/back_cam" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

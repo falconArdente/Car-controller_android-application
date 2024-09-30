@@ -7,7 +7,6 @@
     <color name="DarkHighLight">#5d87f0</color>
     <color name="DarkSecondSurface">#1a184c</color>
     <color name="DarkDisabled">#9aa0ab</color>
-    <color name="GreenBack">#00c3d0</color>
 
     <color name="LightBack">#ffffff</color>
     <color name="LightSurface">#d7e5ff</color>
@@ -16,4 +15,7 @@
     <color name="LightSecondSurface">#263247</color>
     <color name="LightDisabled">#7e8aa1</color>
 
+    <color name="GreenBack">#00c3d0</color>
+    <color name="RedCaution">#CEFF2222</color>
+    <color name="transparent">#00000000</color>
 </resources>
