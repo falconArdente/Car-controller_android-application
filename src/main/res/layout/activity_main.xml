@@ -39,13 +39,34 @@
         android:text=""
         android:textColor="?attr/colorOnPrimary" />
 
-    <include
-        android:id="@+id/commands_block"
-        layout="@layout/command_set"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_marginEnd="@dimen/command_set_margin_end"
-        android:layout_marginBottom="@dimen/command_set_margin_bottom" />
+        android:orientation="horizontal">
 
+        <include
+            android:id="@+id/column_set"
+            layout="@layout/column_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center"
+            android:layout_marginStart="@dimen/command_set_margin_end" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <include
+            android:id="@+id/commands_block"
+            layout="@layout/command_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_marginEnd="@dimen/command_set_margin_end" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="@dimen/command_set_margin_bottom" />
 </androidx.appcompat.widget.LinearLayoutCompat>

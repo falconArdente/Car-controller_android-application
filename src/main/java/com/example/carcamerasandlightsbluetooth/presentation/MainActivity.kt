@@ -33,6 +33,12 @@ class MainActivity : AppCompatActivity() {
         renderShifts(state)
         renderBluetoothSign(state)
         renderCommandSet(state)
+        binding.columnSet.cautionButton.setBackgroundDrawable(
+            AppCompatResources.getDrawable(
+                this@MainActivity,
+                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+            )
+        )
     }
 
     private fun renderCommandSet(state: DeviceState) {

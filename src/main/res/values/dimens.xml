@@ -15,4 +15,5 @@
     <dimen name="shift_set_margin_top">4dp</dimen>
     <dimen name="elevation">16dp</dimen>
     <dimen name="shadow_size">4dp</dimen>
+    <dimen name="side_guide_shift_set">16dp</dimen>
 </resources>

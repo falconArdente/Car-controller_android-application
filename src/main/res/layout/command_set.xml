@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/command_set_container"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -48,7 +49,8 @@
         android:id="@+id/front_cam_text"
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/front_cam_back"
-        app:layout_constraintTop_toTopOf="@id/front_cam_back" />
+        app:layout_constraintTop_toTopOf="@id/front_cam_back"
+        tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/left_fog"
@@ -56,7 +58,8 @@
         android:scaleType="fitCenter"
         android:src="@drawable/fog_lamp"
         app:layout_constraintStart_toStartOf="@id/start_gide"
-        app:layout_constraintTop_toBottomOf="@id/front_cam" />
+        app:layout_constraintTop_toBottomOf="@id/front_cam"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/right_fog"
@@ -67,7 +70,8 @@
         android:src="@drawable/fog_lamp"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/left_fog"
-        app:layout_constraintTop_toBottomOf="@id/front_cam" />
+        app:layout_constraintTop_toBottomOf="@id/front_cam"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/back_cam_back"
@@ -93,12 +97,14 @@
         android:id="@+id/back_cam_text"
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/back_cam_back"
-        app:layout_constraintTop_toTopOf="@id/back_cam_back" />
+        app:layout_constraintTop_toTopOf="@id/back_cam_back"
+        tools:ignore="TextSizeCheck" />
 
     <View
         android:layout_width="@dimen/icon_slide"
         android:layout_height="@dimen/icon_slide"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/start_gide"
         app:layout_constraintTop_toBottomOf="@id/back_cam" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
