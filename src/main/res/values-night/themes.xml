@@ -1,7 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.CarCamerasAndLightsBluetooth" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="backgroundColor">@color/black</item>
+        <item name="colorPrimary">@color/DarkBack</item>
+        <item name="colorOnPrimary">@color/DarkOnPrimary</item>
+        <item name="colorSecondary">@color/DarkSecondSurface</item>
+        <item name="colorControlNormal">@color/DarkDisabled</item>
+        <item name="colorControlActivated">@color/GreenBack</item>
+        <item name="colorControlHighlight">@color/LightHighLight</item>
     </style>
 </resources>

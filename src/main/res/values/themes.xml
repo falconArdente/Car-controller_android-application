@@ -8,7 +8,6 @@
         <item name="colorControlNormal">@color/LightDisabled</item>
         <item name="colorControlActivated">@color/GreenBack</item>
         <item name="colorControlHighlight">@color/LightHighLight</item>
-
     </style>
 
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />

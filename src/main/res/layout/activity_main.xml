@@ -10,9 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/shift_set_margin_top"
         android:background="?attr/colorPrimary"
-        android:elevation="8dp"
+        android:elevation="16dp"
         android:outlineAmbientShadowColor="?attr/colorSecondary">
 
         <include
@@ -22,10 +21,11 @@
             android:layout_height="wrap_content" />
 
         <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/bluetooth_sign"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:scaleType="centerInside"
-            android:src="@drawable/bluetooth_common"
+            android:src="@drawable/b_scaning"
 
             />
     </LinearLayout>
