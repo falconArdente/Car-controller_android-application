@@ -6,7 +6,9 @@ import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import java.util.BitSet
-
+/**
+ * Соединяет массив байт контроллера и объекты в Android
+ */
 object PacketsMapper {
     fun toReport(data: ByteArray): DeviceReports {
         if (!(data[0] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()

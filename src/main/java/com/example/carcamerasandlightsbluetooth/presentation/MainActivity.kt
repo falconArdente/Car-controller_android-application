@@ -1,151 +1,123 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
-import android.bluetooth.BluetoothDevice
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
+import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import com.example.carcamerasandlightsbluetooth.R
-import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController
-import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState
-import com.example.carcamerasandlightsbluetooth.data.repository.BluetoothRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
+import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
+import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
+    private val viewModel by viewModel<RootViewModel>()
+    private var _binding: ActivityMainBinding? = null
+    private val binding: ActivityMainBinding
+        get() = _binding!!
 
-    private var countOfConnectedDevices: Int = 0
-    private var scanJob: Job? = null
-    private var sendJob: Job? = null
-    private val blessed: SimpleBleConnectedController by inject<SimpleBleConnectedController>()
-    private val repo: BluetoothRepository by inject()
-    private var handler: Handler? = null
-    private var switch = true
-    override fun onDestroy() {
-        super.onDestroy()
-        blessed.onDestroy()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        handler = Handler(mainLooper)
-        setContentView(R.layout.activity_main)
-        lifecycleScope.launch(Dispatchers.IO) {
-            blessed.connectionStateFlow.collect {
-                //parseNewConnectionState(it)
-            }
-        }
-        doScanStuff3()
-    }
-
-    private fun doScanStuff3() {
-        Log.d("repository", "Launch It")
-        lifecycleScope.launch {
-            launch {
-                repo.getServiceDataFlow()
-                    .collect { string ->
-                        Log.d("repository", "service: $string")
-
-                    }
-            }
-            //delay(3000L)
-            repo.scanForDevice()
-        }
-//        lifecycleScope.launch {
-//            launch {
-//                repo.getServiceDataFlow()
-//                    .collect { string ->
-//                        Log.d("repository", "INIT subcr $string")
-//                    }
-//            }
-//
-//            var counter = 0
-//            while (true) {
-//                delay(15000L)
-//                Log.d("repository", "go for service $counter")
-//                launch {
-//                    repo.getServiceDataFlow()
-//                        .collect { string ->
-//
-//                            Log.d("repository", "at $counter flow $string")
-//                        }
-//                }
-//                Log.d("repository", "subscribed service on $counter")
-//                counter++
-//            }
-//        }
-    }
-
-    private fun doScanStuff2() {
-        scanJob = lifecycleScope.launch(Dispatchers.IO) {
-            Log.d("SimpleBle", "new Scan run")
-            blessed.startScanByAddress("00:15:A5:02:0A:24")
-                .collect { listItem ->
-                    Log.d("SimpleBle", "collecting")
-                    if (!listItem.isNullOrEmpty()) {
-                        listItem.forEach { device ->
-                            Log.d("SimpleBle", listItem.toString())
-                            if (device.address == "00:15:A5:02:0A:24") {
-                                blessed.stopScan()
-                                Log.d("SimpleBle", "connecting")
-                                if (countOfConnectedDevices == 0) connectTo(device)
-                                countOfConnectedDevices++
-                                coroutineContext.cancel()
-                            }
-                        }
-                    }
-                }
+        _binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        viewModel.stateToObserve.observe(this) { renderDeviceState(it) }
+        binding.LogView.movementMethod = ScrollingMovementMethod()
+        viewModel.serviceLogToObserve.observe(this) {
+            binding.LogView.text = it
         }
     }
 
-    private fun parseNewConnectionState(state: ConnectionState) {
-        when (state) {
-            ConnectionState.CONNECTED -> {
-                Log.d("SimpleBle", "A connected")
-                senderLauncher()
-            }
-
-            ConnectionState.NOT_CONNECTED, ConnectionState.SCANNING -> Log.d(
-                "SimpleBle",
-                "A NOT con"
+    private fun renderDeviceState(state: DeviceState) {
+        renderShifts(state)
+        renderBluetoothSign(state)
+        renderCommandSet(state)
+        binding.columnSet.cautionButton.setBackgroundDrawable(
+            AppCompatResources.getDrawable(
+                this@MainActivity,
+                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
             )
+        )
+    }
 
-            ConnectionState.CONNECTED_NOTIFICATIONS -> Log.d(
-                "SimpleBle",
-                "A CON with NOTIFY"
+    private fun renderCommandSet(state: DeviceState) {
+        with(binding.commandsBlock) {
+            backCamText.isVisible = state.rearCameraIsOn
+            frontCamText.isVisible = state.frontCameraIsShown
+            backCamBack.setBackgroundDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.rearCameraIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                )
+            )
+            frontCamBack.setBackgroundDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.frontCameraIsShown) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                )
+            )
+            leftFog.setBackgroundDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.leftFogIsOn) R.drawable.fog_lamp_on else R.drawable.fog_lamp
+                )
+            )
+            rightFog.setBackgroundDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.rightFogIsOn) R.drawable.fog_lamp_on else R.drawable.fog_lamp
+                )
             )
         }
     }
 
-    private var sender = Runnable {
-        if (switch) {
-            blessed.sendBytes(byteArrayOf(1, 1))
-            switch = false
-        } else {
-            blessed.sendBytes(byteArrayOf(1, 2))
-            switch = true
-        }
-        senderLauncher()
-    }
-
-    private fun senderLauncher() {
-        handler?.removeCallbacks(sender)
-        handler?.postDelayed(sender, 3000L)
-    }
-
-    private fun connectTo(device: BluetoothDevice) {
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            blessed.connectTo(device)
-                .collect { result ->
-                    Log.d("SimpleBle", (result.data as ByteArray).toList().toString())
+    private fun renderBluetoothSign(state: DeviceState) {
+        binding.bluetoothSign.setImageDrawable(
+            AppCompatResources.getDrawable(
+                this,
+                when (state.connectionState) {
+                    DeviceState.ConnectionState.NOT_CONNECTED -> R.drawable.b_disconnected
+                    DeviceState.ConnectionState.SCANNING -> R.drawable.b_scaning
+                    DeviceState.ConnectionState.CONNECTED -> R.drawable.b_connected
+                    DeviceState.ConnectionState.CONNECTED_NOTIFIED -> R.drawable.b_notified
                 }
+            )
+        )
+    }
+
+    private fun renderShifts(state: DeviceState) {
+        with(binding.shifts) {
+            leftClickImg.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.leftPressed) R.drawable.turn_arrow_is_on else R.drawable.turn_arrow
+                )
+            )
+            leftDblClickImg.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.leftDblPressed) R.drawable.dbl_click_is_on else R.drawable.dbl_click
+                )
+            )
+            rightClickImg.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.rightPressed) R.drawable.turn_arrow_is_on else R.drawable.turn_arrow
+                )
+            )
+            rightDblClickImg.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.rightDblPressed) R.drawable.dbl_click_is_on else R.drawable.dbl_click
+                )
+            )
+            reverseImg.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.reversePressed) R.drawable.reverse_is_on else R.drawable.reverse
+                )
+            )
         }
     }
 }

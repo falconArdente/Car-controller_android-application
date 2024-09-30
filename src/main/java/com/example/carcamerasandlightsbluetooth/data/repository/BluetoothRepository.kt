@@ -11,6 +11,9 @@ interface BluetoothRepository {
     fun sendTimings(newTimings: Timings)
     suspend fun scanForDevice()
     fun stopScan()
-    suspend fun getServiceDataFlow(): Flow<String>
+    fun getServiceDataFlow(): Flow<String>
     fun getStateFlow(): Flow<DeviceState>
+    fun getErrorsCountFlow(): Flow<Int>
+    fun switchToTestMode(testIsOn: Boolean)
+    fun finish()
 }

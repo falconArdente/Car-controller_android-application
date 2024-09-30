@@ -1,8 +1,46 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.CarCamerasAndLightsBluetooth" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="backgroundColor">@color/LightBack</item>
+        <item name="colorPrimary">@color/LightSurface</item>
+        <item name="colorOnPrimary">@color/LightOnPrimary</item>
+        <item name="colorSecondary">@color/LightSecondSurface</item>
+        <item name="colorControlNormal">@color/LightDisabled</item>
+        <item name="colorControlActivated">@color/GreenBack</item>
+        <item name="colorControlHighlight">@color/LightHighLight</item>
+    </style>
+
+    <style name="CameraSign" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="cardBackgroundColor">?attr/colorPrimary</item>
+        <item name="cardElevation">@dimen/command_card_elevation</item>
+    </style>
+    <style name="CameraTextView" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:elevation">@dimen/command_card_elevation</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:text">@string/camera_on_air</item>
+        <item name="android:textAlignment">gravity</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/camera_text_size</item>
+    </style>
+
+    <style name="FogButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:background">@color/transparent</item>
+        <item name="cardElevation">@dimen/command_card_elevation</item>
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
+        <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
+    </style>
+    <style name="ColumnButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
+        <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
     </style>
 
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />

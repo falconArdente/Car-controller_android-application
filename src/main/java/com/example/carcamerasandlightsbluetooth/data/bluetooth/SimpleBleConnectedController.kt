@@ -68,6 +68,7 @@ class SimpleBleConnectedController(
     private val failedToConnect = context.getString(R.string.failed_to_connect)
     private val scanFailedWithError = context.getString(R.string.scan_failed_with_error)
     private val waitingBondingCompletion = context.getString(R.string.waiting_bonding_completion)
+
     /**
      * Поток событий статуса соединения здесь. Gatt отдельно
      */
@@ -254,6 +255,7 @@ class SimpleBleConnectedController(
     }
 
     private fun onDisconnect() {
+
         mutableConnectionStateFlow.value = ConnectionState.NOT_CONNECTED
         serviceToCommunicateWith = null
         characteristicToNotifyOf = null
@@ -305,7 +307,9 @@ class SimpleBleConnectedController(
         }
         return outLog
     }
-
+    /**
+     * Активирует ССС дескриптор и подписывается на оповещения изменений харастеристики сервиса
+     */
     @SuppressLint("MissingPermission")
     fun subscribeForNotifyAndWrite(
         gattProfile: BluetoothGatt, characteristic: BluetoothGattCharacteristic?
@@ -326,9 +330,19 @@ class SimpleBleConnectedController(
 
     @SuppressLint("MissingPermission")
     fun onDestroy() {
-        currentGattProfile?.disconnect()
+        finish()
+    }
+
+    /**
+     * Отменяет сканирование, завершает соединение, освобождает запись реестра GATT клиентов
+     */
+    fun finish() {
         stopScan()
-        scanJob?.cancel()
+        runPermissionSafe {
+            currentGattProfile?.disconnect()
+            currentGattProfile?.close()
+        }
+        controllerDevice = null
     }
 
     /**

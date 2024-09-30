@@ -6,7 +6,9 @@ plugins {
 android {
     namespace = "com.example.carcamerasandlightsbluetooth"
     compileSdk = 34
-
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId = "com.example.carcamerasandlightsbluetooth"
         minSdk = 28
