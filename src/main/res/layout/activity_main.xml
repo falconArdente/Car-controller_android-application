@@ -37,7 +37,17 @@
         android:paddingVertical="@dimen/bottom_guide_line_margin"
         android:scrollbars="vertical"
         android:text=""
-        android:textColor="?attr/colorOnPrimary" />
+        android:textColor="?attr/colorOnPrimary"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/timings_set"
+        layout="@layout/timings_set"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/timing_set_margin_horizontal"
+        android:layout_marginVertical="@dimen/timing_set_margin_vertical"
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="match_parent"

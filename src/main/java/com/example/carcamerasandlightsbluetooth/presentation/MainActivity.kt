@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
@@ -27,8 +28,21 @@ class MainActivity : AppCompatActivity() {
         viewModel.serviceLogToObserve.observe(this) {
             binding.LogView.text = it
         }
+        setClickListeners()
+    }
+
+    private fun setClickListeners() {
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
-        binding.commandsBlock.glass.setOnClickListener { viewModel.clickLock() }
+        binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
+        with(binding.commandsBlock) {
+            glass.setOnClickListener { viewModel.clickLock() }
+            frontCam.setOnClickListener { viewModel.clickFrontCam() }
+            backCam.setOnClickListener { viewModel.clickRearCam() }
+            leftFog.setOnClickListener { viewModel.clickLeftFog() }
+            rightFog.setOnClickListener { viewModel.clickRightFog() }
+            angelEye.setOnClickListener { viewModel.clickAngelEye() }
+            cautionInSet.setOnClickListener { viewModel.clickCaution() }
+        }
     }
 
     private fun renderMainState(mainState: MainState) {
@@ -36,11 +50,18 @@ class MainActivity : AppCompatActivity() {
         renderBluetoothSign(mainState.deviceState)
         renderCommandSet(mainState.deviceState, mainState.isLocked)
         renderLock(mainState.isLocked)
-        renderTimingSettings(mainState.isSetTimings)
+        renderTimingSettings(mainState)
     }
 
-    private fun renderTimingSettings(isSetTimings: Boolean) {
-
+    private fun renderTimingSettings(mainState: MainState) {
+        binding.timingsSet.root.isGone = !mainState.isSetTimings
+        binding.LogView.isGone = mainState.isSetTimings
+        with(binding.timingsSet) {
+            bounceValue.text = mainState.deviceState.timings.bounce.toString()
+            repeaterValue.text = mainState.deviceState.timings.repeater.toString()
+            frontDelayValue.text = mainState.deviceState.timings.frontDelay.toString()
+            rearDelayValue.text = mainState.deviceState.timings.rearDelay.toString()
+        }
     }
 
     private fun renderLock(isLocked: Boolean) {
@@ -59,6 +80,7 @@ class MainActivity : AppCompatActivity() {
                 if (isLocked) R.drawable.lock else R.drawable.unlock
             )
         )
+
     }
 
     private fun renderCommandSet(state: DeviceState, isLocked: Boolean = true) {
@@ -66,6 +88,12 @@ class MainActivity : AppCompatActivity() {
             if (isLocked) {
                 backCamText.isVisible = state.rearCameraIsOn
                 frontCamText.isVisible = state.frontCameraIsShown
+                backCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
+                )
+                frontCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
+                )
                 backCamBack.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
@@ -111,11 +139,15 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-
+// Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(
             AppCompatResources.getDrawable(
                 this@MainActivity,
-                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+                if (isLocked) {
+                    if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+                } else {
+                    if (state.testModeIsOn) R.drawable.play else R.drawable.pause
+                }
             )
         )
     }

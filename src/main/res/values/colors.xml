@@ -3,7 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="DarkBack">#130426</color>
-    <color name="DarkOnPrimary">#1f59eb</color>
+    <color name="DarkOnPrimary">#C91F59EB</color>
     <color name="DarkHighLight">#5d87f0</color>
     <color name="DarkSecondSurface">#1a184c</color>
     <color name="DarkDisabled">#38385D</color>

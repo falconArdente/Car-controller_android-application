@@ -5,7 +5,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.domain.api.ControllerInteractor
+import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,6 +18,7 @@ class RootViewModel(
     private val deviceInteractor: ControllerInteractor
 ) : ViewModel() {
     private var deviceJob: Job? = null
+    private var isTestMode = false
 
     init {
         deviceJob = viewModelScope.launch(Dispatchers.IO) {
@@ -41,12 +44,10 @@ class RootViewModel(
         mutableStatesLiveData.postValue(
             mutableStatesLiveData.value?.copy(deviceState = incomeState)
         )
-        Log.d("SimpleBle", incomeState.toString())
     }
     private val serviceLogCollector = FlowCollector<String> { message ->
         logStorage += message + '\n'
         mutableLogLiveData.postValue(logStorage)
-        Log.d("SimpleBle", "service: $message")
     }
     private val errorCountCollector = FlowCollector<Int> {
 
@@ -57,11 +58,91 @@ class RootViewModel(
         super.onCleared()
     }
 
+    fun clickFrontCam() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(relayIsOn = !state.relayIsOn)
+        )
+    }
+
+    fun clickLeftFog() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(leftFogIsOn = !state.leftFogIsOn)
+        )
+    }
+
+    fun clickAngelEye() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(angelEyeIsOn = !state.angelEyeIsOn)
+        )
+    }
+
+    fun clickRightFog() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(rightFogIsOn = !state.rightFogIsOn)
+        )
+    }
+
+    fun clickRearCam() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(rearCameraIsOn = !state.rearCameraIsOn)
+        )
+    }
+
+    fun clickCaution() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(cautionIsOn = !state.cautionIsOn)
+        )
+    }
+
+
+    private fun currentStateToCommand(): ControlCommand {
+        with(mutableStatesLiveData.value!!.deviceState) {
+            val cameraState = if (isTestMode) {
+                CameraState.TEST_MODE
+            } else {
+                if (frontCameraIsShown) {
+                    CameraState.FRONT_CAM_ON
+                } else if (rearCameraIsOn) {
+                    CameraState.REAR_CAM_ON
+                } else {
+                    CameraState.CAMS_OFF
+                }
+            }
+            return ControlCommand(
+                cautionIsOn = cautionIsOn,
+                leftFogIsOn = leftFogIsOn,
+                rightFogIsOn = rightFogIsOn,
+                relayIsOn = frontCameraIsShown,
+                rearCameraIsOn = rearCameraIsOn,
+                angelEyeIsOn = angelEyeIsOn,
+                displayIsOn = displayIsOn,
+                cameraState = cameraState
+            )
+        }
+    }
+
     fun clickLock() {
         with(mutableStatesLiveData) {
             postValue(
                 value?.copy(
                     isLocked = !value?.isLocked!!
+                )
+            )
+        }
+    }
+
+    fun clickTimings() {
+        with(mutableStatesLiveData) {
+            if (!value?.isSetTimings!!)deviceInteractor.requestTimings()
+            postValue(
+                value?.copy(
+                    isSetTimings = !value?.isSetTimings!!
                 )
             )
         }

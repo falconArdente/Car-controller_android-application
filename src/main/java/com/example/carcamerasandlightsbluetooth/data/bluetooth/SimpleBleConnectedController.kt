@@ -182,6 +182,7 @@ class SimpleBleConnectedController(
                 gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?
             ) {
                 if (characteristic?.value != null) {
+                    Log.d("SimpleBle", "received ${characteristic.value!!.toList()}")
                     trySend(
                         Result.Success(
                             characteristic.value!!
