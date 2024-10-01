@@ -27,31 +27,71 @@ class MainActivity : AppCompatActivity() {
         viewModel.serviceLogToObserve.observe(this) {
             binding.LogView.text = it
         }
+        binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
+        binding.commandsBlock.glass.setOnClickListener { viewModel.clickLock() }
     }
 
     private fun renderMainState(mainState: MainState) {
         renderShifts(mainState.deviceState)
         renderBluetoothSign(mainState.deviceState)
-        renderCommandSet(mainState.deviceState)
+        renderCommandSet(mainState.deviceState, mainState.isLocked)
+        renderLock(mainState.isLocked)
+        renderTimingSettings(mainState.isSetTimings)
+    }
+
+    private fun renderTimingSettings(isSetTimings: Boolean) {
 
     }
 
-    private fun renderCommandSet(state: DeviceState) {
+    private fun renderLock(isLocked: Boolean) {
         with(binding.commandsBlock) {
-            backCamText.isVisible = state.rearCameraIsOn
-            frontCamText.isVisible = state.frontCameraIsShown
-            backCamBack.setBackgroundDrawable(
-                AppCompatResources.getDrawable(
-                    this@MainActivity,
-                    if (state.rearCameraIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
-                )
+            backCamBack.isVisible = isLocked
+            backCamText.isVisible = isLocked
+            glass.isVisible = isLocked
+            frontCamBack.isVisible = isLocked
+            frontCamText.isVisible = isLocked
+            cautionInSet.isVisible = !isLocked
+            angelEye.isVisible = !isLocked
+        }
+        binding.columnSet.lockButton.setImageDrawable(
+            AppCompatResources.getDrawable(
+                this@MainActivity,
+                if (isLocked) R.drawable.lock else R.drawable.unlock
             )
-            frontCamBack.setBackgroundDrawable(
-                AppCompatResources.getDrawable(
-                    this@MainActivity,
-                    if (state.frontCameraIsShown) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+        )
+    }
+
+    private fun renderCommandSet(state: DeviceState, isLocked: Boolean = true) {
+        with(binding.commandsBlock) {
+            if (isLocked) {
+                backCamText.isVisible = state.rearCameraIsOn
+                frontCamText.isVisible = state.frontCameraIsShown
+                backCamBack.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        this@MainActivity,
+                        if (state.rearCameraIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                    )
                 )
-            )
+                frontCamBack.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        this@MainActivity,
+                        if (state.frontCameraIsShown) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                    )
+                )
+            } else {
+                backCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        this@MainActivity,
+                        if (state.rearCameraIsOn) R.drawable.camera_on else R.drawable.camera_void
+                    )
+                )
+                frontCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(
+                        this@MainActivity,
+                        if (state.frontCameraIsShown) R.drawable.camera_on else R.drawable.camera_void
+                    )
+                )
+            }
             leftFog.setBackgroundDrawable(
                 AppCompatResources.getDrawable(
                     this@MainActivity,
@@ -64,7 +104,14 @@ class MainActivity : AppCompatActivity() {
                     if (state.rightFogIsOn) R.drawable.fog_lamp_on else R.drawable.fog_lamp
                 )
             )
+            cautionInSet.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+                )
+            )
         }
+
         binding.columnSet.cautionButton.setBackgroundDrawable(
             AppCompatResources.getDrawable(
                 this@MainActivity,

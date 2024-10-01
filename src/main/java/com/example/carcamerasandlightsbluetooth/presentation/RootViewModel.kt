@@ -29,7 +29,7 @@ class RootViewModel(
     private val mutableStatesLiveData = MutableLiveData(
         MainState(
             deviceState = DeviceState.NOT_INITIALIZED,
-            isLocked = false,
+            isLocked = true,
             isSetTimings = false
         )
     )
@@ -55,5 +55,15 @@ class RootViewModel(
     override fun onCleared() {
         deviceInteractor.finish()
         super.onCleared()
+    }
+
+    fun clickLock() {
+        with(mutableStatesLiveData) {
+            postValue(
+                value?.copy(
+                    isLocked = !value?.isLocked!!
+                )
+            )
+        }
     }
 }
