@@ -1,0 +1,29 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <vector
+            android:width="1024dp"
+            android:height="1024dp"
+            android:alpha="0.15"
+            android:autoMirrored="true"
+            android:tintMode="screen"
+            android:viewportWidth="2400"
+            android:viewportHeight="1024">
+
+            <path
+                android:fillColor="?attr/colorControlNormal"
+                android:pathData="M256.6,845.1l-39.5,-32.5c30.8,-37.5 15,-72.7 -20.9,-142.5l-4.5,-8.7c-33.3,-64.9 -6.8,-125.9 14.4,-174.9 6.1,-14.1 11.8,-27.4 16.1,-40 6.3,-18.8 -13.1,-59.3 -27.3,-88.9 -6.4,-13.3 -12.4,-25.8 -17,-37.6 -20.6,-52.1 12.9,-124.4 16.7,-132.5l46.1,22.2L217.6,198.4l23.1,11.1c-10.9,22.8 -24.6,67.8 -15.3,91.6 4,10.1 9.6,21.9 15.6,34.3 19.9,41.6 42.5,88.7 29.7,127.2 -4.9,14.8 -11.4,29.8 -17.7,44.2 -19.6,45.2 -38,87.8 -15.8,131.2l4.4,8.7c35.2,68.5 68.5,133.3 14.9,198.5z" />
+        </vector>
+
+
+    </item>
+    <item >
+        <shape android:tintMode="screen" >
+            <solid android:color="#090101AA" />
+            <corners android:radius="@dimen/icon_slide" />
+            <stroke
+                android:width="3dp"
+                android:color="@color/transparent" />
+        </shape>
+    </item>
+
+</layer-list>

@@ -1,6 +1,5 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,8 +13,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 
 class RootViewModel(
-    private val deviceInteractor: ControllerInteractor,
-    private val context: Context
+    private val deviceInteractor: ControllerInteractor
 ) : ViewModel() {
     private var deviceJob: Job? = null
 
@@ -28,13 +26,21 @@ class RootViewModel(
         }
     }
 
-    private val mutableStatesLiveData = MutableLiveData(DeviceState.NOT_INITIALIZED)
-    val stateToObserve: LiveData<DeviceState> = mutableStatesLiveData
+    private val mutableStatesLiveData = MutableLiveData(
+        MainState(
+            deviceState = DeviceState.NOT_INITIALIZED,
+            isLocked = false,
+            isSetTimings = false
+        )
+    )
+    val stateToObserve: LiveData<MainState> = mutableStatesLiveData
     private val mutableLogLiveData = MutableLiveData("")
     val serviceLogToObserve: LiveData<String> = mutableLogLiveData
     private var logStorage = ""
     private val stateFlowCollector = FlowCollector<DeviceState> { incomeState ->
-        mutableStatesLiveData.postValue(incomeState)
+        mutableStatesLiveData.postValue(
+            mutableStatesLiveData.value?.copy(deviceState = incomeState)
+        )
         Log.d("SimpleBle", incomeState.toString())
     }
     private val serviceLogCollector = FlowCollector<String> { message ->

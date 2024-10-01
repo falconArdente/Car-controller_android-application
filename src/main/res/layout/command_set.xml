@@ -8,6 +8,20 @@
     android:background="@drawable/command_back"
     android:outlineSpotShadowColor="?attr/colorOnPrimary">
 
+    <ImageView
+        android:id="@+id/glass"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:elevation="@dimen/elevation"
+        android:scaleType="fitXY"
+        android:src="@drawable/command_glass"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </ImageView>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_gide"
         android:layout_width="wrap_content"
@@ -23,7 +37,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_end="@dimen/sides_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/front_cam_back"
@@ -49,6 +62,14 @@
         android:id="@+id/front_cam_text"
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/front_cam_back"
+        app:layout_constraintTop_toTopOf="@id/front_cam_back"
+        tools:ignore="TextSizeCheck" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/angel_eye"
+        style="@style/LockedCommSettButton"
+        android:src="@drawable/angel_wings"
+        app:layout_constraintEnd_toEndOf="@id/end_guide"
         app:layout_constraintTop_toTopOf="@id/front_cam_back"
         tools:ignore="TextSizeCheck" />
 
@@ -98,6 +119,14 @@
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/back_cam_back"
         app:layout_constraintTop_toTopOf="@id/back_cam_back"
+        tools:ignore="TextSizeCheck" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/caution_in_set"
+        style="@style/LockedCommSettButton"
+        android:src="@drawable/caution_sign"
+        app:layout_constraintEnd_toEndOf="@id/end_guide"
+        app:layout_constraintTop_toTopOf="@id/back_cam"
         tools:ignore="TextSizeCheck" />
 
     <View

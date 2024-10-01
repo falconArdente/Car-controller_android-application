@@ -22,23 +22,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewModel.stateToObserve.observe(this) { renderDeviceState(it) }
+        viewModel.stateToObserve.observe(this) { renderMainState(it) }
         binding.LogView.movementMethod = ScrollingMovementMethod()
         viewModel.serviceLogToObserve.observe(this) {
             binding.LogView.text = it
         }
     }
 
-    private fun renderDeviceState(state: DeviceState) {
-        renderShifts(state)
-        renderBluetoothSign(state)
-        renderCommandSet(state)
-        binding.columnSet.cautionButton.setBackgroundDrawable(
-            AppCompatResources.getDrawable(
-                this@MainActivity,
-                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
-            )
-        )
+    private fun renderMainState(mainState: MainState) {
+        renderShifts(mainState.deviceState)
+        renderBluetoothSign(mainState.deviceState)
+        renderCommandSet(mainState.deviceState)
+
     }
 
     private fun renderCommandSet(state: DeviceState) {
@@ -70,6 +65,12 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+        binding.columnSet.cautionButton.setBackgroundDrawable(
+            AppCompatResources.getDrawable(
+                this@MainActivity,
+                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+            )
+        )
     }
 
     private fun renderBluetoothSign(state: DeviceState) {

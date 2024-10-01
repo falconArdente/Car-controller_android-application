@@ -7,14 +7,13 @@ import com.example.carcamerasandlightsbluetooth.data.repository.BluetoothReposit
 import com.example.carcamerasandlightsbluetooth.domain.api.ControllerInteractor
 import com.example.carcamerasandlightsbluetooth.presentation.RootViewModel
 import org.koin.android.ext.koin.androidApplication
-import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import java.util.UUID
 
 val bluetoothModule = module {
     viewModel<RootViewModel> {
-        RootViewModel(deviceInteractor = get(), androidContext())
+        RootViewModel(deviceInteractor = get())
     }
     single<SimpleBleConnectedController> {
         SimpleBleConnectedController(

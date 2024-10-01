@@ -42,6 +42,14 @@
         <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
         <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
     </style>
+    <style name="LockedCommSettButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:layout_width">@dimen/button_size</item>
+        <item name="android:layout_height">@dimen/button_size</item>
+        <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
+        <item name="android:visibility">invisible</item>
+    </style>
 
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />
 </resources>
