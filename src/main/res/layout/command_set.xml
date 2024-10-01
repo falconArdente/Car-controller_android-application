@@ -8,6 +8,21 @@
     android:background="@drawable/command_back"
     android:outlineSpotShadowColor="?attr/colorOnPrimary">
 
+    <ImageView
+        android:id="@+id/glass"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:elevation="@dimen/elevation"
+        android:scaleType="fitXY"
+        android:src="@drawable/command_glass"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription">
+
+    </ImageView>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_gide"
         android:layout_width="wrap_content"
@@ -24,7 +39,6 @@
         app:layout_constraintGuide_end="@dimen/sides_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
 
-
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/front_cam_back"
         style="@style/CameraSign"
@@ -39,17 +53,28 @@
         android:id="@+id/front_cam"
         android:layout_width="@dimen/button_size"
         android:layout_height="@dimen/button_size"
+        android:layout_marginStart="@dimen/command_camera_margin_start"
+        android:layout_marginTop="@dimen/icon_slide"
         android:elevation="@dimen/command_card_elevation"
         android:rotation="270"
         android:src="@drawable/camera_void"
-        app:layout_constraintStart_toStartOf="@id/front_cam_back"
-        app:layout_constraintTop_toTopOf="@id/front_cam_back" />
+        app:layout_constraintStart_toStartOf="@id/start_gide"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/front_cam_text"
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/front_cam_back"
         app:layout_constraintTop_toTopOf="@id/front_cam_back"
+        tools:ignore="TextSizeCheck" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/angel_eye"
+        style="@style/LockedCommSettButton"
+        android:layout_marginEnd="@dimen/command_camera_margin_end"
+        android:src="@drawable/angel_wings"
+        app:layout_constraintEnd_toEndOf="@id/end_guide"
+        app:layout_constraintTop_toTopOf="@id/front_cam"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatImageButton
@@ -87,17 +112,28 @@
         android:id="@+id/back_cam"
         android:layout_width="@dimen/button_size"
         android:layout_height="@dimen/button_size"
+        android:layout_marginStart="@dimen/command_camera_margin_start"
+        android:layout_marginTop="@dimen/icon_row_divider"
         android:elevation="@dimen/command_card_elevation"
         android:rotation="90"
         android:src="@drawable/camera_void"
-        app:layout_constraintStart_toStartOf="@id/back_cam_back"
-        app:layout_constraintTop_toTopOf="@id/back_cam_back" />
+        app:layout_constraintStart_toStartOf="@id/start_gide"
+        app:layout_constraintTop_toBottomOf="@id/left_fog" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/back_cam_text"
         style="@style/CameraTextView"
         app:layout_constraintEnd_toEndOf="@id/back_cam_back"
         app:layout_constraintTop_toTopOf="@id/back_cam_back"
+        tools:ignore="TextSizeCheck" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/caution_in_set"
+        style="@style/LockedCommSettButton"
+        android:layout_marginEnd="@dimen/command_camera_margin_end"
+        android:src="@drawable/caution_sign"
+        app:layout_constraintEnd_toEndOf="@id/end_guide"
+        app:layout_constraintTop_toTopOf="@id/back_cam"
         tools:ignore="TextSizeCheck" />
 
     <View
