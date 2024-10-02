@@ -45,88 +45,100 @@
         android:id="@+id/bounce_edit"
         style="@style/TimingEdit"
         android:text="NEW VALUE"
+        app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/bounce_value"
         app:layout_constraintTop_toTopOf="@id/bounce_label"
-        app:layout_constraintEnd_toStartOf="@id/end_guide"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/repeater_label"
         style="@style/TimingLabel"
         android:text="REPEATER LABEL"
+        app:layout_constraintEnd_toStartOf="@id/repeater_value"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/bounce_label"
-        app:layout_constraintEnd_toStartOf="@id/repeater_value"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/repeater_value"
         style="@style/TimingValue"
         android:text="REPEATER VALUE"
+        app:layout_constraintEnd_toStartOf="@id/repeater_edit"
         app:layout_constraintStart_toEndOf="@id/repeater_label"
         app:layout_constraintTop_toTopOf="@id/repeater_label"
-        app:layout_constraintEnd_toStartOf="@id/repeater_edit"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/repeater_edit"
         style="@style/TimingEdit"
         android:text="NEW VALUE"
+        app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/repeater_value"
         app:layout_constraintTop_toTopOf="@id/repeater_label"
-        app:layout_constraintEnd_toStartOf="@id/end_guide"
         tools:ignore="TextSizeCheck" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/front_delay_label"
         style="@style/TimingLabel"
         android:text="FRONT LABEL"
+        app:layout_constraintEnd_toStartOf="@id/front_delay_value"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/repeater_label"
-        app:layout_constraintEnd_toStartOf="@id/front_delay_value"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/front_delay_value"
         style="@style/TimingValue"
         android:text="FRONT VALUE"
+        app:layout_constraintEnd_toStartOf="@id/front_delay_edit"
         app:layout_constraintStart_toEndOf="@id/front_delay_label"
         app:layout_constraintTop_toTopOf="@id/front_delay_label"
-        app:layout_constraintEnd_toStartOf="@id/front_delay_edit"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/front_delay_edit"
         style="@style/TimingEdit"
         android:text="FRONT NEW VALUE"
+        app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/front_delay_value"
         app:layout_constraintTop_toTopOf="@id/front_delay_label"
-        app:layout_constraintEnd_toStartOf="@id/end_guide"
         tools:ignore="TextSizeCheck" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/rear_delay_label"
         style="@style/TimingLabel"
         android:text="REAR LABEL"
+        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/front_delay_label"
-        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/rear_delay_value"
         style="@style/TimingValue"
         android:text="REAR VALUE"
+        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
         app:layout_constraintStart_toEndOf="@id/rear_delay_label"
         app:layout_constraintTop_toTopOf="@id/rear_delay_label"
-        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/rear_delay_edit"
         style="@style/TimingEdit"
         android:text="REAR NEW VALUE"
+        app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toEndOf="@id/rear_delay_value"
         app:layout_constraintTop_toTopOf="@id/rear_delay_label"
-        app:layout_constraintEnd_toStartOf="@id/end_guide"
         tools:ignore="TextSizeCheck" />
+
+    <ImageButton
+        android:id="@+id/send_timings"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:background="@color/transparent"
+        android:scaleType="fitCenter"
+        android:src="@drawable/angel_wings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/start_guide" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

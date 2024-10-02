@@ -1,6 +1,5 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -139,12 +138,18 @@ class RootViewModel(
 
     fun clickTimings() {
         with(mutableStatesLiveData) {
-            if (!value?.isSetTimings!!)deviceInteractor.requestTimings()
+            if (!value?.isSetTimings!!) deviceInteractor.requestTimings()
             postValue(
                 value?.copy(
                     isSetTimings = !value?.isSetTimings!!
                 )
             )
         }
+    }
+
+    fun sendTimings() {
+        deviceInteractor.sendTimings(
+            newTimings = mutableStatesLiveData.value!!.deviceState.timings
+        )
     }
 }

@@ -67,6 +67,10 @@ protected:
     void newTimingsToControllerDevice(byte package[MAX_PACKAGE_SIZE]);
 
     void sendPackage(byte *packageToSend, int bytesToSend);
+
+    void incErrorCount();
+
+    void doBlink(int times);
 };
 
 #endif

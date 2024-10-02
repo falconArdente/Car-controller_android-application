@@ -33,7 +33,8 @@ public:
     void executeCommand(CommunicationUnit::ControlCommandSet command);
 
     void sendUpTimings();
-  
+    void sendCurrentState();
+      
 private:
       CommunicationUnit network;
       Timings timings = Timings( //default one

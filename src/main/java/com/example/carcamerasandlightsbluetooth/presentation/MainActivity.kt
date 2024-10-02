@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setClickListeners() {
+        binding.timingsSet.sendTimings.setOnClickListener { viewModel.sendTimings() }
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
         binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
         with(binding.commandsBlock) {
