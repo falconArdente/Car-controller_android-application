@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/command_set_container"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/command_back"
     android:outlineSpotShadowColor="?attr/colorOnPrimary">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/start_guide"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         app:layout_constraintGuide_begin="@dimen/sides_guide_line"
@@ -25,109 +25,95 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/bounce_label"
+        android:id="@+id/delays_title"
         style="@style/TimingLabel"
-        android:text="BOUNCE LABEL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:lines="1"
+        android:text="@string/delay_set_title"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/bounce_label"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/bounce_value"
-        style="@style/TimingValue"
-        android:text="BOUNCE VALUE"
-        app:layout_constraintEnd_toStartOf="@id/bounce_edit"
-        app:layout_constraintStart_toEndOf="@id/bounce_label"
-        app:layout_constraintTop_toTopOf="@id/bounce_label"
+        android:id="@+id/bounce_label"
+        style="@style/TimingLabel"
+        android:text="@string/bounce_d_name"
+        app:layout_constraintStart_toStartOf="@id/start_guide"
+        app:layout_constraintTop_toBottomOf="@id/delays_title"
+        app:layout_constraintBottom_toTopOf="@id/rear_delay_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/bounce_edit"
-        style="@style/TimingEdit"
-        android:text="NEW VALUE"
+        android:id="@+id/bounce_value"
+        style="@style/TimingValue"
+        android:text="@string/not_gotten"
+        app:layout_constraintBottom_toBottomOf="@id/bounce_label"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
-        app:layout_constraintStart_toEndOf="@id/bounce_value"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/bounce_label"
         app:layout_constraintTop_toTopOf="@id/bounce_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/repeater_label"
         style="@style/TimingLabel"
-        android:text="REPEATER LABEL"
-        app:layout_constraintEnd_toStartOf="@id/repeater_value"
+        android:text="@string/rear_cam_d_name"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/bounce_label"
-        tools:ignore="TextSizeCheck" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/repeater_value"
-        style="@style/TimingValue"
-        android:text="REPEATER VALUE"
-        app:layout_constraintEnd_toStartOf="@id/repeater_edit"
-        app:layout_constraintStart_toEndOf="@id/repeater_label"
-        app:layout_constraintTop_toTopOf="@id/repeater_label"
+        app:layout_constraintBottom_toTopOf="@id/front_delay_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/repeater_edit"
-        style="@style/TimingEdit"
-        android:text="NEW VALUE"
+        android:id="@+id/repeater_value"
+        style="@style/TimingValue"
+        android:text="@string/not_gotten"
+        app:layout_constraintBottom_toBottomOf="@id/repeater_label"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
-        app:layout_constraintStart_toEndOf="@id/repeater_value"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/repeater_label"
         app:layout_constraintTop_toTopOf="@id/repeater_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/front_delay_label"
         style="@style/TimingLabel"
-        android:text="FRONT LABEL"
-        app:layout_constraintEnd_toStartOf="@id/front_delay_value"
+        android:text="@string/front_cam_d_name"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/repeater_label"
-        tools:ignore="TextSizeCheck" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/front_delay_value"
-        style="@style/TimingValue"
-        android:text="FRONT VALUE"
-        app:layout_constraintEnd_toStartOf="@id/front_delay_edit"
-        app:layout_constraintStart_toEndOf="@id/front_delay_label"
-        app:layout_constraintTop_toTopOf="@id/front_delay_label"
+        app:layout_constraintBottom_toTopOf="@id/rear_delay_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/front_delay_edit"
-        style="@style/TimingEdit"
-        android:text="FRONT NEW VALUE"
+        android:id="@+id/front_delay_value"
+        style="@style/TimingValue"
+        android:text="@string/not_gotten"
+        app:layout_constraintBottom_toBottomOf="@id/front_delay_label"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
-        app:layout_constraintStart_toEndOf="@id/front_delay_value"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/front_delay_label"
         app:layout_constraintTop_toTopOf="@id/front_delay_label"
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/rear_delay_label"
         style="@style/TimingLabel"
-        android:text="REAR LABEL"
-        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
+        android:text="@string/rear_cam_d_name"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/start_guide"
         app:layout_constraintTop_toBottomOf="@id/front_delay_label"
         tools:ignore="TextSizeCheck" />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/rear_delay_value"
         style="@style/TimingValue"
-        android:text="REAR VALUE"
-        app:layout_constraintEnd_toStartOf="@id/rear_delay_value"
-        app:layout_constraintStart_toEndOf="@id/rear_delay_label"
-        app:layout_constraintTop_toTopOf="@id/rear_delay_label"
-        tools:ignore="TextSizeCheck" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/rear_delay_edit"
-        style="@style/TimingEdit"
-        android:text="REAR NEW VALUE"
+        android:text="@string/not_gotten"
+        app:layout_constraintBottom_toBottomOf="@id/rear_delay_label"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
-        app:layout_constraintStart_toEndOf="@id/rear_delay_value"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/rear_delay_label"
         app:layout_constraintTop_toTopOf="@id/rear_delay_label"
         tools:ignore="TextSizeCheck" />
 
@@ -137,8 +123,12 @@
         android:layout_height="@dimen/icon_size"
         android:background="@color/transparent"
         android:scaleType="fitCenter"
-        android:src="@drawable/angel_wings"
+        android:src="@drawable/send_timings"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/start_guide" />
+        app:layout_constraintEnd_toStartOf="@id/end_guide"
+        app:layout_constraintStart_toStartOf="@id/start_guide"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1"
+        android:layout_marginBottom="@dimen/icon_row_divider"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

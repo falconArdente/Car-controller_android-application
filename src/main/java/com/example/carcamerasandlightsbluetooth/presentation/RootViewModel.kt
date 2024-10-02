@@ -10,6 +10,7 @@ import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 
@@ -151,5 +152,14 @@ class RootViewModel(
         deviceInteractor.sendTimings(
             newTimings = mutableStatesLiveData.value!!.deviceState.timings
         )
+    }
+
+    fun reScan() {
+        viewModelScope.launch(Dispatchers.IO) {
+            deviceInteractor.stopScan()
+            delay(900L)
+            deviceInteractor.scanForDevice()
+        }
+
     }
 }

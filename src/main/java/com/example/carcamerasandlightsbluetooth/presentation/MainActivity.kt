@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         binding.timingsSet.sendTimings.setOnClickListener { viewModel.sendTimings() }
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
         binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
+        binding.bluetoothSign.setOnClickListener { viewModel.reScan() }
         with(binding.commandsBlock) {
             glass.setOnClickListener { viewModel.clickLock() }
             frontCam.setOnClickListener { viewModel.clickFrontCam() }
@@ -58,11 +59,16 @@ class MainActivity : AppCompatActivity() {
         binding.timingsSet.root.isGone = !mainState.isSetTimings
         binding.LogView.isGone = mainState.isSetTimings
         with(binding.timingsSet) {
-            bounceValue.text = mainState.deviceState.timings.bounce.toString()
-            repeaterValue.text = mainState.deviceState.timings.repeater.toString()
-            frontDelayValue.text = mainState.deviceState.timings.frontDelay.toString()
-            rearDelayValue.text = mainState.deviceState.timings.rearDelay.toString()
+            bounceValue.setText(timingToString(mainState.deviceState.timings.bounce))
+            repeaterValue.setText(timingToString(mainState.deviceState.timings.repeater))
+            frontDelayValue.setText(timingToString(mainState.deviceState.timings.frontDelay))
+            rearDelayValue.setText(timingToString(mainState.deviceState.timings.rearDelay))
         }
+    }
+
+    private fun timingToString(number: Int): String {
+        if (number != -1) return number.toString()
+        return getString(R.string.not_gotten)
     }
 
     private fun renderLock(isLocked: Boolean) {
