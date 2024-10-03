@@ -124,7 +124,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
     switch (state) {
         case CAMS_OFF:
             digitalWrite(outDisplayOn, LOW);
-            digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outCautionSignal, LOW);
@@ -132,7 +131,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             turnOffFogLight();
@@ -141,15 +139,13 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             break;
         case FRONT_CAM_ON: // Fog lights turn on logic is inside checkGearsLoopStep case
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outAngelEye, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outCautionSignal, LOW);
             break;
-            sendCurrentState();
     }
-    this->isChangedFlag = true;
     cameraState = state;
+    isChangedFlag = true;
     if (changeStateCallback != NULL)changeStateCallback(state);
 }
 
@@ -164,11 +160,13 @@ void CameraLightTurnsSupplyController::turnFogLightOn() {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
     }
+    isChangedFlag = true;
 }
 
 void CameraLightTurnsSupplyController::turnOffFogLight() {
     digitalWrite(outLeftFogLight, LOW);
     digitalWrite(outRightFogLight, LOW);
+    isChangedFlag = true;
 }
 
 bool CameraLightTurnsSupplyController::isTimeOutForFront() {
