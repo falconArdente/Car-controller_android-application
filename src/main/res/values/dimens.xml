@@ -18,6 +18,7 @@
     <dimen name="elevation">16dp</dimen>
     <dimen name="shadow_size">4dp</dimen>
     <dimen name="side_guide_shift_set">16dp</dimen>
+    <dimen name="side_guide_shift_set_landscape">2dp</dimen>
     <dimen name="command_camera_margin_start">8dp</dimen>
     <dimen name="command_camera_margin_end">16dp</dimen>
     <dimen name="timing_set_margin_horizontal">8dp</dimen>

@@ -8,6 +8,8 @@
         <item name="colorControlNormal">@color/LightDisabled</item>
         <item name="colorControlActivated">@color/GreenBack</item>
         <item name="colorControlHighlight">@color/LightHighLight</item>
+        <item name="statusBarBackground">@color/LightBack</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="CameraSign" parent="Base.Theme.CarCamerasAndLightsBluetooth">

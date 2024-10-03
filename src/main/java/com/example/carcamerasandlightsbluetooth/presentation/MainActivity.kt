@@ -1,7 +1,10 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.view.View
+import android.view.Window
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -21,10 +24,26 @@ class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding
         get() = _binding!!
     private var timingValuesArray: ArrayList<EditText>? = null
+    override fun onResume() {
+        super.onResume()
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            actionBar?.hide()
+        } else
+            requestWindowFeature(Window.FEATURE_ACTION_BAR)
         _binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
         viewModel.stateToObserve.observe(this) { renderMainState(it) }
         binding.LogView.movementMethod = ScrollingMovementMethod()
