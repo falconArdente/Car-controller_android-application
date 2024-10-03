@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="@dimen/elevation"
+        android:orientation="horizontal"
         android:outlineAmbientShadowColor="?attr/colorSecondary">
 
         <include
@@ -24,6 +25,7 @@
             android:id="@+id/bluetooth_sign"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_margin="@dimen/main_board_margin"
             android:scaleType="centerInside"
             android:src="@drawable/b_disconnected" />
     </LinearLayout>
@@ -37,11 +39,23 @@
         android:paddingVertical="@dimen/bottom_guide_line_margin"
         android:scrollbars="vertical"
         android:text=""
-        android:textColor="?attr/colorOnPrimary" />
+        android:textColor="?attr/colorOnPrimary"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/timings_set"
+        layout="@layout/timings_set"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="@dimen/timing_set_margin_horizontal"
+        android:layout_marginVertical="@dimen/timing_set_margin_vertical"
+        android:layout_weight="1" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/column_set_margin_start"
         android:orientation="horizontal">
 
         <include
@@ -49,8 +63,7 @@
             layout="@layout/column_set"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|center"
-            android:layout_marginStart="@dimen/command_set_margin_end" />
+            android:layout_gravity="start|center" />
 
         <View
             android:layout_width="0dp"

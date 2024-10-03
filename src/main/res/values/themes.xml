@@ -8,12 +8,15 @@
         <item name="colorControlNormal">@color/LightDisabled</item>
         <item name="colorControlActivated">@color/GreenBack</item>
         <item name="colorControlHighlight">@color/LightHighLight</item>
+        <item name="statusBarBackground">@color/LightBack</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="CameraSign" parent="Base.Theme.CarCamerasAndLightsBluetooth">
         <item name="cardBackgroundColor">?attr/colorPrimary</item>
         <item name="cardElevation">@dimen/command_card_elevation</item>
     </style>
+
     <style name="CameraTextView" parent="Base.Theme.CarCamerasAndLightsBluetooth">
         <item name="android:layout_width">@dimen/button_size</item>
         <item name="android:layout_height">@dimen/button_size</item>
@@ -35,6 +38,7 @@
         <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
         <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
     </style>
+
     <style name="ColumnButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
         <item name="android:background">@color/transparent</item>
         <item name="android:layout_width">@dimen/button_size</item>
@@ -42,6 +46,7 @@
         <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
         <item name="android:layout_marginTop">@dimen/command_set_side_margin</item>
     </style>
+
     <style name="LockedCommSettButton" parent="Base.Theme.CarCamerasAndLightsBluetooth">
         <item name="android:background">@color/transparent</item>
         <item name="android:scaleType">fitCenter</item>
@@ -49,6 +54,39 @@
         <item name="android:layout_height">@dimen/button_size</item>
         <item name="android:layout_marginHorizontal">@dimen/command_set_side_margin</item>
         <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="TimingLabel" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginVertical">8dp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginStart">4dp</item>
+    </style>
+
+    <style name="TimingValue" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginEnd">24dp</item>
+        <item name="singleLine">true</item>
+        <item name="android:inputType">number</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="layout_constraintHorizontal_bias">1</item>
+    </style>
+   <style name="TimingHelp" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?attr/colorControlNormal</item>
+
+        <item name="singleLine">true</item>
     </style>
 
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />

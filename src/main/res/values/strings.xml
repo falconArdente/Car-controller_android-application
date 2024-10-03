@@ -22,4 +22,11 @@
     <string name="failed_to_connect">Подключится не удалось</string>
     <string name="scan_failed_with_error">Ошибка сканирования </string>
     <string name="waiting_bonding_completion">Ждем завершения привязки устройства</string>
+    <string name="delay_set_title">Задержки</string>
+    <string name="bounce_d_name">Дребезг конактов</string>
+    <string name="repeater_d_name">Двойное нажатие</string>
+    <string name="front_cam_d_name">Передняя камера</string>
+    <string name="rear_cam_d_name">Задняя камера</string>
+    <string name="not_gotten">Не получено</string>
+    <string name="new_value">Введите</string>
 </resources>

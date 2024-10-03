@@ -6,6 +6,7 @@ import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import java.util.BitSet
+
 /**
  * Соединяет массив байт контроллера и объекты в Android
  */
@@ -34,6 +35,7 @@ object PacketsMapper {
                         rearCameraIsOn = bits.get(11),
                         angelEyeIsOn = bits.get(12),
                         displayIsOn = bits.get(13),
+                        testModeIsOn = (bits.get(14) && bits.get(15)),
                         timings = Timings.NOT_INITIALIZED
                     )
                 )

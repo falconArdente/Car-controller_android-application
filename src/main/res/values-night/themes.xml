@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.CarCamerasAndLightsBluetooth" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="backgroundColor">@color/black</item>
@@ -8,5 +8,7 @@
         <item name="colorControlNormal">@color/DarkDisabled</item>
         <item name="colorControlActivated">@color/GreenBack</item>
         <item name="colorControlHighlight">@color/LightHighLight</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="statusBarBackground">@color/black</item>
     </style>
 </resources>

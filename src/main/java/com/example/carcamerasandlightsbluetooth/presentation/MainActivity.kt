@@ -1,10 +1,17 @@
 package com.example.carcamerasandlightsbluetooth.presentation
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.view.View
+import android.view.Window
+import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
@@ -16,19 +23,83 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
         get() = _binding!!
+    private var timingValuesArray: ArrayList<EditText>? = null
+    override fun onResume() {
+        super.onResume()
 
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            actionBar?.hide()
+        } else
+            requestWindowFeature(Window.FEATURE_ACTION_BAR)
         _binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
         viewModel.stateToObserve.observe(this) { renderMainState(it) }
         binding.LogView.movementMethod = ScrollingMovementMethod()
         viewModel.serviceLogToObserve.observe(this) {
             binding.LogView.text = it
         }
+        setClickListeners()
+        timingValuesArray = combineTimingsEditTextToArrayList()
+        timingValuesArray!!.forEach { it.doAfterTextChanged { _ -> timingsToSendCheck() } }
+    }
+
+    private fun combineTimingsEditTextToArrayList(): ArrayList<EditText> {
+        with(binding.timingsSet) {
+            return arrayListOf(
+                bounceValue,
+                repeaterValue,
+                frontDelayValue,
+                rearDelayValue
+            )
+        }
+    }
+
+    private fun timingsToSendCheck() {
+        if (timingValuesArray == null) return
+        var isReadyToSend = true
+        val errorText = getString(R.string.not_gotten)
+        timingValuesArray!!.forEach { editText ->
+            val localNum = try {
+                editText.text.toString().toInt()
+            } catch (e: Exception) {
+                65535
+            }
+            if (editText.text.toString() == errorText
+                || localNum >= 65534
+            ) {
+                isReadyToSend = false
+                return@forEach
+            }
+        }
+        binding.timingsSet.sendTimings.isEnabled = isReadyToSend
+    }
+
+    private fun setClickListeners() {
+        binding.timingsSet.sendTimings.setOnClickListener { viewModel.sendTimings() }
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
-        binding.commandsBlock.glass.setOnClickListener { viewModel.clickLock() }
+        binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
+        binding.bluetoothSign.setOnClickListener { viewModel.reScan() }
+        with(binding.commandsBlock) {
+            glass.setOnClickListener { viewModel.clickLock() }
+            frontCam.setOnClickListener { viewModel.clickFrontCam() }
+            backCam.setOnClickListener { viewModel.clickRearCam() }
+            leftFog.setOnClickListener { viewModel.clickLeftFog() }
+            rightFog.setOnClickListener { viewModel.clickRightFog() }
+            angelEye.setOnClickListener { viewModel.clickAngelEye() }
+            cautionInSet.setOnClickListener { viewModel.clickCaution() }
+        }
     }
 
     private fun renderMainState(mainState: MainState) {
@@ -36,11 +107,44 @@ class MainActivity : AppCompatActivity() {
         renderBluetoothSign(mainState.deviceState)
         renderCommandSet(mainState.deviceState, mainState.isLocked)
         renderLock(mainState.isLocked)
-        renderTimingSettings(mainState.isSetTimings)
+        renderTimingSettings(mainState)
     }
 
-    private fun renderTimingSettings(isSetTimings: Boolean) {
+    private fun renderTimingSettings(mainState: MainState) {
+        binding.timingsSet.root.isGone = !mainState.isSetTimings
+        binding.LogView.isGone = mainState.isSetTimings
+        with(binding.timingsSet) {
+            renderTimingValueAndHelper(
+                bounceValue,
+                bounceBlue,
+                mainState.deviceState.timings.bounce
+            )
+            renderTimingValueAndHelper(
+                repeaterValue,
+                repeaterBlue,
+                mainState.deviceState.timings.repeater
+            )
+            renderTimingValueAndHelper(
+                frontDelayValue,
+                frontBlue,
+                mainState.deviceState.timings.frontDelay
+            )
+            renderTimingValueAndHelper(
+                rearDelayValue,
+                rearBlue,
+                mainState.deviceState.timings.rearDelay
+            )
+        }
+    }
 
+    private fun renderTimingValueAndHelper(editText: EditText, helper: TextView, number: Int) {
+        if (number != -1) {
+            editText.setText(number.toString())
+            helper.text = number.toString()
+        } else {
+            editText.text.clear()
+            helper.text = getString(R.string.not_gotten)
+        }
     }
 
     private fun renderLock(isLocked: Boolean) {
@@ -59,6 +163,7 @@ class MainActivity : AppCompatActivity() {
                 if (isLocked) R.drawable.lock else R.drawable.unlock
             )
         )
+
     }
 
     private fun renderCommandSet(state: DeviceState, isLocked: Boolean = true) {
@@ -66,6 +171,12 @@ class MainActivity : AppCompatActivity() {
             if (isLocked) {
                 backCamText.isVisible = state.rearCameraIsOn
                 frontCamText.isVisible = state.frontCameraIsShown
+                backCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
+                )
+                frontCam.setBackgroundDrawable(
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
+                )
                 backCamBack.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
@@ -110,12 +221,17 @@ class MainActivity : AppCompatActivity() {
                     if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
                 )
             )
+            angelEye.isActivated = state.angelEyeIsOn
         }
-
+// Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(
             AppCompatResources.getDrawable(
                 this@MainActivity,
-                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+                if (isLocked) {
+                    if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
+                } else {
+                    if (state.testModeIsOn) R.drawable.play else R.drawable.pause
+                }
             )
         )
     }

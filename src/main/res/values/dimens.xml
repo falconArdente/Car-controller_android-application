@@ -2,6 +2,7 @@
 <resources>
     <dimen name="bottom_guide_line_margin">16dp</dimen>
     <dimen name="sides_guide_line">4dp</dimen>
+    <dimen name="column_set_guide_line">0dp</dimen>
     <dimen name="icon_size">54dp</dimen>
     <dimen name="icon_slide">16dp</dimen>
     <dimen name="command_set_side_margin">8dp</dimen>
@@ -10,12 +11,17 @@
     <dimen name="camera_button_width">192dp</dimen>
     <dimen name="command_card_elevation">4dp</dimen>
     <dimen name="camera_text_size">21sp</dimen>
-    <dimen name="command_set_margin_bottom">32dp</dimen>
+    <dimen name="command_set_margin_bottom">8dp</dimen>
     <dimen name="command_set_margin_end">4dp</dimen>
+    <dimen name="column_set_margin_start">8dp</dimen>
     <dimen name="shift_set_margin_top">4dp</dimen>
     <dimen name="elevation">16dp</dimen>
     <dimen name="shadow_size">4dp</dimen>
     <dimen name="side_guide_shift_set">16dp</dimen>
+    <dimen name="side_guide_shift_set_landscape">2dp</dimen>
     <dimen name="command_camera_margin_start">8dp</dimen>
     <dimen name="command_camera_margin_end">16dp</dimen>
+    <dimen name="timing_set_margin_horizontal">8dp</dimen>
+    <dimen name="timing_set_margin_vertical">8dp</dimen>
+    <dimen name="main_board_margin">2dp</dimen>
 </resources>

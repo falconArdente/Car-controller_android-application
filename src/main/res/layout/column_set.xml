@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="@dimen/sides_guide_line"
+        app:layout_constraintGuide_begin="@dimen/column_set_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -20,14 +20,14 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_end="@dimen/sides_guide_line"
+        app:layout_constraintGuide_end="@dimen/column_set_guide_line"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/settings_button"
         style="@style/ColumnButton"
         android:scaleType="fitCenter"
-        android:src="@drawable/gear"
+        android:src="@drawable/time_gear"
         app:layout_constraintBottom_toTopOf="@id/lock_button"
         app:layout_constraintEnd_toStartOf="@id/end_guide"
         app:layout_constraintStart_toStartOf="@id/start_gide"

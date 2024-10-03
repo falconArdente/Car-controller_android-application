@@ -48,34 +48,38 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
     digitalWrite(outAngelEye, command.angelEyeIsOn);
     digitalWrite(outDisplayOn, command.displayIsOn);
     setCameraState(command.cameraState);
+    sendCurrentState();
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
     network.sendTimings(timings);
 }
 
+void CameraLightTurnsSupplyController::sendCurrentState() {
+    CommunicationUnit::StateInfoSet state{
+            leftTurnLever.isOn(),
+            leftTurnLever.isDoubleClicked(),
+            rightTurnLever.isOn(),
+            rightTurnLever.isDoubleClicked(),
+            reverseGear.isOn(),
+            digitalRead(outCautionSignal),
+            digitalRead(outLeftFogLight),
+            digitalRead(outRightFogLight),
+            digitalRead(outRelayCameraSwitch),
+            digitalRead(outRearCamPower),
+            digitalRead(outAngelEye),
+            digitalRead(outDisplayOn),
+            cameraState,
+    };
+    network.sendState(state);
+}
 
 void CameraLightTurnsSupplyController::communicationLoopStep() {
     if (!reverseGear.isChangedFlag && !leftTurnLever.isChangedFlag &&
         !rightTurnLever.isChangedFlag && !isChangedFlag) {
         network.checkForIncome();
     } else {
-        CommunicationUnit::StateInfoSet state{
-                leftTurnLever.isOn(),
-                leftTurnLever.isDoubleClicked(),
-                rightTurnLever.isOn(),
-                rightTurnLever.isDoubleClicked(),
-                reverseGear.isOn(),
-                digitalRead(outCautionSignal),
-                digitalRead(outLeftFogLight),
-                digitalRead(outRightFogLight),
-                digitalRead(outRelayCameraSwitch),
-                digitalRead(outRearCamPower),
-                digitalRead(outAngelEye),
-                digitalRead(outDisplayOn),
-                cameraState,
-        };
-        network.sendState(state);
+        sendCurrentState();
         reverseGear.isChangedFlag = false;
         leftTurnLever.isChangedFlag = false;
         rightTurnLever.isChangedFlag = false;
@@ -123,7 +127,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
-            digitalWrite(outControllerLed, LOW);
             digitalWrite(outCautionSignal, LOW);
             turnOffFogLight();
             break;
@@ -132,7 +135,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outAngelEye, LOW);
             digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
-            digitalWrite(outControllerLed, HIGH);
             turnOffFogLight();
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
                 digitalWrite(outCautionSignal, HIGH);
@@ -142,9 +144,9 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outAngelEye, HIGH);
             digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
-            digitalWrite(outControllerLed, HIGH);
             digitalWrite(outCautionSignal, LOW);
             break;
+            sendCurrentState();
     }
     this->isChangedFlag = true;
     cameraState = state;

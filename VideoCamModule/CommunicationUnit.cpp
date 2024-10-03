@@ -27,30 +27,39 @@ void CommunicationUnit::checkForIncome() {
 void CommunicationUnit::parseIncomingPackage(byte package[MAX_PACKAGE_SIZE], int packetSize) {
     switch (packetSize) {
         case 1: //timings Request?
-            // Serial.println("1 Byte parsing");
-            if (bitRead(!package[0], 0) && bitRead(package[0], 1)) {
+            if (!bitRead(package[0], 0) && bitRead(package[0], 1)) {
                 hostObject->sendUpTimings();
-            } else errorsCount++;
+            } else this->incErrorCount();
             break;
         case 2: //controlCommand?
-            // Serial.println("2 Byte parsing");
             if (bitRead(package[0], 0) && !bitRead(package[0], 1)) {
                 commandToControllerDevice(package);
-            }
-            errorsCount++;
+            } else this->incErrorCount();
             break;
         case 9: //newTimings?
-            // Serial.println("9 Byte parsing");
             if (bitRead(package[0], 0) && bitRead(package[0], 1)) {
                 newTimingsToControllerDevice(package);
-            }
-            errorsCount++;
+            } else this->incErrorCount();
             break;
         default:
-            errorsCount++;
-            //Serial.print("Errors: ");
-            //Serial.println(errorsCount);
+            this->incErrorCount();
     }
+}
+
+void CommunicationUnit::doBlink(int times) {
+    pinMode(13, OUTPUT);
+    for (int i = 0; i < times; i++) {
+        digitalWrite(13, HIGH);
+        delay(300);
+        digitalWrite(13, LOW);
+        delay(300);
+    }
+    digitalWrite(13, LOW);
+}
+
+void CommunicationUnit::incErrorCount() {
+    errorsCount++;
+    this->sendAdditionalInfo();
 }
 
 void CommunicationUnit::newTimingsToControllerDevice(byte package[MAX_PACKAGE_SIZE]) {
