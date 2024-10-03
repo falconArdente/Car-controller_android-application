@@ -221,6 +221,7 @@ class MainActivity : AppCompatActivity() {
                     if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
                 )
             )
+            angelEye.isActivated = state.angelEyeIsOn
         }
 // Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(

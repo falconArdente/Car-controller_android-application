@@ -3,10 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="DarkBack">#130426</color>
-    <color name="DarkOnPrimary">#C91F59EB</color>
-    <color name="DarkHighLight">#5d87f0</color>
+    <color name="DarkOnPrimary">#C9517FF6</color>
+    <color name="DarkHighLight">#9AB2EB</color>
     <color name="DarkSecondSurface">#1a184c</color>
-    <color name="DarkDisabled">#38385D</color>
+    <color name="DarkDisabled">#58588F</color>
 
     <color name="LightBack">#ffffff</color>
     <color name="LightSurface">#d7e5ff</color>

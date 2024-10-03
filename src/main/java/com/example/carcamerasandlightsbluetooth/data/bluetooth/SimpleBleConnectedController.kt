@@ -269,7 +269,9 @@ class SimpleBleConnectedController(
      */
     @SuppressLint("MissingPermission")
     fun sendBytes(data: ByteArray) {
-        if (mutableConnectionStateFlow.value <= ConnectionState.SCANNING) return
+        if (mutableConnectionStateFlow.value != ConnectionState.CONNECTED
+            && mutableConnectionStateFlow.value != ConnectionState.CONNECTED_NOTIFICATIONS
+        ) return
         if (currentGattProfile == null && characteristicToWriteTo == null) return
         val bytesToSend: ByteArray = byteArrayOf(
             Constants.BORDER_OF_PACKAGE_SIGN.code.toByte(),
@@ -308,6 +310,7 @@ class SimpleBleConnectedController(
         }
         return outLog
     }
+
     /**
      * Активирует ССС дескриптор и подписывается на оповещения изменений харастеристики сервиса
      */
@@ -337,6 +340,7 @@ class SimpleBleConnectedController(
     /**
      * Отменяет сканирование, завершает соединение, освобождает запись реестра GATT клиентов
      */
+    @SuppressLint("MissingPermission")
     fun finish() {
         stopScan()
         runPermissionSafe {
