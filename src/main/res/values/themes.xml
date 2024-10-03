@@ -71,6 +71,20 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:layout_marginEnd">24dp</item>
         <item name="singleLine">true</item>
+        <item name="android:inputType">number</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="layout_constraintHorizontal_bias">1</item>
+    </style>
+   <style name="TimingHelp" parent="Base.Theme.CarCamerasAndLightsBluetooth">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?attr/colorControlNormal</item>
+
+        <item name="singleLine">true</item>
     </style>
 
     <style name="Theme.CarCamerasAndLightsBluetooth" parent="Base.Theme.CarCamerasAndLightsBluetooth" />

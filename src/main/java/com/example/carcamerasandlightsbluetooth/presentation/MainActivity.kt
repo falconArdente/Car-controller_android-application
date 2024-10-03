@@ -2,10 +2,13 @@ package com.example.carcamerasandlightsbluetooth.presentation
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
@@ -17,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
         get() = _binding!!
-
+    private var timingValuesArray: ArrayList<EditText>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +32,39 @@ class MainActivity : AppCompatActivity() {
             binding.LogView.text = it
         }
         setClickListeners()
+        timingValuesArray = combineTimingsEditTextToArrayList()
+        timingValuesArray!!.forEach { it.doAfterTextChanged { _ -> timingsToSendCheck() } }
+    }
+
+    private fun combineTimingsEditTextToArrayList(): ArrayList<EditText> {
+        with(binding.timingsSet) {
+            return arrayListOf(
+                bounceValue,
+                repeaterValue,
+                frontDelayValue,
+                rearDelayValue
+            )
+        }
+    }
+
+    private fun timingsToSendCheck() {
+        if (timingValuesArray == null) return
+        var isReadyToSend = true
+        val errorText = getString(R.string.not_gotten)
+        timingValuesArray!!.forEach { editText ->
+            val localNum = try {
+                editText.text.toString().toInt()
+            } catch (e: Exception) {
+                65535
+            }
+            if (editText.text.toString() == errorText
+                || localNum >= 65534
+            ) {
+                isReadyToSend = false
+                return@forEach
+            }
+        }
+        binding.timingsSet.sendTimings.isEnabled = isReadyToSend
     }
 
     private fun setClickListeners() {
@@ -59,16 +95,37 @@ class MainActivity : AppCompatActivity() {
         binding.timingsSet.root.isGone = !mainState.isSetTimings
         binding.LogView.isGone = mainState.isSetTimings
         with(binding.timingsSet) {
-            bounceValue.setText(timingToString(mainState.deviceState.timings.bounce))
-            repeaterValue.setText(timingToString(mainState.deviceState.timings.repeater))
-            frontDelayValue.setText(timingToString(mainState.deviceState.timings.frontDelay))
-            rearDelayValue.setText(timingToString(mainState.deviceState.timings.rearDelay))
+            renderTimingValueAndHelper(
+                bounceValue,
+                bounceBlue,
+                mainState.deviceState.timings.bounce
+            )
+            renderTimingValueAndHelper(
+                repeaterValue,
+                repeaterBlue,
+                mainState.deviceState.timings.repeater
+            )
+            renderTimingValueAndHelper(
+                frontDelayValue,
+                frontBlue,
+                mainState.deviceState.timings.frontDelay
+            )
+            renderTimingValueAndHelper(
+                rearDelayValue,
+                rearBlue,
+                mainState.deviceState.timings.rearDelay
+            )
         }
     }
 
-    private fun timingToString(number: Int): String {
-        if (number != -1) return number.toString()
-        return getString(R.string.not_gotten)
+    private fun renderTimingValueAndHelper(editText: EditText, helper: TextView, number: Int) {
+        if (number != -1) {
+            editText.setText(number.toString())
+            helper.text = number.toString()
+        } else {
+            editText.text.clear()
+            helper.text = getString(R.string.not_gotten)
+        }
     }
 
     private fun renderLock(isLocked: Boolean) {

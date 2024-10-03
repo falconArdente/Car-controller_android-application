@@ -152,6 +152,9 @@ class RootViewModel(
         deviceInteractor.sendTimings(
             newTimings = mutableStatesLiveData.value!!.deviceState.timings
         )
+        mutableStatesLiveData.postValue(
+            mutableStatesLiveData.value!!.copy(isSetTimings = false)
+        )
     }
 
     fun reScan() {
