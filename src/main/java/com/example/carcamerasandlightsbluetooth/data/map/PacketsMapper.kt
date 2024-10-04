@@ -5,6 +5,7 @@ import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
+import java.nio.ByteBuffer
 import java.util.BitSet
 
 /**
@@ -66,7 +67,9 @@ object PacketsMapper {
     }
 
     private fun twoBytesToInt(leastByte: Byte, mostByte: Byte): Int {
-        return (leastByte.toInt() and (0xFF).toInt()) + mostByte.toInt()
+        val array = byteArrayOf(leastByte, mostByte, 0, 0)
+        array.reverse()
+        return ByteBuffer.wrap(array).int
     }
 
     fun combineReportWithState(
