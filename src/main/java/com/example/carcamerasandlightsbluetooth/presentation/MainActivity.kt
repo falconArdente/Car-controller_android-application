@@ -15,6 +15,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
+import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
@@ -87,7 +88,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setClickListeners() {
-        binding.timingsSet.sendTimings.setOnClickListener { viewModel.sendTimings() }
+        binding.timingsSet.sendTimings.setOnClickListener {
+            with(binding.timingsSet) {
+                viewModel.sendTimings(
+                    Timings(
+                        bounce = bounceValue.text.toString().toInt(),
+                        repeater = repeaterValue.text.toString().toInt(),
+                        frontDelay = frontDelayValue.text.toString().toInt(),
+                        rearDelay = rearDelayValue.text.toString().toInt()
+                    )
+                )
+            }
+        }
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
         binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
         binding.bluetoothSign.setOnClickListener { viewModel.reScan() }
@@ -135,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                 mainState.deviceState.timings.rearDelay
             )
         }
+        timingsToSendCheck()
     }
 
     private fun renderTimingValueAndHelper(editText: EditText, helper: TextView, number: Int) {

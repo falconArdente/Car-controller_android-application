@@ -8,6 +8,7 @@ import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.domain.api.ControllerInteractor
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
+import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -148,9 +149,9 @@ class RootViewModel(
         }
     }
 
-    fun sendTimings() {
+    fun sendTimings(timings: Timings) {
         deviceInteractor.sendTimings(
-            newTimings = mutableStatesLiveData.value!!.deviceState.timings
+            newTimings = timings
         )
         mutableStatesLiveData.postValue(
             mutableStatesLiveData.value!!.copy(isSetTimings = false)
