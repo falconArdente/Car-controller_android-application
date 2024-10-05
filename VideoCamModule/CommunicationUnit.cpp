@@ -109,8 +109,8 @@ void CommunicationUnit::sendState(StateInfoSet stateSet) {
     bitWrite(packageToSend[1], 0, stateSet.leftFogIsOn);
     bitWrite(packageToSend[1], 1, stateSet.rightFogIsOn);
     bitWrite(packageToSend[1], 2, stateSet.relayIsOn);
-    bitWrite(packageToSend[1], 3, stateSet.rearCameraIsOn);
-    bitWrite(packageToSend[1], 4, stateSet.angelEyeIsOn);
+    bitWrite(packageToSend[1], 3, stateSet.rightAngelEyeIsOn);
+    bitWrite(packageToSend[1], 4, stateSet.leftAngelEyeIsOn);
     bitWrite(packageToSend[1], 5, stateSet.displayIsOn);
     bitWrite(packageToSend[1], 6, bitRead(stateSet.cameraState, 0));
     bitWrite(packageToSend[1], 7, bitRead(stateSet.cameraState, 1));

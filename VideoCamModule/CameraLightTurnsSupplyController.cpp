@@ -44,8 +44,8 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
     digitalWrite(outLeftFogLight, command.leftFogIsOn);
     digitalWrite(outRightFogLight, command.rightFogIsOn);
     digitalWrite(outRelayCameraSwitch, command.relayIsOn);
-    digitalWrite(outAngelEyeRight, command.rearCameraIsOn);
-    digitalWrite(outAngelEyeLeft, command.angelEyeIsOn);
+    digitalWrite(outAngelEyeRight, command.rightAngelEyeIsOn);
+    digitalWrite(outAngelEyeLeft, command.leftAngelEyeIsOn);
     digitalWrite(outDisplayOn, command.displayIsOn);
     setCameraState(command.cameraState);
     sendCurrentState();
