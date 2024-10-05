@@ -24,8 +24,8 @@ public:
         bool leftFogIsOn;
         bool rightFogIsOn;
         bool relayIsOn;
-        bool rearCameraIsOn;
-        bool angelEyeIsOn;
+        bool rightAngelEyeIsOn;
+        bool leftAngelEyeIsOn;
         bool displayIsOn;
         CameraStates cameraState;
     };
@@ -34,8 +34,8 @@ public:
         bool leftFogIsOn;
         bool rightFogIsOn;
         bool relayIsOn;
-        bool rearCameraIsOn;
-        bool angelEyeIsOn;
+        bool rightAngelEyeIsOn;
+        bool leftAngelEyeIsOn;
         bool displayIsOn;
         CameraStates cameraState;
     };

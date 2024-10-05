@@ -10,7 +10,7 @@
 #ifndef CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 #define CAMERALIGHTTURNSSUPPLYYCONTROLLER_H
 
-class CameraLightTurnsSupplyController: public ControllerForCommUnitInterface {
+class CameraLightTurnsSupplyController : public ControllerForCommUnitInterface {
 public:
     CameraLightTurnsSupplyController();
 
@@ -33,11 +33,12 @@ public:
     void executeCommand(CommunicationUnit::ControlCommandSet command);
 
     void sendUpTimings();
+
     void sendCurrentState();
-      
+
 private:
-      CommunicationUnit network;
-      Timings timings = Timings( //default one
+    CommunicationUnit network;
+    Timings timings = Timings( //default one
             60, // BOUNCE_DELAY
             900, // REPEATER_DELAY
             3000, // FRONT_CAM_SHOWTIME_DELAY
@@ -50,8 +51,8 @@ private:
     Lever leftTurnLever;
     Lever rightTurnLever;
 //output pins
-    const int outRearCamPower = 7; // transistor to power on
-    const int outAngelEye = 5;
+    const int outAngelEyeRight = 7; // transistor to power on pin8
+    const int outAngelEyeLeft = 5; // transistor to power on pin16
     const int outCautionSignal = 2;
     const int outDisplayOn = A2;
     const int outLeftFogLight = 3;
