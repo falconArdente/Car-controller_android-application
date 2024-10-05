@@ -66,8 +66,8 @@ void CameraLightTurnsSupplyController::sendCurrentState() {
             digitalRead(outLeftFogLight),
             digitalRead(outRightFogLight),
             digitalRead(outRelayCameraSwitch),
-            digitalRead(outAngelEyeLeft),
             digitalRead(outAngelEyeRight),
+            digitalRead(outAngelEyeLeft),
             digitalRead(outDisplayOn),
             cameraState,
     };
