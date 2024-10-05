@@ -17,8 +17,8 @@ void CameraLightTurnsSupplyController::setChangeStateCallback(ChangeStateCallbac
 }
 
 void CameraLightTurnsSupplyController::initiate() {
-    pinMode(outRearCamPower, OUTPUT);
-    pinMode(outAngelEye, OUTPUT);
+    pinMode(outAngelEyeRight, OUTPUT);
+    pinMode(outAngelEyeLeft, OUTPUT);
     pinMode(outCautionSignal, OUTPUT);
     pinMode(outDisplayOn, OUTPUT);
     pinMode(outLeftFogLight, OUTPUT);
@@ -44,8 +44,8 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
     digitalWrite(outLeftFogLight, command.leftFogIsOn);
     digitalWrite(outRightFogLight, command.rightFogIsOn);
     digitalWrite(outRelayCameraSwitch, command.relayIsOn);
-    digitalWrite(outRearCamPower, command.rearCameraIsOn);
-    digitalWrite(outAngelEye, command.angelEyeIsOn);
+    digitalWrite(outAngelEyeRight, command.rearCameraIsOn);
+    digitalWrite(outAngelEyeLeft, command.angelEyeIsOn);
     digitalWrite(outDisplayOn, command.displayIsOn);
     setCameraState(command.cameraState);
     sendCurrentState();
@@ -66,8 +66,8 @@ void CameraLightTurnsSupplyController::sendCurrentState() {
             digitalRead(outLeftFogLight),
             digitalRead(outRightFogLight),
             digitalRead(outRelayCameraSwitch),
-            digitalRead(outRearCamPower),
-            digitalRead(outAngelEye),
+            digitalRead(outAngelEyeLeft),
+            digitalRead(outAngelEyeRight),
             digitalRead(outDisplayOn),
             cameraState,
     };
@@ -124,14 +124,12 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
     switch (state) {
         case CAMS_OFF:
             digitalWrite(outDisplayOn, LOW);
-            digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
             digitalWrite(outCautionSignal, LOW);
             turnOffFogLight();
             break;
         case REAR_CAM_ON:
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outRearCamPower, HIGH);
             digitalWrite(outRelayCameraSwitch, LOW);
             turnOffFogLight();
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
@@ -139,7 +137,6 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             break;
         case FRONT_CAM_ON: // Fog lights turn on logic is inside checkGearsLoopStep case
             digitalWrite(outDisplayOn, HIGH);
-            digitalWrite(outRearCamPower, LOW);
             digitalWrite(outRelayCameraSwitch, HIGH);
             digitalWrite(outCautionSignal, LOW);
             break;
