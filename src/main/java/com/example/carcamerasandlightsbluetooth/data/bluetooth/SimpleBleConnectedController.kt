@@ -47,9 +47,11 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
+import javax.inject.Inject
 
 @SuppressLint("LogNotTimber")
-class SimpleBleConnectedController(
+
+class SimpleBleConnectedController @Inject constructor(
     private val context: Context,
     private val serviceToFindUUID: UUID,
     private val characteristicToFindUUID: UUID,

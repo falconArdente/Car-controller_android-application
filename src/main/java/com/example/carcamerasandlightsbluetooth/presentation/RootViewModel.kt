@@ -14,8 +14,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RootViewModel(
+class RootViewModel @Inject constructor(
     private val deviceInteractor: ControllerInteractor
 ) : ViewModel() {
     private var deviceJob: Job? = null

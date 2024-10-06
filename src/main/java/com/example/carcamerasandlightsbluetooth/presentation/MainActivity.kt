@@ -12,15 +12,17 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
+import com.example.carcamerasandlightsbluetooth.App
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.databinding.ActivityMainBinding
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import javax.inject.Inject
 
 
 class MainActivity : AppCompatActivity() {
-    private val viewModel by viewModel<RootViewModel>()
+    @Inject
+    lateinit var viewModel: RootViewModel
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
         get() = _binding!!
@@ -34,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        (applicationContext as App).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
