@@ -5,8 +5,10 @@ import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class BasicLightCamInteractor(private val repository: BluetoothRepository) : ControllerInteractor {
+class BasicLightCamInteractor @Inject constructor(private val repository: BluetoothRepository) :
+    ControllerInteractor {
     override fun getStateFlow(): Flow<DeviceState> {
         return repository.getStateFlow()
     }

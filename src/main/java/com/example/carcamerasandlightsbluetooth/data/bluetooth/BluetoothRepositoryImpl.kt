@@ -24,8 +24,9 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class BluetoothRepositoryImpl(
+class BluetoothRepositoryImpl @Inject constructor(
     private val communicator: SimpleBleConnectedController,
     private val defaultMAC: String = "",
     context: Context,
