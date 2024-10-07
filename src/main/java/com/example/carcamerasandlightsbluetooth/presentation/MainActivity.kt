@@ -185,7 +185,7 @@ class MainActivity : AppCompatActivity() {
     private fun renderCommandSet(state: DeviceState, isLocked: Boolean = true) {
         with(binding.commandsBlock) {
             if (isLocked) {
-                backCamText.isVisible = state.rearCameraIsOn
+                backCamText.isVisible = state.rightAngelEyeIsOn
                 frontCamText.isVisible = state.frontCameraIsShown
                 backCam.setBackgroundDrawable(
                     AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity() {
                 backCamBack.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
-                        if (state.rearCameraIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                        if (state.rightAngelEyeIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
                     )
                 )
                 frontCamBack.setBackgroundDrawable(
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
                 backCam.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
-                        if (state.rearCameraIsOn) R.drawable.camera_on else R.drawable.camera_void
+                        if (state.rightAngelEyeIsOn) R.drawable.camera_on else R.drawable.camera_void
                     )
                 )
                 frontCam.setBackgroundDrawable(
@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                     if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
                 )
             )
-            angelEye.isActivated = state.angelEyeIsOn
+            angelEye.isActivated = state.leftAngelEyeIsOn
         }
 // Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(

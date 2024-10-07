@@ -7,8 +7,8 @@ data class ControlCommand(
     var leftFogIsOn: Boolean,
     var rightFogIsOn: Boolean,
     var relayIsOn: Boolean,
-    var rearCameraIsOn: Boolean,
-    var angelEyeIsOn: Boolean,
+    var rightAngelEyeIsOn: Boolean,
+    var leftAngelEyeIsOn: Boolean,
     var displayIsOn: Boolean,
     var cameraState: CameraState,
 )

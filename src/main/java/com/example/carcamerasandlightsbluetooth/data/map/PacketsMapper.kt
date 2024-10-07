@@ -33,8 +33,8 @@ object PacketsMapper {
                         leftFogIsOn = bits.get(8),
                         rightFogIsOn = bits.get(9),
                         frontCameraIsShown = bits.get(10),
-                        rearCameraIsOn = bits.get(11),
-                        angelEyeIsOn = bits.get(12),
+                        rightAngelEyeIsOn = bits.get(11),
+                        leftAngelEyeIsOn = bits.get(12),
                         displayIsOn = bits.get(13),
                         testModeIsOn = (bits.get(14) && bits.get(15)),
                         timings = Timings.NOT_INITIALIZED
@@ -87,8 +87,8 @@ object PacketsMapper {
                 leftFogIsOn = leftFogIsOn,
                 rightFogIsOn = rightFogIsOn,
                 frontCameraIsShown = frontCameraIsShown,
-                rearCameraIsOn = rearCameraIsOn,
-                angelEyeIsOn = angelEyeIsOn,
+                rightAngelEyeIsOn = rightAngelEyeIsOn,
+                leftAngelEyeIsOn = leftAngelEyeIsOn,
                 displayIsOn = displayIsOn
             )
         }
@@ -114,8 +114,8 @@ object PacketsMapper {
             bits[3] = leftFogIsOn
             bits[4] = rightFogIsOn
             bits[5] = relayIsOn
-            bits[6] = rearCameraIsOn
-            bits[7] = angelEyeIsOn
+            bits[6] = rightAngelEyeIsOn
+            bits[7] = leftAngelEyeIsOn
             bits[8] = displayIsOn
             bits[9] = cameraBits[0]
             bits[10] = cameraBits[1]

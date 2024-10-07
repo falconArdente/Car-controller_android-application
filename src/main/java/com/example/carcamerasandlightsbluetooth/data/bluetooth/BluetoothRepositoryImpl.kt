@@ -187,8 +187,8 @@ class BluetoothRepositoryImpl @Inject constructor(
                     leftFogIsOn = leftFogIsOn,
                     rightFogIsOn = rightFogIsOn,
                     relayIsOn = frontCameraIsShown,
-                    rearCameraIsOn = rearCameraIsOn,
-                    angelEyeIsOn = angelEyeIsOn,
+                    rightAngelEyeIsOn = rightAngelEyeIsOn,
+                    leftAngelEyeIsOn = leftAngelEyeIsOn,
                     displayIsOn = displayIsOn,
                     cameraState = if (testIsOn) CameraState.TEST_MODE else CameraState.CAMS_OFF
                 )

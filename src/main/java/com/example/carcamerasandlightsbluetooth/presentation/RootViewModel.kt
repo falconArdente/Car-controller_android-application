@@ -77,7 +77,7 @@ class RootViewModel @Inject constructor(
     fun clickAngelEye() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
-            state.copy(angelEyeIsOn = !state.angelEyeIsOn)
+            state.copy(leftAngelEyeIsOn = !state.leftAngelEyeIsOn)
         )
     }
 
@@ -91,7 +91,7 @@ class RootViewModel @Inject constructor(
     fun clickRearCam() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
-            state.copy(rearCameraIsOn = !state.rearCameraIsOn)
+            state.copy(rightAngelEyeIsOn = !state.rightAngelEyeIsOn)
         )
     }
 
@@ -110,7 +110,7 @@ class RootViewModel @Inject constructor(
             } else {
                 if (frontCameraIsShown) {
                     CameraState.FRONT_CAM_ON
-                } else if (rearCameraIsOn) {
+                } else if (rightAngelEyeIsOn) {
                     CameraState.REAR_CAM_ON
                 } else {
                     CameraState.CAMS_OFF
@@ -121,8 +121,8 @@ class RootViewModel @Inject constructor(
                 leftFogIsOn = leftFogIsOn,
                 rightFogIsOn = rightFogIsOn,
                 relayIsOn = frontCameraIsShown,
-                rearCameraIsOn = rearCameraIsOn,
-                angelEyeIsOn = angelEyeIsOn,
+                rightAngelEyeIsOn = rightAngelEyeIsOn,
+                leftAngelEyeIsOn = leftAngelEyeIsOn,
                 displayIsOn = displayIsOn,
                 cameraState = cameraState
             )
