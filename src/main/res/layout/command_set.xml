@@ -69,10 +69,11 @@
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/angel_eye"
+        android:id="@+id/rear_unlocked_cam"
         style="@style/LockedCommSettButton"
         android:layout_marginEnd="@dimen/command_camera_margin_end"
-        android:src="@drawable/angel_wings"
+        android:rotation="90"
+        android:src="@drawable/camera_void"
         app:layout_constraintEnd_toEndOf="@id/end_guide"
         app:layout_constraintTop_toTopOf="@id/front_cam"
         tools:ignore="TextSizeCheck" />
@@ -109,7 +110,7 @@
         app:layout_constraintTop_toBottomOf="@id/left_fog" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/back_cam"
+        android:id="@+id/rear_cam_left_angel_eye"
         android:layout_width="@dimen/button_size"
         android:layout_height="@dimen/button_size"
         android:layout_marginStart="@dimen/command_camera_margin_start"
@@ -128,12 +129,12 @@
         tools:ignore="TextSizeCheck" />
 
     <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/caution_in_set"
+        android:id="@+id/right_angel_eye"
         style="@style/LockedCommSettButton"
         android:layout_marginEnd="@dimen/command_camera_margin_end"
-        android:src="@drawable/caution_sign"
+        android:src="@drawable/angel_wings"
         app:layout_constraintEnd_toEndOf="@id/end_guide"
-        app:layout_constraintTop_toTopOf="@id/back_cam"
+        app:layout_constraintTop_toTopOf="@id/rear_cam_left_angel_eye"
         tools:ignore="TextSizeCheck" />
 
     <View
@@ -141,6 +142,6 @@
         android:layout_height="@dimen/icon_slide"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/start_gide"
-        app:layout_constraintTop_toBottomOf="@id/back_cam" />
+        app:layout_constraintTop_toBottomOf="@id/rear_cam_left_angel_eye" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

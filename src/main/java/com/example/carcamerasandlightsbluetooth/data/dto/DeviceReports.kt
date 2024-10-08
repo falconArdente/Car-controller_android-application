@@ -1,6 +1,5 @@
 package com.example.carcamerasandlightsbluetooth.data.dto
 
-import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
 
 sealed class DeviceReports {
@@ -9,7 +8,7 @@ sealed class DeviceReports {
     ) : DeviceReports()
 
     data class StateReport(
-        val state: DeviceState
+        val state: HardDeviceState
     ) : DeviceReports()
 
     data class AdditionalReport(

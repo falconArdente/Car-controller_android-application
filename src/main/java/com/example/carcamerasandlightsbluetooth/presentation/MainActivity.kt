@@ -3,6 +3,7 @@ package com.example.carcamerasandlightsbluetooth.presentation
 import android.content.res.Configuration
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.EditText
@@ -109,11 +110,11 @@ class MainActivity : AppCompatActivity() {
         with(binding.commandsBlock) {
             glass.setOnClickListener { viewModel.clickLock() }
             frontCam.setOnClickListener { viewModel.clickFrontCam() }
-            backCam.setOnClickListener { viewModel.clickRearCam() }
+            rearUnlockedCam.setOnClickListener { viewModel.clickRearCam() }
             leftFog.setOnClickListener { viewModel.clickLeftFog() }
             rightFog.setOnClickListener { viewModel.clickRightFog() }
-            angelEye.setOnClickListener { viewModel.clickAngelEye() }
-            cautionInSet.setOnClickListener { viewModel.clickCaution() }
+            rightAngelEye.setOnClickListener { viewModel.clickRightAngelEye() }
+            rearCamLeftAngelEye.setOnClickListener { viewModel.clickLeftAngelEye() }
         }
     }
 
@@ -170,8 +171,8 @@ class MainActivity : AppCompatActivity() {
             glass.isVisible = isLocked
             frontCamBack.isVisible = isLocked
             frontCamText.isVisible = isLocked
-            cautionInSet.isVisible = !isLocked
-            angelEye.isVisible = !isLocked
+            rightAngelEye.isVisible = !isLocked
+            rearUnlockedCam.isVisible = !isLocked
         }
         binding.columnSet.lockButton.setImageDrawable(
             AppCompatResources.getDrawable(
@@ -179,17 +180,19 @@ class MainActivity : AppCompatActivity() {
                 if (isLocked) R.drawable.lock else R.drawable.unlock
             )
         )
-
     }
 
-    private fun renderCommandSet(state: DeviceState, isLocked: Boolean = true) {
+    private fun renderCommandSet(state: DeviceState, isLocked: Boolean ) {
         with(binding.commandsBlock) {
             if (isLocked) {
+                // TODO updateState class for camera logic
                 backCamText.isVisible = state.rightAngelEyeIsOn
                 frontCamText.isVisible = state.frontCameraIsShown
-                backCam.setBackgroundDrawable(
+                Log.d("SimpleBLE", "isLocked triggerfor Render")
+                rearCamLeftAngelEye.setImageDrawable(
                     AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
                 )
+                rearCamLeftAngelEye.rotation = 90f
                 frontCam.setBackgroundDrawable(
                     AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
                 )
@@ -206,7 +209,8 @@ class MainActivity : AppCompatActivity() {
                     )
                 )
             } else {
-                backCam.setBackgroundDrawable(
+                //TODO state logic inside VM
+                rearUnlockedCam.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
                         if (state.rightAngelEyeIsOn) R.drawable.camera_on else R.drawable.camera_void
@@ -218,6 +222,10 @@ class MainActivity : AppCompatActivity() {
                         if (state.frontCameraIsShown) R.drawable.camera_on else R.drawable.camera_void
                     )
                 )
+                rearCamLeftAngelEye.setImageDrawable(
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.angel_wings)
+                )
+                rearCamLeftAngelEye.rotation = 0f
             }
             leftFog.setBackgroundDrawable(
                 AppCompatResources.getDrawable(
@@ -231,13 +239,8 @@ class MainActivity : AppCompatActivity() {
                     if (state.rightFogIsOn) R.drawable.fog_lamp_on else R.drawable.fog_lamp
                 )
             )
-            cautionInSet.setImageDrawable(
-                AppCompatResources.getDrawable(
-                    this@MainActivity,
-                    if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
-                )
-            )
-            angelEye.isActivated = state.leftAngelEyeIsOn
+            rightAngelEye.isActivated = state.rightAngelEyeIsOn
+            rearCamLeftAngelEye.isActivated = state.leftAngelEyeIsOn
         }
 // Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(

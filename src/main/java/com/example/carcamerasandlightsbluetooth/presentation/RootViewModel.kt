@@ -74,7 +74,14 @@ class RootViewModel @Inject constructor(
         )
     }
 
-    fun clickAngelEye() {
+    fun clickRightAngelEye() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(rightAngelEyeIsOn = !state.rightAngelEyeIsOn)
+        )
+    }
+
+    fun clickLeftAngelEye() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
             state.copy(leftAngelEyeIsOn = !state.leftAngelEyeIsOn)
