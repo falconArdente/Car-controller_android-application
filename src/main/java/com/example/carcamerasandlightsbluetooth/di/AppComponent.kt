@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.carcamerasandlightsbluetooth.presentation.MainActivity
 import dagger.BindsInstance
 import dagger.Component
+import dagger.Provides
 import javax.inject.Singleton
 
 @Singleton

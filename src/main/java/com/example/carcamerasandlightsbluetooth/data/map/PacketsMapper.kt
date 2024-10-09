@@ -1,7 +1,9 @@
 package com.example.carcamerasandlightsbluetooth.data.map
 
+import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.Constants
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
+import com.example.carcamerasandlightsbluetooth.data.dto.HardDeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.ControlCommand
 import com.example.carcamerasandlightsbluetooth.domain.model.DeviceState
 import com.example.carcamerasandlightsbluetooth.domain.model.Timings
@@ -22,8 +24,7 @@ object PacketsMapper {
                 val bits = BitSet.valueOf(byteArrayOf(packet[0], packet[1]))
                 if ((bits.get(0) || bits.get(1))) return DeviceReports.Error
                 return DeviceReports.StateReport(
-                    state = DeviceState(
-                        connectionState = DeviceState.ConnectionState.CONNECTED_NOTIFIED,
+                    state = HardDeviceState(
                         leftPressed = bits.get(2),
                         leftDblPressed = bits.get(3),
                         rightPressed = bits.get(4),
@@ -32,12 +33,11 @@ object PacketsMapper {
                         cautionIsOn = bits.get(7),
                         leftFogIsOn = bits.get(8),
                         rightFogIsOn = bits.get(9),
-                        frontCameraIsShown = bits.get(10),
-                        rearCameraIsOn = bits.get(11),
-                        angelEyeIsOn = bits.get(12),
+                        relayIsOn = bits.get(10),
+                        rightAngelEyeIsOn = bits.get(11),
+                        leftAngelEyeIsOn = bits.get(12),
                         displayIsOn = bits.get(13),
-                        testModeIsOn = (bits.get(14) && bits.get(15)),
-                        timings = Timings.NOT_INITIALIZED
+                        cameraState = twoBitsToCameraState(lsb = bits.get(14), msb = bits.get(15)),
                     )
                 )
             }
@@ -66,17 +66,24 @@ object PacketsMapper {
         }
     }
 
+    private fun twoBitsToCameraState(lsb: Boolean, msb: Boolean): CameraState {
+        return if (!lsb && !msb) return CameraState.CAMS_OFF
+        else if (lsb && !msb) return CameraState.REAR_CAM_ON
+        else if (!lsb) return CameraState.FRONT_CAM_ON
+        else CameraState.TEST_MODE
+    }
+
     private fun twoBytesToInt(leastByte: Byte, mostByte: Byte): Int {
         val array = byteArrayOf(leastByte, mostByte, 0, 0)
         array.reverse()
         return ByteBuffer.wrap(array).int
     }
 
-    fun combineReportWithState(
-        stateReport: DeviceReports.StateReport,
+    fun combineHardReportWithState(
+        hardState: HardDeviceState,
         deviceState: DeviceState
     ): DeviceState {
-        with(stateReport.state) {
+        with(hardState) {
             return deviceState.copy(
                 leftPressed = leftPressed,
                 leftDblPressed = leftDblPressed,
@@ -86,17 +93,18 @@ object PacketsMapper {
                 cautionIsOn = cautionIsOn,
                 leftFogIsOn = leftFogIsOn,
                 rightFogIsOn = rightFogIsOn,
-                frontCameraIsShown = frontCameraIsShown,
-                rearCameraIsOn = rearCameraIsOn,
-                angelEyeIsOn = angelEyeIsOn,
-                displayIsOn = displayIsOn
+                frontCameraIsShown = (relayIsOn && displayIsOn),
+                rightAngelEyeIsOn = rightAngelEyeIsOn,
+                leftAngelEyeIsOn = leftAngelEyeIsOn,
+                rearCameraIsShown = (!relayIsOn && displayIsOn),
+                testModeIsOn = (cameraState == CameraState.TEST_MODE)
             )
         }
     }
 
     private fun reduceToContent(income: ByteArray): ByteArray {
         val startByte = 2
-        for (i in startByte..income.size step 1) {
+        for (i in startByte..<income.size step 1) {
             if (income[i] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()) {
                 return income.copyOfRange(startByte, i)
             }
@@ -114,8 +122,8 @@ object PacketsMapper {
             bits[3] = leftFogIsOn
             bits[4] = rightFogIsOn
             bits[5] = relayIsOn
-            bits[6] = rearCameraIsOn
-            bits[7] = angelEyeIsOn
+            bits[6] = rightAngelEyeIsOn
+            bits[7] = leftAngelEyeIsOn
             bits[8] = displayIsOn
             bits[9] = cameraBits[0]
             bits[10] = cameraBits[1]

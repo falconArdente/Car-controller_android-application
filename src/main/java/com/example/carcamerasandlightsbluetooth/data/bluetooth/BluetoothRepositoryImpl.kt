@@ -141,8 +141,8 @@ class BluetoothRepositoryImpl @Inject constructor(
                 override fun send(deviceReport: DeviceReports) {
                     when (deviceReport) {
                         is DeviceReports.StateReport -> {
-                            lastDeviceState = PacketsMapper.combineReportWithState(
-                                stateReport = deviceReport,
+                            lastDeviceState = PacketsMapper.combineHardReportWithState(
+                                hardState = deviceReport.state,
                                 deviceState = lastDeviceState
                             )
                             trySend(lastDeviceState).isSuccess
@@ -187,9 +187,9 @@ class BluetoothRepositoryImpl @Inject constructor(
                     leftFogIsOn = leftFogIsOn,
                     rightFogIsOn = rightFogIsOn,
                     relayIsOn = frontCameraIsShown,
-                    rearCameraIsOn = rearCameraIsOn,
-                    angelEyeIsOn = angelEyeIsOn,
-                    displayIsOn = displayIsOn,
+                    rightAngelEyeIsOn = rightAngelEyeIsOn,
+                    leftAngelEyeIsOn = leftAngelEyeIsOn,
+                    displayIsOn = (frontCameraIsShown || rearCameraIsShown),
                     cameraState = if (testIsOn) CameraState.TEST_MODE else CameraState.CAMS_OFF
                 )
             )

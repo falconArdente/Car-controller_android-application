@@ -3,6 +3,8 @@ package com.example.carcamerasandlightsbluetooth.di
 import android.content.Context
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.BluetoothRepositoryImpl
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController
+import com.example.carcamerasandlightsbluetooth.domain.api.ControllerInteractor
+import com.example.carcamerasandlightsbluetooth.presentation.RootViewModel
 import dagger.Module
 import dagger.Provides
 import java.util.UUID
@@ -20,6 +22,7 @@ class DaggerBluetoothProviderModule {
         )
     }
 
+    @Singleton
     @Provides
     fun provideBluetoothRepositoryImpl(context: Context): BluetoothRepositoryImpl {
         return BluetoothRepositoryImpl(
@@ -27,5 +30,13 @@ class DaggerBluetoothProviderModule {
             defaultMAC = "00:15:A5:02:0A:24",
             context = context
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideViewModel(
+        deviceInteractor: ControllerInteractor
+    ): RootViewModel {
+        return RootViewModel(deviceInteractor)
     }
 }

@@ -63,7 +63,10 @@ class RootViewModel @Inject constructor(
     fun clickFrontCam() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
-            state.copy(relayIsOn = !state.relayIsOn)
+            state.copy(
+                relayIsOn = !state.relayIsOn,
+                displayIsOn = !state.relayIsOn
+            )
         )
     }
 
@@ -74,10 +77,17 @@ class RootViewModel @Inject constructor(
         )
     }
 
-    fun clickAngelEye() {
+    fun clickRightAngelEye() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
-            state.copy(angelEyeIsOn = !state.angelEyeIsOn)
+            state.copy(rightAngelEyeIsOn = !state.rightAngelEyeIsOn)
+        )
+    }
+
+    fun clickLeftAngelEye() {
+        val state = currentStateToCommand()
+        deviceInteractor.sendCommand(
+            state.copy(leftAngelEyeIsOn = !state.leftAngelEyeIsOn)
         )
     }
 
@@ -90,9 +100,12 @@ class RootViewModel @Inject constructor(
 
     fun clickRearCam() {
         val state = currentStateToCommand()
-        deviceInteractor.sendCommand(
-            state.copy(rearCameraIsOn = !state.rearCameraIsOn)
-        )
+        val newState = if (mutableStatesLiveData.value?.deviceState?.frontCameraIsShown == true) {
+            state.copy(relayIsOn = false)
+        } else {
+            state.copy(displayIsOn = !state.displayIsOn)
+        }
+        deviceInteractor.sendCommand(newState)
     }
 
     fun clickCaution() {
@@ -110,7 +123,7 @@ class RootViewModel @Inject constructor(
             } else {
                 if (frontCameraIsShown) {
                     CameraState.FRONT_CAM_ON
-                } else if (rearCameraIsOn) {
+                } else if (rightAngelEyeIsOn) {
                     CameraState.REAR_CAM_ON
                 } else {
                     CameraState.CAMS_OFF
@@ -121,9 +134,9 @@ class RootViewModel @Inject constructor(
                 leftFogIsOn = leftFogIsOn,
                 rightFogIsOn = rightFogIsOn,
                 relayIsOn = frontCameraIsShown,
-                rearCameraIsOn = rearCameraIsOn,
-                angelEyeIsOn = angelEyeIsOn,
-                displayIsOn = displayIsOn,
+                rightAngelEyeIsOn = rightAngelEyeIsOn,
+                leftAngelEyeIsOn = leftAngelEyeIsOn,
+                displayIsOn = (rearCameraIsShown || frontCameraIsShown),
                 cameraState = cameraState
             )
         }
@@ -131,6 +144,7 @@ class RootViewModel @Inject constructor(
 
     fun clickLock() {
         with(mutableStatesLiveData) {
+            value?.let { deviceInteractor.switchToTestMode(!it.isLocked) }
             postValue(
                 value?.copy(
                     isLocked = !value?.isLocked!!

@@ -46,6 +46,12 @@ private:
 
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
+    enum FogLightState {
+    ALL_OFF,
+    LEFT_ON,
+    RIGHT_ON,
+    BOTH_ON
+} fogLightsState=ALL_OFF;
 //input gears
     Lever reverseGear;
     Lever leftTurnLever;

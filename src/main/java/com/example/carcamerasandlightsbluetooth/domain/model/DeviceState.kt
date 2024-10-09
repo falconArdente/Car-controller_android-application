@@ -11,9 +11,9 @@ data class DeviceState(
     val leftFogIsOn: Boolean,
     val rightFogIsOn: Boolean,
     val frontCameraIsShown: Boolean,
-    val rearCameraIsOn: Boolean,
-    val angelEyeIsOn: Boolean,
-    val displayIsOn: Boolean,
+    val rightAngelEyeIsOn: Boolean,
+    val leftAngelEyeIsOn: Boolean,
+    val rearCameraIsShown: Boolean,
     val testModeIsOn: Boolean,
     val timings: Timings
 ) {
@@ -36,9 +36,9 @@ data class DeviceState(
             leftFogIsOn = false,
             rightFogIsOn = false,
             frontCameraIsShown = false,
-            rearCameraIsOn = false,
-            angelEyeIsOn = false,
-            displayIsOn = false,
+            rightAngelEyeIsOn = false,
+            leftAngelEyeIsOn = false,
+            rearCameraIsShown = false,
             testModeIsOn = false,
             timings = Timings.NOT_INITIALIZED
         )
