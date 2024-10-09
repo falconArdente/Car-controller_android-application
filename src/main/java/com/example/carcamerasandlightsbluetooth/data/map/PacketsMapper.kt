@@ -69,7 +69,7 @@ object PacketsMapper {
     private fun twoBitsToCameraState(lsb: Boolean, msb: Boolean): CameraState {
         return if (!lsb && !msb) return CameraState.CAMS_OFF
         else if (lsb && !msb) return CameraState.REAR_CAM_ON
-        else if (!lsb && msb) return CameraState.FRONT_CAM_ON
+        else if (!lsb) return CameraState.FRONT_CAM_ON
         else CameraState.TEST_MODE
     }
 
@@ -93,10 +93,11 @@ object PacketsMapper {
                 cautionIsOn = cautionIsOn,
                 leftFogIsOn = leftFogIsOn,
                 rightFogIsOn = rightFogIsOn,
-                frontCameraIsShown = relayIsOn,
+                frontCameraIsShown = (relayIsOn && displayIsOn),
                 rightAngelEyeIsOn = rightAngelEyeIsOn,
                 leftAngelEyeIsOn = leftAngelEyeIsOn,
-                displayIsOn = displayIsOn
+                rearCameraIsShown = (!relayIsOn && displayIsOn),
+                testModeIsOn = (cameraState == CameraState.TEST_MODE)
             )
         }
     }

@@ -147,17 +147,24 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
 }
 
 void CameraLightTurnsSupplyController::turnFogLightOn() {
+  FogLightState newFogsState=ALL_OFF;
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, LOW);
+        newFogsState=LEFT_ON;
     } else if (rightTurnLever.isOn()) {
         digitalWrite(outRightFogLight, HIGH);
         digitalWrite(outLeftFogLight, LOW);
+        newFogsState=RIGHT_ON;
     } else {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
+        newFogsState=BOTH_ON;
     }
+   if(newFogsState!=fogLightsState){
+    fogLightsState=newFogsState;
     isChangedFlag = true;
+   }
 }
 
 void CameraLightTurnsSupplyController::turnOffFogLight() {

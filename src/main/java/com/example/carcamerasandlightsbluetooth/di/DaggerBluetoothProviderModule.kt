@@ -19,7 +19,7 @@ class DaggerBluetoothProviderModule {
             characteristicToFindUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
         )
     }
-
+    @Singleton
     @Provides
     fun provideBluetoothRepositoryImpl(context: Context): BluetoothRepositoryImpl {
         return BluetoothRepositoryImpl(

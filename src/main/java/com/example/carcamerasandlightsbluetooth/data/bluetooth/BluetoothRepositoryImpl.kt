@@ -2,6 +2,7 @@ package com.example.carcamerasandlightsbluetooth.data.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.util.Log
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState

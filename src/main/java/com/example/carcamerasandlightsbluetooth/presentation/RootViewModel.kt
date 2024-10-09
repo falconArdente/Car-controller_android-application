@@ -130,7 +130,7 @@ class RootViewModel @Inject constructor(
                 relayIsOn = frontCameraIsShown,
                 rightAngelEyeIsOn = rightAngelEyeIsOn,
                 leftAngelEyeIsOn = leftAngelEyeIsOn,
-                displayIsOn = displayIsOn,
+                displayIsOn = (rearCameraIsShown || frontCameraIsShown),
                 cameraState = cameraState
             )
         }
@@ -138,6 +138,7 @@ class RootViewModel @Inject constructor(
 
     fun clickLock() {
         with(mutableStatesLiveData) {
+            value?.let { deviceInteractor.switchToTestMode(!it.isLocked) }
             postValue(
                 value?.copy(
                     isLocked = !value?.isLocked!!

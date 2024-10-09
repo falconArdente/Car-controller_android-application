@@ -185,10 +185,8 @@ class MainActivity : AppCompatActivity() {
     private fun renderCommandSet(state: DeviceState, isLocked: Boolean ) {
         with(binding.commandsBlock) {
             if (isLocked) {
-                // TODO updateState class for camera logic
                 backCamText.isVisible = state.rightAngelEyeIsOn
                 frontCamText.isVisible = state.frontCameraIsShown
-                Log.d("SimpleBLE", "isLocked triggerfor Render")
                 rearCamLeftAngelEye.setImageDrawable(
                     AppCompatResources.getDrawable(this@MainActivity, R.drawable.camera_void)
                 )
@@ -199,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                 backCamBack.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
-                        if (state.rightAngelEyeIsOn) R.drawable.camera_back_back_on else R.drawable.camera_back_back
+                        if (state.rearCameraIsShown) R.drawable.camera_back_back_on else R.drawable.camera_back_back
                     )
                 )
                 frontCamBack.setBackgroundDrawable(
