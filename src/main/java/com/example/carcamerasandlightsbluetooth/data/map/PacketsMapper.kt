@@ -79,11 +79,11 @@ object PacketsMapper {
         return ByteBuffer.wrap(array).int
     }
 
-    fun combineReportWithState(
-        stateReport: DeviceReports.StateReport,
+    fun combineHardReportWithState(
+        hardState: HardDeviceState,
         deviceState: DeviceState
     ): DeviceState {
-        with(stateReport.state) {
+        with(hardState) {
             return deviceState.copy(
                 leftPressed = leftPressed,
                 leftDblPressed = leftDblPressed,
@@ -104,7 +104,7 @@ object PacketsMapper {
 
     private fun reduceToContent(income: ByteArray): ByteArray {
         val startByte = 2
-        for (i in startByte..income.size step 1) {
+        for (i in startByte..<income.size step 1) {
             if (income[i] == Constants.BORDER_OF_PACKAGE_SIGN.code.toByte()) {
                 return income.copyOfRange(startByte, i)
             }

@@ -117,6 +117,7 @@
         android:layout_marginTop="@dimen/icon_row_divider"
         android:elevation="@dimen/command_card_elevation"
         android:rotation="90"
+        android:rotationY="180"
         android:src="@drawable/camera_void"
         app:layout_constraintStart_toStartOf="@id/start_gide"
         app:layout_constraintTop_toBottomOf="@id/left_fog" />
@@ -132,7 +133,7 @@
         android:id="@+id/right_angel_eye"
         style="@style/LockedCommSettButton"
         android:layout_marginEnd="@dimen/command_camera_margin_end"
-        android:src="@drawable/angel_wings"
+        android:src="@drawable/wing"
         app:layout_constraintEnd_toEndOf="@id/end_guide"
         app:layout_constraintTop_toTopOf="@id/rear_cam_left_angel_eye"
         tools:ignore="TextSizeCheck" />

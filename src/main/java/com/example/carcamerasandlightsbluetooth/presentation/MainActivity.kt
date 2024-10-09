@@ -3,7 +3,6 @@ package com.example.carcamerasandlightsbluetooth.presentation
 import android.content.res.Configuration
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.EditText
@@ -106,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.columnSet.lockButton.setOnClickListener { viewModel.clickLock() }
         binding.columnSet.settingsButton.setOnClickListener { viewModel.clickTimings() }
+        binding.columnSet.cautionButton.setOnClickListener { viewModel.clickCaution() }
         binding.bluetoothSign.setOnClickListener { viewModel.reScan() }
         with(binding.commandsBlock) {
             glass.setOnClickListener { viewModel.clickLock() }
@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun renderCommandSet(state: DeviceState, isLocked: Boolean ) {
+    private fun renderCommandSet(state: DeviceState, isLocked: Boolean) {
         with(binding.commandsBlock) {
             if (isLocked) {
                 backCamText.isVisible = state.rightAngelEyeIsOn
@@ -206,25 +206,27 @@ class MainActivity : AppCompatActivity() {
                         if (state.frontCameraIsShown) R.drawable.camera_back_back_on else R.drawable.camera_back_back
                     )
                 )
-            } else {
-                //TODO state logic inside VM
+            } else { // unlocked
                 rearUnlockedCam.setBackgroundDrawable(
                     AppCompatResources.getDrawable(
                         this@MainActivity,
-                        if (state.rightAngelEyeIsOn) R.drawable.camera_on else R.drawable.camera_void
-                    )
-                )
-                frontCam.setBackgroundDrawable(
-                    AppCompatResources.getDrawable(
-                        this@MainActivity,
-                        if (state.frontCameraIsShown) R.drawable.camera_on else R.drawable.camera_void
+                        if (state.rearCameraIsShown) R.drawable.camera_on else R.drawable.camera_void
                     )
                 )
                 rearCamLeftAngelEye.setImageDrawable(
-                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.angel_wings)
+                    AppCompatResources.getDrawable(this@MainActivity, R.drawable.wing)
                 )
                 rearCamLeftAngelEye.rotation = 0f
+                rightAngelEye.isActivated = state.rightAngelEyeIsOn
+                rearCamLeftAngelEye.isActivated = state.leftAngelEyeIsOn
             }
+            // lock independent
+            frontCam.setBackgroundDrawable(
+                AppCompatResources.getDrawable(
+                    this@MainActivity,
+                    if (state.frontCameraIsShown) R.drawable.camera_on else R.drawable.camera_void
+                )
+            )
             leftFog.setBackgroundDrawable(
                 AppCompatResources.getDrawable(
                     this@MainActivity,
@@ -237,18 +239,12 @@ class MainActivity : AppCompatActivity() {
                     if (state.rightFogIsOn) R.drawable.fog_lamp_on else R.drawable.fog_lamp
                 )
             )
-            rightAngelEye.isActivated = state.rightAngelEyeIsOn
-            rearCamLeftAngelEye.isActivated = state.leftAngelEyeIsOn
         }
-// Column set Caution is Here
+        // Column set Caution is Here
         binding.columnSet.cautionButton.setBackgroundDrawable(
             AppCompatResources.getDrawable(
                 this@MainActivity,
-                if (isLocked) {
-                    if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
-                } else {
-                    if (state.testModeIsOn) R.drawable.play else R.drawable.pause
-                }
+                if (state.cautionIsOn) R.drawable.caution_sign_on else R.drawable.caution_sign
             )
         )
     }

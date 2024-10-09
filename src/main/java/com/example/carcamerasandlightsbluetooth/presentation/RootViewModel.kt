@@ -63,7 +63,10 @@ class RootViewModel @Inject constructor(
     fun clickFrontCam() {
         val state = currentStateToCommand()
         deviceInteractor.sendCommand(
-            state.copy(relayIsOn = !state.relayIsOn)
+            state.copy(
+                relayIsOn = !state.relayIsOn,
+                displayIsOn = !state.relayIsOn
+            )
         )
     }
 
@@ -97,9 +100,12 @@ class RootViewModel @Inject constructor(
 
     fun clickRearCam() {
         val state = currentStateToCommand()
-        deviceInteractor.sendCommand(
-            state.copy(rightAngelEyeIsOn = !state.rightAngelEyeIsOn)
-        )
+        val newState = if (mutableStatesLiveData.value?.deviceState?.frontCameraIsShown == true) {
+            state.copy(relayIsOn = false)
+        } else {
+            state.copy(displayIsOn = !state.displayIsOn)
+        }
+        deviceInteractor.sendCommand(newState)
     }
 
     fun clickCaution() {

@@ -2,7 +2,6 @@ package com.example.carcamerasandlightsbluetooth.data.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
 import com.example.carcamerasandlightsbluetooth.R
 import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.SimpleBleConnectedController.ConnectionState
@@ -142,8 +141,8 @@ class BluetoothRepositoryImpl @Inject constructor(
                 override fun send(deviceReport: DeviceReports) {
                     when (deviceReport) {
                         is DeviceReports.StateReport -> {
-                            lastDeviceState = PacketsMapper.combineReportWithState(
-                                stateReport = deviceReport,
+                            lastDeviceState = PacketsMapper.combineHardReportWithState(
+                                hardState = deviceReport.state,
                                 deviceState = lastDeviceState
                             )
                             trySend(lastDeviceState).isSuccess
