@@ -43,6 +43,10 @@ class RootViewModel @Inject constructor(
     val serviceLogToObserve: LiveData<String> = mutableLogLiveData
     private var logStorage = ""
     private val stateFlowCollector = FlowCollector<DeviceState> { incomeState ->
+        if (isTestMode != incomeState.testModeIsOn) {
+            isTestMode = incomeState.testModeIsOn
+            logStorage += "test_mode-> $isTestMode\n"
+        }
         mutableStatesLiveData.postValue(
             mutableStatesLiveData.value?.copy(deviceState = incomeState)
         )
@@ -144,7 +148,10 @@ class RootViewModel @Inject constructor(
 
     fun clickLock() {
         with(mutableStatesLiveData) {
-            value?.let { deviceInteractor.switchToTestMode(!it.isLocked) }
+            value?.let {
+                deviceInteractor.switchToTestMode(it.isLocked)
+                isTestMode = it.isLocked
+            }
             postValue(
                 value?.copy(
                     isLocked = !value?.isLocked!!

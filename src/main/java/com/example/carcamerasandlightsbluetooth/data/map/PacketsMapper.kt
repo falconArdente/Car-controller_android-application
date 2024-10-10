@@ -1,5 +1,6 @@
 package com.example.carcamerasandlightsbluetooth.data.map
 
+import android.util.Log
 import com.example.carcamerasandlightsbluetooth.data.CameraState
 import com.example.carcamerasandlightsbluetooth.data.bluetooth.Constants
 import com.example.carcamerasandlightsbluetooth.data.dto.DeviceReports
@@ -115,7 +116,18 @@ object PacketsMapper {
     fun commandToPacket(command: ControlCommand): ByteArray {
         val bits = BitSet(16)
         with(command) {
-            val cameraBits = BitSet(cameraState.ordinal)
+            Log.d("SimpleBle", "c Bits: ${command.cameraState}")
+            val cameraBits = BitSet(2)
+            when (command.cameraState) {
+                CameraState.CAMS_OFF -> Unit
+                CameraState.REAR_CAM_ON -> cameraBits.set(0)
+                CameraState.FRONT_CAM_ON -> cameraBits.set(1)
+                CameraState.TEST_MODE -> {
+                    cameraBits.set(0)
+                    cameraBits.set(1)
+                }
+            }
+            Log.d("SimpleBle", "c Bits: ${cameraBits.toByteArray().toList()}")
             bits[0] = true
             bits[1] = false
             bits[2] = cautionIsOn
