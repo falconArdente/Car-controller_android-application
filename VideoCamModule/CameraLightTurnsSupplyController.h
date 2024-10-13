@@ -52,6 +52,8 @@ private:
     RIGHT_ON,
     BOTH_ON
 } fogLightsState=ALL_OFF;
+    bool cautionIsPressed=false;
+    long cautionIsTimeStamp=0;
 //input gears
     Lever reverseGear;
     Lever leftTurnLever;
@@ -69,6 +71,8 @@ private:
     void getGearsState();
 
     bool isTimeOutForFront();
+
+   void pushCautionButton();
 
     bool isTimeOutForRear();
 
