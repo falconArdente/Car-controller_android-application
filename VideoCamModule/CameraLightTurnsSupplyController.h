@@ -47,13 +47,13 @@ private:
     ChangeStateCallback changeStateCallback;
     CameraStates cameraState = CAMS_OFF;
     enum FogLightState {
-    ALL_OFF,
-    LEFT_ON,
-    RIGHT_ON,
-    BOTH_ON
-} fogLightsState=ALL_OFF;
-    bool cautionIsPressed=false;
-    long cautionIsTimeStamp=0;
+        ALL_OFF,
+        LEFT_ON,
+        RIGHT_ON,
+        BOTH_ON
+    } fogLightsState = ALL_OFF;
+    bool cautionIsPressed = false;
+    long cautionIsTimeStamp = 0;
 //input gears
     Lever reverseGear;
     Lever leftTurnLever;
@@ -72,7 +72,7 @@ private:
 
     bool isTimeOutForFront();
 
-   void pushCautionButton();
+    void pushCautionButton();
 
     bool isTimeOutForRear();
 
