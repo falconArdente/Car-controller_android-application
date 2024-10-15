@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 
 const int TIMINGS_ADDR = 0;
-const int CAUTION_BUTTON_DELAY = 450;
+const int CAUTION_BUTTON_DELAY = 300;
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
@@ -52,7 +52,6 @@ void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
 void
 CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
     if (cautionIsPressed != command.cautionIsOn)pushCautionButton();
-
     digitalWrite(outLeftFogLight, command.leftFogIsOn);
     digitalWrite(outRightFogLight, command.rightFogIsOn);
     digitalWrite(outRelayCameraSwitch, command.relayIsOn);
@@ -61,6 +60,7 @@ CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlComma
     digitalWrite(outDisplayOn, command.displayIsOn);
     setCameraState(command.cameraState);
     sendCurrentState();
+    if (command.leftAngelEyeIsOn)fogTintIsWhite=true; // temp for POC
 }
 
 void CameraLightTurnsSupplyController::sendUpTimings() {
@@ -74,7 +74,7 @@ void CameraLightTurnsSupplyController::sendCurrentState() {
             rightTurnLever.isOn(),
             rightTurnLever.isDoubleClicked(),
             reverseGear.isOn(),
-            digitalRead(outCautionSignal),
+            cautionIsPressed,
             digitalRead(outLeftFogLight),
             digitalRead(outRightFogLight),
             digitalRead(outRelayCameraSwitch),
@@ -179,14 +179,26 @@ void CameraLightTurnsSupplyController::turnFogLightOn() {
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, LOW);
+        if(fogTintIsWhite){
+        digitalWrite(outAngelEyeLeft, HIGH);
+        digitalWrite(outAngelEyeRight, LOW);
+        }
         newFogsState = LEFT_ON;
     } else if (rightTurnLever.isOn()) {
-        digitalWrite(outRightFogLight, HIGH);
-        digitalWrite(outLeftFogLight, LOW);
+              digitalWrite(outLeftFogLight, LOW);
+              digitalWrite(outRightFogLight, HIGH);
+                if(fogTintIsWhite){
+        digitalWrite(outAngelEyeLeft, LOW);
+        digitalWrite(outAngelEyeRight, HIGH);
+        }
         newFogsState = RIGHT_ON;
     } else {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
+                        if(fogTintIsWhite){
+        digitalWrite(outAngelEyeLeft, HIGH);
+        digitalWrite(outAngelEyeRight, HIGH);
+        }
         newFogsState = BOTH_ON;
     }
     if (newFogsState != fogLightsState) {
@@ -198,6 +210,10 @@ void CameraLightTurnsSupplyController::turnFogLightOn() {
 void CameraLightTurnsSupplyController::turnOffFogLight() {
     digitalWrite(outLeftFogLight, LOW);
     digitalWrite(outRightFogLight, LOW);
+                    if(fogTintIsWhite){
+        digitalWrite(outAngelEyeLeft, LOW);
+        digitalWrite(outAngelEyeRight, LOW);
+        }
     isChangedFlag = true;
 }
 

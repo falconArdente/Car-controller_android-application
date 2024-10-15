@@ -54,6 +54,7 @@ private:
     } fogLightsState = ALL_OFF;
     bool cautionIsPressed = false;
     long cautionIsTimeStamp = 0;
+    bool fogTintIsWhite=false;// temp for POC
 //input gears
     Lever reverseGear;
     Lever leftTurnLever;
