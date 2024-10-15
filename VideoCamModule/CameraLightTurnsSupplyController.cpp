@@ -5,6 +5,7 @@
 #include <EEPROM.h>
 
 const int TIMINGS_ADDR = 0;
+const int CAUTION_BUTTON_DELAY = 450;
 
 CameraLightTurnsSupplyController::CameraLightTurnsSupplyController() {}
 
@@ -25,12 +26,22 @@ void CameraLightTurnsSupplyController::initiate() {
     pinMode(outRightFogLight, OUTPUT);
     pinMode(outRelayCameraSwitch, OUTPUT);
     pinMode(outControllerLed, OUTPUT);
+    digitalWrite(outAngelEyeRight, LOW);
+    digitalWrite(outAngelEyeLeft, LOW);
+    digitalWrite(outCautionSignal, LOW);
+    digitalWrite(outDisplayOn, LOW);
+    digitalWrite(outLeftFogLight, LOW);
+    digitalWrite(outRightFogLight, LOW);
+    digitalWrite(outRelayCameraSwitch, LOW);
+    digitalWrite(outControllerLed, LOW);
     reverseGear = Lever(A1, &timings);
     leftTurnLever = Lever(A0, &timings);
     rightTurnLever = Lever(12, &timings);
+    cautionIsTimeStamp = millis();
     setCameraState(CAMS_OFF);
     getTimingsFromStorage();
     getGearsState();
+    sendCurrentState();
 }
 
 void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
@@ -40,7 +51,8 @@ void CameraLightTurnsSupplyController::updateTimings(Timings newTimings) {
 
 void
 CameraLightTurnsSupplyController::executeCommand(CommunicationUnit::ControlCommandSet command) {
-    digitalWrite(outCautionSignal, command.cautionIsOn);
+    if (cautionIsPressed != command.cautionIsOn)pushCautionButton();
+
     digitalWrite(outLeftFogLight, command.leftFogIsOn);
     digitalWrite(outRightFogLight, command.rightFogIsOn);
     digitalWrite(outRelayCameraSwitch, command.relayIsOn);
@@ -116,16 +128,32 @@ void CameraLightTurnsSupplyController::checkGearsLoopStep() {
         case TEST_MODE:
             break;
     }
-    if (!reverseGear.isOn() && cameraState != TEST_MODE)digitalWrite(outCautionSignal, LOW);
+    if (!reverseGear.isOn() && cameraState != TEST_MODE && cautionIsPressed) {
+        pushCautionButton();
+        isChangedFlag = true;
+    }
+// for caution no fixation sequence
+    if (digitalRead(outCautionSignal) == HIGH
+        && (millis() > cautionIsTimeStamp + CAUTION_BUTTON_DELAY)) {
+        digitalWrite(outCautionSignal, LOW);
+    }
+}
+
+void CameraLightTurnsSupplyController::pushCautionButton() {
+    if (cautionIsPressed) cautionIsPressed = false; else cautionIsPressed = true;
+    cautionIsTimeStamp = millis();
+    digitalWrite(outCautionSignal, HIGH);
 }
 
 void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
     if (cameraState == state)return;
+
     switch (state) {
         case CAMS_OFF:
+            if (cameraState == TEST_MODE)asm volatile("jmp 0x00"); //return to code start
             digitalWrite(outDisplayOn, LOW);
             digitalWrite(outRelayCameraSwitch, LOW);
-            digitalWrite(outCautionSignal, LOW);
+            if (cautionIsPressed) pushCautionButton();
             turnOffFogLight();
             break;
         case REAR_CAM_ON:
@@ -133,12 +161,12 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
             digitalWrite(outRelayCameraSwitch, LOW);
             turnOffFogLight();
             if (!leftTurnLever.isOn() && !rightTurnLever.isOn())
-                digitalWrite(outCautionSignal, HIGH);
+                if (!cautionIsPressed) pushCautionButton();
             break;
         case FRONT_CAM_ON: // Fog lights turn on logic is inside checkGearsLoopStep case
             digitalWrite(outDisplayOn, HIGH);
             digitalWrite(outRelayCameraSwitch, HIGH);
-            digitalWrite(outCautionSignal, LOW);
+            if (cautionIsPressed) pushCautionButton();
             break;
     }
     cameraState = state;
@@ -147,24 +175,24 @@ void CameraLightTurnsSupplyController::setCameraState(CameraStates state) {
 }
 
 void CameraLightTurnsSupplyController::turnFogLightOn() {
-  FogLightState newFogsState=ALL_OFF;
+    FogLightState newFogsState = ALL_OFF;
     if (leftTurnLever.isOn()) {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, LOW);
-        newFogsState=LEFT_ON;
+        newFogsState = LEFT_ON;
     } else if (rightTurnLever.isOn()) {
         digitalWrite(outRightFogLight, HIGH);
         digitalWrite(outLeftFogLight, LOW);
-        newFogsState=RIGHT_ON;
+        newFogsState = RIGHT_ON;
     } else {
         digitalWrite(outLeftFogLight, HIGH);
         digitalWrite(outRightFogLight, HIGH);
-        newFogsState=BOTH_ON;
+        newFogsState = BOTH_ON;
     }
-   if(newFogsState!=fogLightsState){
-    fogLightsState=newFogsState;
-    isChangedFlag = true;
-   }
+    if (newFogsState != fogLightsState) {
+        fogLightsState = newFogsState;
+        isChangedFlag = true;
+    }
 }
 
 void CameraLightTurnsSupplyController::turnOffFogLight() {
@@ -203,11 +231,7 @@ void CameraLightTurnsSupplyController::getTimingsFromStorage() {
     if (checkByte == 0) {
         if (!(timings == timingsFromStorage)) timings = timingsFromStorage;
     } else {
-        setCameraState(TEST_MODE);
-        digitalWrite(outCautionSignal, HIGH);
-        delay(1500);
-        digitalWrite(outCautionSignal, LOW);
-        setCameraState(CAMS_OFF);
+        // Some way to signalise
     }
 }
 
