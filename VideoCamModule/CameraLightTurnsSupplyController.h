@@ -41,7 +41,7 @@ private:
     Timings timings = Timings( //default one
             60, // BOUNCE_DELAY
             900, // REPEATER_DELAY
-            100, // FRONT_CAM_SHOWTIME_DELAY
+            50, // FRONT_CAM_SHOWTIME_DELAY
             1500); // REAR_CAM_SHOWTIME_DELAY
 
     ChangeStateCallback changeStateCallback;
